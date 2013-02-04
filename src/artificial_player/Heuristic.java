@@ -6,9 +6,6 @@ package artificial_player;
  *      - OR it will be probabilistic (ie. I have to pick up a bone)
  */
 public interface Heuristic {
-    enum Option {
-        BEST, WORST;
-    }
     double getValue();
     Choice getChoice();
     boolean isMyTurn();

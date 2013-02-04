@@ -4,18 +4,19 @@ import java.util.*;
 
 
 public class GameState {
-    private static final Set<Bone2> all_bones;
-    private static final int PLY = 4;
+    public static final Set<Bone2> all_bones;
+    private static final int PLY = 5;
 
     static {
-        all_bones = new HashSet<Bone2>();
+        Set<Bone2> temp_all_bones = new HashSet<Bone2>();
 
         for (int i = 0; i < 7; ++i) {
             for (int j = 0; j < 7; ++j) {
-                all_bones.add(new Bone2(i, j, false));
+                temp_all_bones.add(new Bone2(i, j, false));
             }
         }
-        assert all_bones.size() == 28;
+        assert temp_all_bones.size() == 28;
+        all_bones = Collections.unmodifiableSet(temp_all_bones);
     }
     public static enum Action {
         PLACED_RIGHT, PLACED_LEFT, PICKED_UP, PASS;
@@ -40,7 +41,27 @@ public class GameState {
         placed_bones = new LinkedList<Bone2>();
         size_of_opponent_hand = my_bones.size();
         size_of_boneyard = all_bones.size() - 2 * size_of_opponent_hand;
-        value = 0;
+
+        int my_hand_value = 0;
+        for (Bone2 bone : my_bones) {
+            my_hand_value += bone.weight();
+            System.out.println("my bone: " + bone);
+        }
+
+        int opponent_hand_value = 0;
+        for (Bone2 bone : getPossibleOpponentBones()) {
+            opponent_hand_value += bone.weight();
+            System.out.println("opponent bone: " + bone);
+        }
+        System.out.println("opponent hand size = " + size_of_opponent_hand);
+        System.out.println("boneyard size = " + size_of_boneyard);
+        System.out.println("prob that opponent has bone = " + probThatOpponentHasBone());
+        System.out.println("opponent hand value = " + opponent_hand_value);
+        System.out.println("my hand value = " + my_hand_value);
+
+        // TODO: once probThatOpponentHasBone() is fixed, use it instead of '0.5' below.
+        value = opponent_hand_value * 0.5 - my_hand_value;
+        System.out.println("starting value = " + value);
         move_number = 0;
         memo = new Memo();
 
@@ -61,6 +82,10 @@ public class GameState {
         this.move_number = previous.move_number + 1;
         this.memo = previous.memo;
 
+        // TODO: value of picking up should be average of all bones I or the opponent could pick up
+        // (otherwise I'll keep assuming I can pick up the [0,0] bone).
+
+
         if (action == Action.PLACED_RIGHT || action == Action.PLACED_LEFT) {
 
             if (bone.isMine()) {
@@ -71,7 +96,7 @@ public class GameState {
             } else {
                 assert ! previous.my_turn;
                 size_of_opponent_hand = previous.size_of_opponent_hand - 1;
-                value = previous.value - bone.weight() * probThatOpponentHasBone();
+                value = previous.value - bone.weight();// * probThatOpponentHasBone();
             }
 
             if (action == Action.PLACED_RIGHT)
@@ -87,11 +112,11 @@ public class GameState {
                 assert previous.my_turn;
                 size_of_opponent_hand = previous.size_of_opponent_hand;
                 my_bones.add(bone);
-                value = previous.value - bone.weight() * probThatBoneYardHasBone();
+                value = previous.value - bone.weight();// * probThatBoneYardHasBone();
             } else {
                 assert ! previous.my_turn;
                 size_of_opponent_hand = previous.size_of_opponent_hand + 1;
-                value = previous.value + bone.weight() * probThatBoneYardHasBone();
+                value = previous.value + bone.weight();// * probThatBoneYardHasBone();
             }
             size_of_boneyard = previous.size_of_boneyard - 1;
 
@@ -107,6 +132,8 @@ public class GameState {
     }
 
     public Choice getBestChoice() {
+        // TODO: allow good choices to get higher ply.  Number of good choices to allow forward should depend on probThatOpponentHasBone()
+
         Choice best_choice = getHeuristic().getChoice();
         for (Map.Entry<Choice,GameState> e : choices.entrySet()) {
             System.out.println(e.getKey() + " val: " + e.getValue().getValue() + " heuristic: " + e.getValue().getHeuristic());
@@ -229,10 +256,11 @@ public class GameState {
         // TODO: if opponent picks up with 1s on left and right, prob of having a 1 bone = 0
         int total_possible_opponent_bones = size_of_boneyard + size_of_opponent_hand;
 
+        // TODO: this keeps returning 1.0 ...
         if (total_possible_opponent_bones == 0)
             return 0;
         else
-            return size_of_opponent_hand / total_possible_opponent_bones;
+            return ( (double) size_of_opponent_hand) / total_possible_opponent_bones;
     }
 
     private double probThatBoneYardHasBone() {
@@ -298,5 +326,21 @@ public class GameState {
                 ", my_turn=" + my_turn +
                 ", move_number=" + move_number +
                 '}';
+    }
+
+    public void printBestChoices() {
+        Choice choice;
+        StringBuilder sbuilder = new StringBuilder();
+        GameState state = this;
+
+        do {
+            choice = state.getHeuristic().getChoice();
+            //sbuilder.append("val = "+ state.getValue() + ", now choose: " + choice + "\n");
+            sbuilder.append(String.format("val=%.1f, now %s: %s%n", state.getValue(),
+                    (state.getHeuristic().isMyTurn() ? "I choose" : "opponent choses"), choice));
+            state = state.choices.get(choice);
+        } while (choice != null);
+
+        System.out.println(sbuilder.toString());
     }
 }
