@@ -5,7 +5,7 @@ import java.util.*;
 
 public class GameState {
     public static final Set<Bone2> all_bones;
-    private static final int PLY = 5;
+    private static final int PLY = 4;
     private static final int COST_OF_MY_PICKUP = 20;
     private static final int VALUE_OF_OPPONENT_PICKUP = 5;
     private static final Comparator<Map.Entry<Choice, GameState>> comp = new Comparator<Map.Entry<Choice, GameState>>() {
@@ -27,13 +27,22 @@ public class GameState {
         return Double.compare(s1.getValue(), s2.getValue());
     }
 
+    public static Set<Bone2> getAllBones() {
+        Set<Bone2> temp_all_bones = new HashSet<Bone2>();
+
+        for (Bone2 bone : all_bones) {
+            temp_all_bones.add(new Bone2(bone));
+        }
+
+        return temp_all_bones;
+    }
 
     static {
         Set<Bone2> temp_all_bones = new HashSet<Bone2>();
 
         for (int i = 0; i < 7; ++i) {
             for (int j = 0; j < 7; ++j) {
-                temp_all_bones.add(new Bone2(i, j, false));
+                temp_all_bones.add(new Bone2Immutable(i, j));
             }
         }
         assert temp_all_bones.size() == 28;
@@ -41,11 +50,11 @@ public class GameState {
     }
 
     public static enum Action {
-        PLACED_RIGHT, PLACED_LEFT, PICKED_UP, PASS;
+        PLACED_RIGHT, PLACED_LEFT, PICKED_UP, PASS
     }
 
     public static enum Status {
-        NOT_YET_CALCULATED, HAS_CHILD_STATES, IS_LEAF;
+        NOT_YET_CALCULATED, HAS_CHILD_STATES, IS_LEAF
     }
 
     private final int size_of_opponent_hand, size_of_boneyard;
@@ -114,15 +123,13 @@ public class GameState {
 
         if (choice_taken.getAction() == Action.PLACED_RIGHT || choice_taken.getAction() == Action.PLACED_LEFT) {
 
-            if (choice_taken.getBone().isMine()) {
-                assert previous.my_turn;
+            if (previous.my_turn) {
                 my_bones.remove(choice_taken.getBone());
                 size_of_opponent_hand = previous.size_of_opponent_hand;
                 value = previous.value + choice_taken.getBone().weight();
             } else {
-                assert ! previous.my_turn;
                 size_of_opponent_hand = previous.size_of_opponent_hand - 1;
-                value = previous.value - choice_taken.getBone().weight();
+                value = previous.value - choice_taken.getBone().weight();// * probThatOpponentHasBone();
             }
 
             if (choice_taken.getAction() == Action.PLACED_RIGHT)
@@ -140,13 +147,11 @@ public class GameState {
             }
             average_of_boneyard_cards /= previous.size_of_boneyard + previous.size_of_opponent_hand;
 
-            if (choice_taken.getBone().isMine()) {
-                assert previous.my_turn;
+            if (previous.my_turn) {
                 size_of_opponent_hand = previous.size_of_opponent_hand;
                 my_bones.add(choice_taken.getBone());
                 value = previous.value - average_of_boneyard_cards - COST_OF_MY_PICKUP;
             } else {
-                assert ! previous.my_turn;
                 size_of_opponent_hand = previous.size_of_opponent_hand + 1;
                 value = previous.value + average_of_boneyard_cards + VALUE_OF_OPPONENT_PICKUP;
             }
@@ -225,15 +230,22 @@ public class GameState {
             }
         }
 
-        int[] counter = new int[6];
-        for (GameState final_state : choices_by_final_state.keySet()) {
-            ++counter[final_state.move_number];
-        }
+//        int[] counter = new int[6];
+//        for (GameState final_state : choices_by_final_state.keySet()) {
+//            ++counter[final_state.move_number];
+//        }
+//
+//        System.out.println("Counter: " + Arrays.toString(counter));
 
-        System.out.println("Counter: " + Arrays.toString(counter));
+//        int[] counter = new int[2];
+//        for (GameState final_state : choices_by_final_state.keySet()) {
+//            ++counter[final_state.my_turn ? 1 : 0];
+//        }
 
-        // Find at most N best final states, but no more than were found.
-        N = Math.min(N, choices_by_final_state.size());
+//        System.out.println("Counter: " + Arrays.toString(counter));
+
+        // Find at most N best final states, but no more than half that were found.
+        N = Math.min(N, choices_by_final_state.size() / 2);
         Map<Choice,GameState> best_choices = new HashMap<Choice, GameState>();
 
         for (int i = 0; i < N; ++i) {
@@ -299,9 +311,7 @@ public class GameState {
             if (next_states.isEmpty()) {
                 // No possible move - must pick up from boneyard
                 for (Bone2 bone : getPossibleOpponentBones()) {
-                    Bone2 bone_if_it_becomes_mine = new Bone2(bone);
-                    bone_if_it_becomes_mine.setMine(true);
-                    next_states.add(createNextState(Action.PICKED_UP, bone_if_it_becomes_mine));
+                    next_states.add(createNextState(Action.PICKED_UP, bone));
                 }
             }
 
@@ -359,12 +369,8 @@ public class GameState {
         return 1 - probThatOpponentHasBone();
     }
 
-    private Set<GameState> getOpponentNextStates() {
-        return getNextStates(getPossibleOpponentBones());
-    }
-
     private Set<Bone2> getPossibleOpponentBones() {
-        Set<Bone2> possible_opponent_bones = new HashSet<Bone2>(all_bones);
+        Set<Bone2> possible_opponent_bones = new HashSet<Bone2>(getAllBones());
         possible_opponent_bones.removeAll(my_bones);
         possible_opponent_bones.removeAll(placed_bones);
         return possible_opponent_bones;
@@ -427,7 +433,7 @@ public class GameState {
 
             sbuilder.append(String.format("Move %d: %s %s , now value = %.1f%n\t%s%n",
                     next_state.move_number,
-                    (next_state.my_turn ? "opponent chose" : "I chose"),
+                    (next_state.my_turn ? "opponent" : "I"),
                     next_state.getChoiceTaken(), next_state.getValue(),
                     next_state.placed_bones.toString()));
         }

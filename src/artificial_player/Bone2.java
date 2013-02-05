@@ -9,21 +9,19 @@ package artificial_player;
 class Bone2 {
     private int left, right;
     private int weight;
-    private boolean is_mine;
 
-    public Bone2(int left, int right, boolean is_mine) {
-        setValues(left, right, is_mine);
+    public Bone2(int left, int right) {
+        setValues(left, right);
     }
 
-    private void setValues(int left, int right, boolean is_mine) {
+    private void setValues(int left, int right) {
         this.weight = left + right;
         this.right = right;
         this.left = left;
-        setMine(is_mine);
     }
 
     public Bone2(Bone2 to_copy) {
-        setValues(to_copy.left(), to_copy.right(), to_copy.is_mine);
+        setValues(to_copy.left(), to_copy.right());
     }
 
     public void flip() {
@@ -47,7 +45,7 @@ class Bone2 {
     @Override
     public boolean equals(Object o) {
         if (o == null) return false;
-        if (o.getClass() != getClass()) return false;
+        if (!(o instanceof Bone2)) return false;
 
         Bone2 b = (Bone2) o;
 
@@ -60,18 +58,6 @@ class Bone2 {
     @Override
     public int hashCode() {
         return weight();
-    }
-
-    public boolean matchesNumber(int number) {
-        return left() == number || right() == number;
-    }
-
-    public void setMine(boolean is_mine) {
-        this.is_mine = is_mine;
-    }
-
-    public boolean isMine() {
-        return is_mine;
     }
 
     @Override

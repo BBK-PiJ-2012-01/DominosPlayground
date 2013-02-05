@@ -44,9 +44,6 @@ public class Choice {
 
     @Override
     public String toString() {
-        return "Choice{" +
-                "action=" + action +
-                ", bone=" + bone +
-                '}';
+        return action + " bone " + bone;
     }
 }

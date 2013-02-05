@@ -11,8 +11,10 @@ import java.util.*;
  * Time: 13:36
  */
 public class GameStateTest {
-    GameState state;
+    GameState my_state;
+    GameState opponent_state;
     Set<Bone2> my_bones;
+    Set<Bone2> opponent_bones;
 
     @Before
     public void setUp() throws Exception {
@@ -26,28 +28,38 @@ public class GameStateTest {
 //        my_bones.add(new Bone2(2, 3, true));
 //        my_bones.add(new Bone2(3, 3, true));
 
-        List<Bone2> all_bones = new LinkedList<Bone2>(GameState.all_bones);
+        List<Bone2> all_bones = new LinkedList<Bone2>(GameState.getAllBones());
         Collections.shuffle(all_bones);
         my_bones.addAll(all_bones.subList(0, 7));
-        for (Bone2 bone : my_bones) {
-            bone.setMine(true);
-        }
 
-        state = new GameState(my_bones, true);
+        my_state = new GameState(my_bones, true);
+
+        all_bones = new LinkedList<Bone2>(GameState.getAllBones());
+        all_bones.removeAll(my_bones);
+        Collections.shuffle(all_bones);
+        opponent_bones = new HashSet<Bone2>();
+        opponent_state = new GameState(my_bones, false);
     }
 
     @Test
     public void test1() throws Exception {
-        state.printBestN(1);
+        my_state.printBestN(1);
     }
 
     @Test
     public void test2() throws Exception {
-        state.printBestN(2);
+        my_state.printBestN(2);
     }
 
     @Test
     public void test3() throws Exception {
-        state.printBestN(5);
+        my_state.printBestN(50);
+    }
+
+    @Test
+    public void testOpponent() throws Exception {
+        Choice best_choice = opponent_state.getBestChoice();
+        opponent_state.choose(best_choice);
+        opponent_state.printBestN(50);
     }
 }
