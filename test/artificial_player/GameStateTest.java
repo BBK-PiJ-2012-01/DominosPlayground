@@ -37,24 +37,17 @@ public class GameStateTest {
     }
 
     @Test
-    public void testGetBestChoice() throws Exception {
-        System.out.println(state.getBestChoice());
-        System.out.println(state);
-        state.printBestChoices();
+    public void test1() throws Exception {
+        state.printBestN(1);
     }
 
     @Test
-    public void testGetHeuristic() throws Exception {
-
+    public void test2() throws Exception {
+        state.printBestN(2);
     }
 
     @Test
-    public void testChoose() throws Exception {
-
-    }
-
-    @Test
-    public void testGetValue() throws Exception {
-
+    public void test3() throws Exception {
+        state.printBestN(5);
     }
 }

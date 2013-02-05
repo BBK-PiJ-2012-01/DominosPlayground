@@ -76,6 +76,6 @@ class Bone2 {
 
     @Override
     public String toString() {
-        return String.format("Bone[%d,%d]", left(), right());
+        return String.format("[%d,%d]", left(), right());
     }
 }
