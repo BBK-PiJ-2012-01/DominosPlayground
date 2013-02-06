@@ -1,9 +1,8 @@
 package artificial_player;
 
 /**
- * User: Sam Wright
- * Date: 06/02/2013
- * Time: 11:41
+ * Evaluates the state value as the expectation value of the opponent's hand's weight minus
+ * my hand's weight.
  */
 public class HandExpectationEvaluator implements HandEvaluator {
     private static final int COST_OF_MY_PICKUP = 20;
@@ -28,13 +27,15 @@ public class HandExpectationEvaluator implements HandEvaluator {
 
     @Override
     public double addedValueFromChoice(Choice choice, GameState state) {
+        int addedValue = 3;
+
         if (choice.getAction() == GameState.Action.PLACED_RIGHT
                 || choice.getAction() == GameState.Action.PLACED_LEFT) {
 
             if (state.isMyTurn()) {
-                return state.getValue() + choice.getBone().weight();
+                addedValue += state.getValue() + choice.getBone().weight();
             } else {
-                return state.getValue() - choice.getBone().weight() * state.probThatOpponentHasBone();
+                addedValue += state.getValue() - choice.getBone().weight() * state.probThatOpponentHasBone();
             }
 
         } else if (choice.getAction() == GameState.Action.PICKED_UP) {
@@ -46,17 +47,19 @@ public class HandExpectationEvaluator implements HandEvaluator {
             average_of_boneyard_cards /= state.getSizeOfBoneyard() + state.getSizeOfOpponentHand();
 
             if (state.isMyTurn()) {
-                return state.getValue() - average_of_boneyard_cards - COST_OF_MY_PICKUP;
+                addedValue += state.getValue() - average_of_boneyard_cards - COST_OF_MY_PICKUP;
             } else {
-                return state.getValue() + average_of_boneyard_cards + VALUE_OF_OPPONENT_PICKUP;
+                addedValue += state.getValue() + average_of_boneyard_cards + VALUE_OF_OPPONENT_PICKUP;
             }
 
         } else if (choice.getAction() == GameState.Action.PASS) {
 
-            return state.getValue();
+            addedValue += state.getValue();
 
         } else {
             throw new RuntimeException("Unhandled action");
         }
+
+        return addedValue;
     }
 }

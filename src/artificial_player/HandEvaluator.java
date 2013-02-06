@@ -1,14 +1,14 @@
 package artificial_player;
 
 /**
- * User: Sam Wright
- * Date: 06/02/2013
- * Time: 12:37
+ * Swappable component of AIContainer that associates a value with each GameState.
+ *
+ * NB. The suggested convention is for the larger of two values to represent the
+ * GameState that is better.
  */
 public interface HandEvaluator {
     /**
-     * Evaluates the value of the given initial state (where a large positive
-     * value is good, and a large negative value is bad).
+     * Evaluates the value of the given initial state.
      *
      * @param initialState the initial state to evaluate the value for.
      * @return the value.

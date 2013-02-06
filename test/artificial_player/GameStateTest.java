@@ -32,7 +32,7 @@ public class GameStateTest {
         Collections.shuffle(all_bones);
         my_bones.addAll(all_bones.subList(0, 7));
 
-        AIContainer ai = new AIContainer(my_bones, true, new HandExpectationEvaluator());
+        AIContainer ai = new DefaultAIContainer(my_bones, true);
         my_state = ai.getCurrentState();
 
         all_bones = new LinkedList<Bone2>(GameState.getAllBones());
@@ -40,7 +40,7 @@ public class GameStateTest {
         Collections.shuffle(all_bones);
         opponent_bones = new HashSet<Bone2>();
 
-        AIContainer ai_opponent = new AIContainer(opponent_bones, false, new HandExpectationEvaluator());
+        AIContainer ai_opponent = new DefaultAIContainer(opponent_bones, false);
         opponent_state = ai_opponent.getCurrentState();
     }
 

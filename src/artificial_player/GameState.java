@@ -5,9 +5,6 @@ import java.util.*;
 
 public class GameState {
     public static final Set<Bone2> allBones;
-    private static final int PLY = 4;
-    private static final int COST_OF_MY_PICKUP = 20;
-    private static final int VALUE_OF_OPPONENT_PICKUP = 5;
     private static final Comparator<Map.Entry<Choice, GameState>> comparator;
     private static final Comparator<Map.Entry<GameState, Choice>> inverseComparator;
 
@@ -77,7 +74,7 @@ public class GameState {
     private final Map<Choice,GameState> choices = new HashMap<Choice, GameState>();
 
     private Status status = Status.NOT_YET_CALCULATED;
-    private int extraPly;
+    private int ply;
 
     public GameState(AIContainer aiContainer, Set<Bone2> myBones, boolean isMyTurn) {
         this.isMyTurn = isMyTurn;
@@ -92,6 +89,7 @@ public class GameState {
         choiceTaken = null;
 
         value = aiContainer.getHandEvaluator().evaluateInitialValue(this);
+        ply = aiContainer.getPlyManager().getInitialPly();
     }
 
     public Set<Bone2> getMyBones() {
@@ -106,6 +104,18 @@ public class GameState {
         return createNextState(new Choice(action, bone));
     }
 
+    public int getPly() {
+        return ply;
+    }
+
+    public int getMoveNumber() {
+        return moveNumber;
+    }
+
+    public void setPly(int ply) {
+        this.ply = ply;
+    }
+
     private GameState(GameState previous, Choice choiceTaken) {
         this.myBones = new HashSet<Bone2>(previous.myBones);
         this.placedBones = new LinkedList<Bone2>(previous.placedBones);
@@ -114,9 +124,11 @@ public class GameState {
         this.moveNumber = previous.moveNumber + 1;
         this.memo = previous.memo;
         this.previous = previous;
-        this.extraPly = previous.extraPly;
+        this.ply = previous.ply;
         this.aiContainer = previous.aiContainer;
+
         this.value = aiContainer.getHandEvaluator().addedValueFromChoice(choiceTaken, previous);
+        ply = previous.getPly();
 
         // Set sizeOfOpponentHand, sizeOfBoneyard, myBones, and placedBones
 
@@ -177,11 +189,21 @@ public class GameState {
     }
 
     public void printBestAfterSelectivelyIncreasingPly(int N) {
-        for (Map.Entry<Choice, GameState> e : getNBestChoicesAndFinalStates(N)) {
-            e.getValue().extraPly += PLY;
+        List<GameState> bestFinalStates;
+        int[] plyIncreases;
+        int i;
+
+        for (int n = 0; n < N; ++n) {
+            bestFinalStates = getBestNFinalStates(5);
+            plyIncreases = aiContainer.getPlyManager().getPlyIncreases(bestFinalStates);
+
+            i = 0;
+            for (GameState state : bestFinalStates) {
+                state.setPly(state.getPly() + plyIncreases[i++]);
+            }
         }
 
-        printBestN(N);
+        printBestN(5);
     }
 
     public Map<Choice,GameState> getValidChoices() {
@@ -210,7 +232,7 @@ public class GameState {
             GameState next_state = e.getValue();
             //System.out.println("\tlooking into choice " + choice);
 
-            //if (next_state.extraPly > 0)
+            //if (next_state.ply > 0)
             //    System.out.println("");
             next_state.calculateAsNecessary();
 
@@ -237,20 +259,6 @@ public class GameState {
             }
         }
 
-//        int[] counter = new int[6];
-//        for (GameState final_state : choices_by_final_state.keySet()) {
-//            ++counter[final_state.moveNumber];
-//        }
-//
-//        System.out.println("Counter: " + Arrays.toString(counter));
-
-//        int[] counter = new int[2];
-//        for (GameState final_state : choices_by_final_state.keySet()) {
-//            ++counter[final_state.isMyTurn ? 1 : 0];
-//        }
-
-//        System.out.println("Counter: " + Arrays.toString(counter));
-
         // Find at most N best final states, but no more than were found.
         N = Math.min(N, choices_by_final_state.size());
         Map<Choice,GameState> best_choices = new HashMap<Choice, GameState>();
@@ -264,6 +272,7 @@ public class GameState {
                 best_choice = Collections.min(choices_by_final_state.entrySet(), inverseComparator);
 
             // Add the entry to best_choices (but inverted)
+            assert ! best_choices.containsKey(best_choice.getValue());
             best_choices.put(best_choice.getValue(), best_choice.getKey());
 
             // Remove the entry from the original 'choices_by_final_state' so the next iteration will find the (i+1)th
@@ -286,9 +295,9 @@ public class GameState {
     private Status getDesiredStatus() {
         if (status == Status.IS_LEAF)
             return Status.IS_LEAF;
-        if (memo.getMovesPlayed() + PLY + extraPly > moveNumber)
+        if (memo.getMovesPlayed() + ply > moveNumber)
             return Status.HAS_CHILD_STATES;
-        if (memo.getMovesPlayed() + PLY + extraPly <= moveNumber)
+        if (memo.getMovesPlayed() + ply <= moveNumber)
             return Status.NOT_YET_CALCULATED;
 
         throw new RuntimeException("getDesiredStatus broke");
