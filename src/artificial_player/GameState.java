@@ -140,7 +140,9 @@ public class GameState {
                 layout.addFirst(choiceTaken.getBone());
         } else if (choiceTaken.getAction() == Action.PICKED_UP) {
             sizeOfBoneyard = previous.getSizeOfBoneyard() - 1;
-        } else throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
+        } else if (choiceTaken.getAction() == Action.PASS)
+            sizeOfBoneyard = previous.sizeOfBoneyard;
+        else throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
 
         if (previous.isMyTurn()) {
             sizeOfOpponentHand = previous.getSizeOfOpponentHand();
@@ -148,13 +150,17 @@ public class GameState {
                 myBones.remove(choiceTaken.getBone());
             else if (choiceTaken.getAction() == Action.PICKED_UP)
                 myBones.add(choiceTaken.getBone());
-            else throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
+            else if (choiceTaken.getAction() != Action.PASS)
+                throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
         } else {
             if (choiceTaken.getAction() == Action.PLACED_LEFT || choiceTaken.getAction() == Action.PLACED_RIGHT)
                 sizeOfOpponentHand = previous.getSizeOfOpponentHand() - 1;
             else if (choiceTaken.getAction() == Action.PICKED_UP)
                 sizeOfOpponentHand = previous.getSizeOfOpponentHand() + 1;
-            else throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
+            else if (choiceTaken.getAction() == Action.PASS)
+                sizeOfOpponentHand = previous.getSizeOfOpponentHand();
+            else
+                throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
         }
     }
 
@@ -226,7 +232,7 @@ public class GameState {
             Choice choice = e.getKey();
             GameState next_state = e.getValue();
 
-
+            next_state.lazyChoicesInitialisation();
 
             if (next_state.getStatus() == Status.HAS_CHILD_STATES) {
                 // For each of the best final states given this choice
@@ -237,7 +243,6 @@ public class GameState {
                 // The point of this method is to get the most desirable next_states to pursue further.
                 for (Map.Entry<Choice, GameState> e_child : next_state.getNBestChoicesAndFinalStates(1)) {
                     GameState final_state = e_child.getValue();
-
                     // Store what final state is achievable given this choice
                     assert ! choices_by_final_state.containsKey(final_state);
                     choices_by_final_state.put(final_state, choice);
@@ -245,7 +250,6 @@ public class GameState {
             } else {
                 // If the next_state is a final state (ie. a leaf or too unimportant to calculate)
                 choices_by_final_state.put(next_state, choice);
-                //System.out.println("\t\t\t...got final state " + next_state + " in state " + next_state.status);
             }
         }
 
