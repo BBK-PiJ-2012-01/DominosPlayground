@@ -11,4 +11,6 @@ public interface AIContainer {
     GameState getCurrentState();
 
     PlyManager getPlyManager();
+
+    StateEnumerator getStateEnumerator();
 }

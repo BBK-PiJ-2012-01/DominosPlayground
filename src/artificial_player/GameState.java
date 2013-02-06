@@ -8,6 +8,10 @@ public class GameState {
     private static final Comparator<Map.Entry<Choice, GameState>> comparator;
     private static final Comparator<Map.Entry<GameState, Choice>> inverseComparator;
 
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
     public static enum Action {
         PLACED_RIGHT, PLACED_LEFT, PICKED_UP, PASS
     }
@@ -18,7 +22,6 @@ public class GameState {
 
     static {
         // Enumerate all bones
-
         Set<Bone2> tempAllBones = new HashSet<Bone2>();
 
         for (int i = 0; i < 7; ++i) {
@@ -65,13 +68,13 @@ public class GameState {
     private final int sizeOfBoneyard;
     private final double value;
     private final Set<Bone2> myBones;
-    private final LinkedList<Bone2> placedBones;
+    private final LinkedList<Bone2> layout;
     private final boolean isMyTurn;
     private final int moveNumber;
     private final Memo memo;
     private final GameState previous;
     private final Choice choiceTaken;
-    private final Map<Choice,GameState> choices = new HashMap<Choice, GameState>();
+    private final Map<Choice,GameState> validChoices = new HashMap<Choice, GameState>();
 
     private Status status = Status.NOT_YET_CALCULATED;
     private int ply;
@@ -80,7 +83,7 @@ public class GameState {
         this.isMyTurn = isMyTurn;
         this.myBones = myBones;
         this.aiContainer = aiContainer;
-        placedBones = new LinkedList<Bone2>();
+        layout = new LinkedList<Bone2>();
         sizeOfOpponentHand = myBones.size();
         sizeOfBoneyard = allBones.size() - 2 * sizeOfOpponentHand;
         previous = null;
@@ -100,16 +103,13 @@ public class GameState {
         return new GameState(this, choice);
     }
 
-    private GameState createNextState(Action action, Bone2 bone) {
-        return createNextState(new Choice(action, bone));
+    public Map<Choice,GameState> getValidChoices() {
+        lazyChoicesInitialisation();
+        return Collections.unmodifiableMap(validChoices);
     }
 
     public int getPly() {
         return ply;
-    }
-
-    public int getMoveNumber() {
-        return moveNumber;
     }
 
     public void setPly(int ply) {
@@ -118,7 +118,7 @@ public class GameState {
 
     private GameState(GameState previous, Choice choiceTaken) {
         this.myBones = new HashSet<Bone2>(previous.myBones);
-        this.placedBones = new LinkedList<Bone2>(previous.placedBones);
+        this.layout = new LinkedList<Bone2>(previous.layout);
         this.choiceTaken = choiceTaken;
         this.isMyTurn = !previous.isMyTurn;
         this.moveNumber = previous.moveNumber + 1;
@@ -130,14 +130,14 @@ public class GameState {
         this.value = aiContainer.getHandEvaluator().addedValueFromChoice(choiceTaken, previous);
         ply = previous.getPly();
 
-        // Set sizeOfOpponentHand, sizeOfBoneyard, myBones, and placedBones
+        // Set sizeOfOpponentHand, sizeOfBoneyard, myBones, and layout
 
         if (choiceTaken.getAction() == Action.PLACED_LEFT || choiceTaken.getAction() == Action.PLACED_RIGHT) {
             sizeOfBoneyard = previous.getSizeOfBoneyard();
             if (choiceTaken.getAction() == Action.PLACED_RIGHT)
-                placedBones.addLast(choiceTaken.getBone());
+                layout.addLast(choiceTaken.getBone());
             else
-                placedBones.addFirst(choiceTaken.getBone());
+                layout.addFirst(choiceTaken.getBone());
         } else if (choiceTaken.getAction() == Action.PICKED_UP) {
             sizeOfBoneyard = previous.getSizeOfBoneyard() - 1;
         } else throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
@@ -159,7 +159,7 @@ public class GameState {
     }
 
     public Choice getBestChoice() {
-        // TODO: allow good choices to get higher ply.  Number of good choices to allow forward should depend on probThatOpponentHasBone()
+        // TODO: allow good validChoices to get higher ply.  Number of good validChoices to allow forward should depend on probThatOpponentHasBone()
 
         return getBestNChoices(3).get(0);
     }
@@ -206,10 +206,6 @@ public class GameState {
         printBestN(5);
     }
 
-    public Map<Choice,GameState> getValidChoices() {
-        return Collections.unmodifiableMap(choices);
-    }
-
     public Status getStatus() {
         return status;
     }
@@ -221,23 +217,16 @@ public class GameState {
     public List<Map.Entry<Choice,GameState>> getNBestChoicesAndFinalStates(int N) {
         // TODO: split this method into two: getAllBestChoicesAndFinalStates() and getBestChoiceAndFinalState()
 
-        calculateAsNecessary();
         Map<GameState,Choice> choices_by_final_state = new HashMap<GameState, Choice>();
-        //System.out.println("Getting best choices for state " + this);
 
-
-        for (Map.Entry<Choice,GameState> e : choices.entrySet()) {
+        for (Map.Entry<Choice,GameState> e : getValidChoices().entrySet()) {
             // For each choice
             Choice choice = e.getKey();
             GameState next_state = e.getValue();
-            //System.out.println("\tlooking into choice " + choice);
 
-            //if (next_state.ply > 0)
-            //    System.out.println("");
-            next_state.calculateAsNecessary();
 
-            if (next_state.status == Status.HAS_CHILD_STATES) {
-                //System.out.println("\t\tlooking into children... " + choice);
+
+            if (next_state.getStatus() == Status.HAS_CHILD_STATES) {
                 // For each of the best final states given this choice
 
                 // Changed N to 1 here, because finding more than just the best route given this choice
@@ -246,7 +235,6 @@ public class GameState {
                 // The point of this method is to get the most desirable next_states to pursue further.
                 for (Map.Entry<Choice, GameState> e_child : next_state.getNBestChoicesAndFinalStates(1)) {
                     GameState final_state = e_child.getValue();
-                    //System.out.println("\t\t\t...got recursive final state " + final_state);
 
                     // Store what final state is achievable given this choice
                     assert ! choices_by_final_state.containsKey(final_state);
@@ -266,7 +254,7 @@ public class GameState {
         for (int i = 0; i < N; ++i) {
             // Find the entry with the best final state (which is maximum value if my turn, and minimum value if not)
             Map.Entry<GameState, Choice> best_choice;
-            if (isMyTurn)
+            if (isMyTurn())
                 best_choice = Collections.max(choices_by_final_state.entrySet(), inverseComparator);
             else
                 best_choice = Collections.min(choices_by_final_state.entrySet(), inverseComparator);
@@ -285,7 +273,7 @@ public class GameState {
 
         // Best option should be at front of list.
         Collections.sort(list_of_best_choices, comparator);
-        if (isMyTurn)
+        if (isMyTurn())
             Collections.reverse(list_of_best_choices);
 
         return list_of_best_choices;
@@ -303,68 +291,43 @@ public class GameState {
         throw new RuntimeException("getDesiredStatus broke");
     }
 
-    public void calculateAsNecessary() {
+    public void lazyChoicesInitialisation() {
         Status desired_status = getDesiredStatus();
         if (desired_status == status)
             return;
 
-        if (desired_status == Status.HAS_CHILD_STATES)
-            calculateChildren();
-    }
+        if (desired_status == Status.HAS_CHILD_STATES) {
+            Set<Choice> validChoicesList = new HashSet<Choice>();
 
-    public void calculateChildren() {
-        // If either player has now played all of their bones, this is a leaf state in the tree.
-        if (myBones.isEmpty() || sizeOfOpponentHand == 0) {
-            status = Status.IS_LEAF;
-            return;
-        }
-
-        // Otherwise, check for legal moves and the subsequent next_states.
-        Set<GameState> next_states;
-
-        if (isMyTurn) {
-            next_states = getNextStates(myBones);
-            if (next_states.isEmpty()) {
-                // No possible move - must pick up from boneyard
-                for (Bone2 bone : getPossibleOpponentBones()) {
-                    next_states.add(createNextState(Action.PICKED_UP, bone));
-                }
+            if (isMyTurn) {
+                if (!myBones.isEmpty())
+                    validChoicesList = aiContainer.getStateEnumerator()
+                            .getMyValidChoices(layout, myBones, getPossibleOpponentBones());
+            } else {
+                if (sizeOfOpponentHand != 0)
+                    validChoicesList = aiContainer.getStateEnumerator()
+                            .getOpponentValidChoices(layout, getPossibleOpponentBones());
             }
 
-        } else {
-            // Assuming the opponent can place a bone
-            Set<Bone2> possible_opponent_bones = getPossibleOpponentBones();
-            next_states = getNextStates(possible_opponent_bones);
+            for (Choice choice : validChoicesList)
+                validChoices.put(choice, createNextState(choice));
 
-            // Assuming the opponent can't place a bone
-            for (Bone2 bone : possible_opponent_bones) {
-                next_states.add(createNextState(Action.PICKED_UP, bone));
-            }
+            if (validChoices.isEmpty())
+                setStatus(Status.IS_LEAF);
+            else if (choiceTaken != null
+                    && choiceTaken.getAction() == Action.PASS
+                    && validChoices.size() == 1
+                    && validChoices.containsKey(new Choice(Action.PASS, null)))
+                setStatus(Status.IS_LEAF);
+            else
+                setStatus(Status.HAS_CHILD_STATES);
         }
-
-        if (next_states.isEmpty()) {
-            // If no valid moves were found, then this turn is passed.
-            if (choiceTaken.getAction() == Action.PASS) {
-                // If the previous turn was also passed, then game-over and this is a leaf-state.
-                status = Status.IS_LEAF;
-                return;
-            }
-            next_states.add(createNextState(Action.PASS, null));
-        }
-
-        // Formulate the next_states into the 'choices' map
-        for (GameState state : next_states) {
-            choices.put(state.choiceTaken, state);
-        }
-
-        status = Status.HAS_CHILD_STATES;
     }
 
     public GameState choose(Choice choice) {
-        GameState next_state = choices.get(choice);
-        if (next_state == null) {
-            next_state = createNextState(choice);
-        }
+        GameState next_state = getValidChoices().get(choice);
+        if (next_state == null)
+            throw new RuntimeException("Choice was not valid: " + choice);
         memo.incrementMovesPlayed();
         return next_state;
     }
@@ -399,47 +362,8 @@ public class GameState {
     public Set<Bone2> getPossibleOpponentBones() {
         Set<Bone2> possible_opponent_bones = new HashSet<Bone2>(getAllBones());
         possible_opponent_bones.removeAll(myBones);
-        possible_opponent_bones.removeAll(placedBones);
+        possible_opponent_bones.removeAll(layout);
         return possible_opponent_bones;
-    }
-
-    private Set<GameState> getNextStates(Set<Bone2> availableBones) {
-        Set<GameState> new_states = new HashSet<GameState>();
-
-        if (placedBones.isEmpty()) {
-            // No bones have been placed (ie. this is the first move of the game)
-            for (Bone2 bone : availableBones) {
-                // Can place any of my bones
-                new_states.add(createNextState(Action.PLACED_RIGHT, bone));
-            }
-
-        } else {
-            // Bones have already been placed
-            int right_val = placedBones.getLast().right();
-            int left_val = placedBones.getFirst().left();
-
-            for (Bone2 bone : availableBones) {
-                // Check right/last of placed bones
-                if (right_val == bone.left()) {
-                    new_states.add(createNextState(Action.PLACED_RIGHT, bone));
-                } else if (right_val == bone.right()) {
-                    Bone2 flipped_bone = new Bone2(bone);
-                    flipped_bone.flip();
-                    new_states.add(createNextState(Action.PLACED_RIGHT, flipped_bone));
-                }
-
-                // Check left/first of placed bones
-                if (left_val == bone.right()) {
-                    new_states.add(createNextState(Action.PLACED_LEFT, bone));
-                } else if (left_val == bone.left()) {
-                    Bone2 flipped_bone = new Bone2(bone);
-                    flipped_bone.flip();
-                    new_states.add(createNextState(Action.PLACED_LEFT, flipped_bone));
-                }
-            }
-        }
-
-        return new_states;
     }
 
     @Override
@@ -462,7 +386,7 @@ public class GameState {
                     next_state.moveNumber,
                     (next_state.isMyTurn ? "opponent" : "I"),
                     next_state.getChoiceTaken(), next_state.getValue(),
-                    next_state.placedBones.toString()));
+                    next_state.layout.toString()));
         }
 
         System.out.println(sbuilder.toString());
