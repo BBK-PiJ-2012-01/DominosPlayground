@@ -14,7 +14,7 @@ public class DefaultAIContainer implements AIContainer {
     private final StateEnumerator stateEnumerator;
 
     public DefaultAIContainer(Set<Bone2> myBones, boolean isMyTurn) {
-        handEvaluator = new HandExpectationEvaluator();
+        handEvaluator = new ExpectationWeightEvaluator();
         plyManager = new LinearPlyManager();
         stateEnumerator = new StateEnumeratorImpl();
 

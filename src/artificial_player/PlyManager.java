@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * The ply is the limit applied to the number of levels allowed in the decision tree.
- * 
+ *
  * The ply is set for each GameState, so certain favourable GameStates can be explored
  * further without unfavorable/unrealistic GameStates being wastefully pursued.
  */
@@ -17,7 +17,7 @@ public interface PlyManager {
     int getInitialPly();
 
     /**
-     * Given a list of GameStates which represent the best-possible states to end in
+     * Given a list of GameState values which represent the best-possible states to end in
      * (though are not leafs in the tree - their children have not yet been calculated
      * because we used up all our ply) with the best first, return an array of ply
      * increases to be applied to these states.
@@ -27,8 +27,8 @@ public interface PlyManager {
      * bestFinalStates.get(0).  This can be used to limit the potential intelligence
      * of the AI.
      *
-     * @param bestFinalStates the final states considered to be best, and worth pursuing
+     * @param bestFinalStateValues the final states' values considered to be best, and worth pursuing
      * @return an integer array of ply increases to be applied to the GameStates.
      */
-    int[] getPlyIncreases(List<GameState> bestFinalStates);
+    int[] getPlyIncreases(double[] bestFinalStateValues);
 }

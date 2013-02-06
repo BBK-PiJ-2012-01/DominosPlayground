@@ -1,7 +1,5 @@
 package artificial_player;
 
-import java.util.List;
-
 
 public class LinearPlyManager implements PlyManager {
 
@@ -11,8 +9,8 @@ public class LinearPlyManager implements PlyManager {
     }
 
     @Override
-    public int[] getPlyIncreases(List<GameState> bestFinalStates) {
-        int[] ply_increases = new int[bestFinalStates.size()];
+    public int[] getPlyIncreases(double[] bestFinalStateValues) {
+        int[] ply_increases = new int[bestFinalStateValues.length];
 
         for (int i = 0; i < ply_increases.length; ++i) {
             ply_increases[i] = 2;

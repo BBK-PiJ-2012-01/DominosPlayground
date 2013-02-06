@@ -164,10 +164,6 @@ public class GameState {
         return getBestNChoices(3).get(0);
     }
 
-    public GameState getBestFinalState() {
-        return getBestNFinalStates(3).get(0);
-    }
-
     public List<Choice> getBestNChoices(int N) {
         List<Choice> list_of_best_choices = new LinkedList<Choice>();
 
@@ -195,7 +191,13 @@ public class GameState {
 
         for (int n = 0; n < N; ++n) {
             bestFinalStates = getBestNFinalStates(5);
-            plyIncreases = aiContainer.getPlyManager().getPlyIncreases(bestFinalStates);
+
+            double[] bestFinalStateValues = new double[5];
+            int j = 0;
+            for (GameState finalState : bestFinalStates)
+                bestFinalStateValues[j++] = finalState.getValue();
+
+            plyIncreases = aiContainer.getPlyManager().getPlyIncreases(bestFinalStateValues);
 
             i = 0;
             for (GameState state : bestFinalStates) {
@@ -348,7 +350,6 @@ public class GameState {
         // TODO: if opponent picks up with 1s on left and right, prob of having a 1 bone = 0
         int total_possible_opponent_bones = sizeOfBoneyard + sizeOfOpponentHand;
 
-        // TODO: this keeps returning 1.0 ...
         if (total_possible_opponent_bones == 0)
             return 0;
         else
