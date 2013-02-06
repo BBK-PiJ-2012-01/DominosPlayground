@@ -57,8 +57,13 @@ public class GameStateTest {
     }
 
     @Test
+    public void testWithExtraPly() throws Exception {
+        my_state.printBestAfterSelectivelyIncreasingPly(100);
+    }
+
+    @Test
     public void testOpponent() throws Exception {
-        Choice best_choice = opponent_state.getBestChoice();
+        Choice best_choice = my_state.getBestChoice();
         opponent_state.choose(best_choice);
         opponent_state.printBestN(50);
     }

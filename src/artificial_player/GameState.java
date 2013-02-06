@@ -8,20 +8,46 @@ public class GameState {
     private static final int PLY = 4;
     private static final int COST_OF_MY_PICKUP = 20;
     private static final int VALUE_OF_OPPONENT_PICKUP = 5;
-    private static final Comparator<Map.Entry<Choice, GameState>> comp = new Comparator<Map.Entry<Choice, GameState>>() {
-        @Override
-        public int compare(Map.Entry<Choice, GameState> o1, Map.Entry<Choice, GameState> o2) {
-            return compareStates(o1.getValue(), o2.getValue());
-        }
-    };
+    private static final Comparator<Map.Entry<Choice, GameState>> comp;
+    private static final Comparator<Map.Entry<GameState, Choice>> inverse_comp;
 
-    private static final Comparator<Map.Entry<GameState, Choice>> inverse_comp = new Comparator<Map.Entry<GameState, Choice>>() {
+    public static enum Action {
+        PLACED_RIGHT, PLACED_LEFT, PICKED_UP, PASS
+    }
 
-        @Override
-        public int compare(Map.Entry<GameState, Choice> o1, Map.Entry<GameState, Choice> o2) {
-            return compareStates(o1.getKey(), o2.getKey());
+    public static enum Status {
+        NOT_YET_CALCULATED, HAS_CHILD_STATES, IS_LEAF
+    }
+
+    static {
+        // Enumerate all bones
+
+        Set<Bone2> temp_all_bones = new HashSet<Bone2>();
+
+        for (int i = 0; i < 7; ++i) {
+            for (int j = 0; j < 7; ++j) {
+                temp_all_bones.add(new Bone2(i, j));
+            }
         }
-    };
+        assert temp_all_bones.size() == 28;
+        all_bones = Collections.unmodifiableSet(temp_all_bones);
+
+        // Setup the comparators
+        comp = new Comparator<Map.Entry<Choice, GameState>>() {
+            @Override
+            public int compare(Map.Entry<Choice, GameState> o1, Map.Entry<Choice, GameState> o2) {
+                return compareStates(o1.getValue(), o2.getValue());
+            }
+        };
+
+        inverse_comp = new Comparator<Map.Entry<GameState, Choice>>() {
+
+            @Override
+            public int compare(Map.Entry<GameState, Choice> o1, Map.Entry<GameState, Choice> o2) {
+                return compareStates(o1.getKey(), o2.getKey());
+            }
+        };
+    }
 
     private static int compareStates(GameState s1, GameState s2) {
         return Double.compare(s1.getValue(), s2.getValue());
@@ -37,26 +63,6 @@ public class GameState {
         return temp_all_bones;
     }
 
-    static {
-        Set<Bone2> temp_all_bones = new HashSet<Bone2>();
-
-        for (int i = 0; i < 7; ++i) {
-            for (int j = 0; j < 7; ++j) {
-                temp_all_bones.add(new Bone2Immutable(i, j));
-            }
-        }
-        assert temp_all_bones.size() == 28;
-        all_bones = Collections.unmodifiableSet(temp_all_bones);
-    }
-
-    public static enum Action {
-        PLACED_RIGHT, PLACED_LEFT, PICKED_UP, PASS
-    }
-
-    public static enum Status {
-        NOT_YET_CALCULATED, HAS_CHILD_STATES, IS_LEAF
-    }
-
     private final int size_of_opponent_hand, size_of_boneyard;
     private final double value;
     private final Set<Bone2> my_bones;
@@ -68,7 +74,8 @@ public class GameState {
     private final GameState previous;
     private final Choice choice_taken;
 
-    private  Status status = Status.NOT_YET_CALCULATED;
+    private Status status = Status.NOT_YET_CALCULATED;
+    private int extra_ply;
 
     public GameState(Set<Bone2> my_bones, boolean my_turn) {
         this.my_turn = my_turn;
@@ -104,11 +111,15 @@ public class GameState {
         choice_taken = null;
     }
 
-    private GameState createNextState(Action action, Bone2 bone) {
-        return new GameState(this, new Choice(action, bone), bone);
+    private GameState createNextState(Choice choice) {
+        return new GameState(this, choice);
     }
 
-    private GameState(GameState previous, Choice choice_taken, Bone2 choice_taken_getBone) {
+    private GameState createNextState(Action action, Bone2 bone) {
+        return createNextState(new Choice(action, bone));
+    }
+
+    private GameState(GameState previous, Choice choice_taken) {
         this.my_bones = new HashSet<Bone2>(previous.my_bones);
         this.placed_bones = new LinkedList<Bone2>(previous.placed_bones);
         this.choice_taken = choice_taken;
@@ -116,8 +127,9 @@ public class GameState {
         this.move_number = previous.move_number + 1;
         this.memo = previous.memo;
         this.previous = previous;
+        this.extra_ply += previous.extra_ply;
 
-        // TODO: value of picking up should be average of all bones I or the opponent could pick up
+        // DONE: value of picking up should be average of all bones I or the opponent could pick up
         // (otherwise I'll keep assuming I can pick up the [0,0] bone).
 
 
@@ -129,7 +141,7 @@ public class GameState {
                 value = previous.value + choice_taken.getBone().weight();
             } else {
                 size_of_opponent_hand = previous.size_of_opponent_hand - 1;
-                value = previous.value - choice_taken.getBone().weight();// * probThatOpponentHasBone();
+                value = previous.value - choice_taken.getBone().weight() * probThatOpponentHasBone();
             }
 
             if (choice_taken.getAction() == Action.PLACED_RIGHT)
@@ -198,7 +210,17 @@ public class GameState {
         return list_of_best_final_states;
     }
 
+    public void printBestAfterSelectivelyIncreasingPly(int N) {
+        for (Map.Entry<Choice, GameState> e : getNBestChoicesAndFinalStates(N)) {
+            e.getValue().extra_ply += PLY;
+        }
+
+        printBestN(N);
+    }
+
     public List<Map.Entry<Choice,GameState>> getNBestChoicesAndFinalStates(int N) {
+        // TODO: split this method into two: getAllBestChoicesAndFinalStates() and getBestChoiceAndFinalState()
+
         calculateAsNecessary();
         Map<GameState,Choice> choices_by_final_state = new HashMap<GameState, Choice>();
         //System.out.println("Getting best choices for state " + this);
@@ -210,12 +232,19 @@ public class GameState {
             GameState next_state = e.getValue();
             //System.out.println("\tlooking into choice " + choice);
 
+            //if (next_state.extra_ply > 0)
+            //    System.out.println("");
             next_state.calculateAsNecessary();
 
             if (next_state.status == Status.HAS_CHILD_STATES) {
                 //System.out.println("\t\tlooking into children... " + choice);
                 // For each of the best final states given this choice
-                for (Map.Entry<Choice, GameState> e_child : next_state.getNBestChoicesAndFinalStates(N)) {
+
+                // Changed N to 1 here, because finding more than just the best route given this choice
+                // means taking less-optimal routes (eg. the opponent doesn't chose the most devistating routes)
+                // which is not as likely.
+                // The point of this method is to get the most desirable next_states to pursue further.
+                for (Map.Entry<Choice, GameState> e_child : next_state.getNBestChoicesAndFinalStates(1)) {
                     GameState final_state = e_child.getValue();
                     //System.out.println("\t\t\t...got recursive final state " + final_state);
 
@@ -244,8 +273,8 @@ public class GameState {
 
 //        System.out.println("Counter: " + Arrays.toString(counter));
 
-        // Find at most N best final states, but no more than half that were found.
-        N = Math.min(N, choices_by_final_state.size() / 2);
+        // Find at most N best final states, but no more than were found.
+        N = Math.min(N, choices_by_final_state.size());
         Map<Choice,GameState> best_choices = new HashMap<Choice, GameState>();
 
         for (int i = 0; i < N; ++i) {
@@ -279,9 +308,9 @@ public class GameState {
     private Status getDesiredStatus() {
         if (status == Status.IS_LEAF)
             return Status.IS_LEAF;
-        if (memo.getMovesPlayed() + PLY > move_number)
+        if (memo.getMovesPlayed() + PLY + extra_ply > move_number)
             return Status.HAS_CHILD_STATES;
-        if (memo.getMovesPlayed() + PLY <= move_number)
+        if (memo.getMovesPlayed() + PLY + extra_ply <= move_number)
             return Status.NOT_YET_CALCULATED;
 
         throw new RuntimeException("getDesiredStatus broke");
@@ -346,6 +375,9 @@ public class GameState {
 
     public GameState choose(Choice choice) {
         GameState next_state = choices.get(choice);
+        if (next_state == null) {
+            next_state = createNextState(choice);
+        }
         memo.incrementMovesPlayed();
         return next_state;
     }
