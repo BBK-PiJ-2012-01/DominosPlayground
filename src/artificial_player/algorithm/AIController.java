@@ -23,6 +23,7 @@ public class AIController {
     private final StateEnumerator stateEnumerator;
     private final HandEvaluator handEvaluator;
 
+    private  MoveCounter moveCounter;
     private GameState currentState;
 
     public AIController(PlyManager plyManager, StateSelector stateSelector,
@@ -32,10 +33,12 @@ public class AIController {
         this.stateSelector = stateSelector;
         this.stateEnumerator = stateEnumerator;
         this.handEvaluator = handEvaluator;
+        this.moveCounter = moveCounter;
     }
 
     public void setInitialState(Set<CopiedBone> myBones, boolean isMyTurn) {
-        currentState = new GameState(stateEnumerator, handEvaluator, new MoveCounter(),
+        moveCounter = new MoveCounter();
+        currentState = new GameState(stateEnumerator, handEvaluator, moveCounter,
                 plyManager.getInitialPly(), myBones, isMyTurn);
     }
 
@@ -69,7 +72,7 @@ public class AIController {
         GameState nextState = currentState.getValidChoices().get(choice);
         if (nextState == null)
             throw new RuntimeException("Choice was not valid: " + choice);
-        currentState.getMoveCounter().incrementMovesPlayed();
+        moveCounter.incrementMovesPlayed();
 
         currentState = nextState;
     }

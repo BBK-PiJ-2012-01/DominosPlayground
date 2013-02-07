@@ -27,8 +27,8 @@ public class GameState {
     private final GameState previous;
     private final Choice choiceTaken;
     private final Map<Choice,GameState> validChoices = new HashMap<Choice, GameState>();
-    private Status status = Status.NOT_YET_CALCULATED;
 
+    private Status status = Status.NOT_YET_CALCULATED;
     private int ply;
 
     public GameState(StateEnumerator stateEnumerator, HandEvaluator handEvaluator, MoveCounter moveCounter,
@@ -48,35 +48,6 @@ public class GameState {
 
         value = handEvaluator.evaluateInitialValue(this);
         ply = initialPly;
-    }
-
-    public Map<Choice,GameState> getValidChoices() {
-        lazyChoicesInitialisation();
-        return Collections.unmodifiableMap(validChoices);
-    }
-
-    public Set<CopiedBone> getMyBones() {
-        return Collections.unmodifiableSet(myBones);
-    }
-
-    private GameState createNextState(Choice choice) {
-        return new GameState(this, choice);
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public GameState getPrevious() {
-        return previous;
-    }
-
-    public int getPly() {
-        return ply;
-    }
-
-    public void setPly(int ply) {
-        this.ply = ply;
     }
 
     private GameState(GameState previous, Choice choiceTaken) {
@@ -128,10 +99,6 @@ public class GameState {
         }
     }
 
-    public boolean isMyTurn() {
-        return isMyTurn;
-    }
-
     public Status getDesiredStatus() {
         if (status == Status.IS_LEAF)
             return Status.IS_LEAF;
@@ -143,7 +110,7 @@ public class GameState {
         throw new RuntimeException("getDesiredStatus broke");
     }
 
-    public void lazyChoicesInitialisation() {
+    private void lazyChoicesInitialisation() {
         Status desired_status = getDesiredStatus();
         if (desired_status == status)
             return;
@@ -163,15 +130,61 @@ public class GameState {
                 validChoices.put(choice, createNextState(choice));
 
             if (validChoices.isEmpty())
-                setStatus(Status.IS_LEAF);
+                status = Status.IS_LEAF;
             else if (choiceTaken != null
                     && choiceTaken.getAction() == Action.PASS
                     && validChoices.size() == 1
                     && validChoices.containsKey(new Choice(Action.PASS, null)))
-                setStatus(Status.IS_LEAF);
+                status = Status.IS_LEAF;
             else
-                setStatus(Status.HAS_CHILD_STATES);
+                status = Status.HAS_CHILD_STATES;
         }
+    }
+
+    public Map<Choice,GameState> getValidChoices() {
+        lazyChoicesInitialisation();
+        return Collections.unmodifiableMap(validChoices);
+    }
+
+    public Set<CopiedBone> getPossibleOpponentBones() {
+        Set<CopiedBone> possible_opponent_bones = new HashSet<CopiedBone>(Bones.getAllBones());
+        possible_opponent_bones.removeAll(myBones);
+        possible_opponent_bones.removeAll(layout);
+        return possible_opponent_bones;
+    }
+
+    public double probThatOpponentHasBone() {
+        // TODO: if opponent picks up with 1s on left and right, prob of having a 1 bone is low
+        int total_possible_opponent_bones = sizeOfBoneyard + sizeOfOpponentHand;
+
+        if (total_possible_opponent_bones == 0)
+            return 0;
+        else
+            return ( (double) sizeOfOpponentHand) / total_possible_opponent_bones;
+    }
+
+    public boolean isMyTurn() {
+        return isMyTurn;
+    }
+
+    public Set<CopiedBone> getMyBones() {
+        return Collections.unmodifiableSet(myBones);
+    }
+
+    private GameState createNextState(Choice choice) {
+        return new GameState(this, choice);
+    }
+
+    public GameState getPrevious() {
+        return previous;
+    }
+
+    public int getPly() {
+        return ply;
+    }
+
+    public void setPly(int ply) {
+        this.ply = ply;
     }
 
     public double getValue() {
@@ -186,35 +199,10 @@ public class GameState {
         return sizeOfBoneyard;
     }
 
-    public double probThatOpponentHasBone() {
-        // TODO: if opponent picks up with 1s on left and right, prob of having a 1 bone is low
-        int total_possible_opponent_bones = sizeOfBoneyard + sizeOfOpponentHand;
-
-        if (total_possible_opponent_bones == 0)
-            return 0;
-        else
-            return ( (double) sizeOfOpponentHand) / total_possible_opponent_bones;
-    }
-
-    public Set<CopiedBone> getPossibleOpponentBones() {
-        Set<CopiedBone> possible_opponent_bones = new HashSet<CopiedBone>(Bones.getAllBones());
-        possible_opponent_bones.removeAll(myBones);
-        possible_opponent_bones.removeAll(layout);
-        return possible_opponent_bones;
-    }
-
     @Override
     public String toString() {
         return String.format("%s %s , now value = %.1f , i have %d, opponent has %d, boneyard has %d%n\t%s",
-                (isMyTurn ? "opponent" : "I"), getChoiceTaken(), getValue(), myBones.size(),
+                (isMyTurn ? "opponent" : "I"), choiceTaken, getValue(), myBones.size(),
                 sizeOfOpponentHand, sizeOfBoneyard, layout.toString());
-    }
-
-    public Choice getChoiceTaken() {
-        return choiceTaken;
-    }
-
-    public MoveCounter getMoveCounter() {
-        return moveCounter;
     }
 }

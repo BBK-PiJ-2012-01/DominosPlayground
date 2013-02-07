@@ -29,8 +29,8 @@ public class AIControllerTest {
                 new LinearPlyManager(),
                 new StateSelectorImpl(),
                 new StateEnumeratorImpl(),
-                new ExpectationWeightEvaluator()
-        );
+                new ExpectationWeightEvaluator(),
+                moveCounter);
 
         my_bones = new HashSet<CopiedBone>();
         List<CopiedBone> all_bones = new LinkedList<CopiedBone>(Bones.getAllBones());
