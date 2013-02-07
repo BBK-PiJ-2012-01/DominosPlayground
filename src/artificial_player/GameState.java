@@ -4,7 +4,7 @@ import java.util.*;
 
 
 public class GameState {
-    public static final Set<Bone2> allBones;
+    private static final Set<Bone2> allBones;
     private static final Comparator<Map.Entry<Choice, GameState>> comparator;
     private static final Comparator<Map.Entry<GameState, Choice>> inverseComparator;
 
@@ -164,12 +164,6 @@ public class GameState {
         }
     }
 
-    public Choice getBestChoice() {
-        // TODO: allow good validChoices to get higher ply.  Number of good validChoices to allow forward should depend on probThatOpponentHasBone()
-
-        return getBestNChoices(3).get(0);
-    }
-
     public List<Choice> getBestNChoices(int N) {
         List<Choice> list_of_best_choices = new LinkedList<Choice>();
 
@@ -178,6 +172,17 @@ public class GameState {
         }
 
         return list_of_best_choices;
+    }
+
+
+    public List<GameState> getBestFinalStatesUsingAI() {
+        List<GameState> list_of_best_final_states = new LinkedList<GameState>();
+
+        for (Route route : aiContainer.getStateSelector().getBestRoutes(this)) {
+            list_of_best_final_states.add(route.getFinalState());
+        }
+
+        return list_of_best_final_states;
     }
 
     public List<GameState> getBestNFinalStates(int N) {
@@ -191,17 +196,18 @@ public class GameState {
     }
 
     public void printBestAfterSelectivelyIncreasingPly(int N) {
-        List<GameState> bestFinalStates;
+        List<GameState> bestFinalStates = getBestFinalStatesUsingAI();
         int[] plyIncreases;
         int i;
 
         for (int n = 0; n < N; ++n) {
-            bestFinalStates = getBestNFinalStates(5);
+            //bestFinalStates = getBestNFinalStates(5);
+            bestFinalStates = getBestFinalStatesUsingAI();
 
-            double[] bestFinalStateValues = new double[5];
-            int j = 0;
+            double[] bestFinalStateValues = new double[bestFinalStates.size()];
+            i = 0;
             for (GameState finalState : bestFinalStates)
-                bestFinalStateValues[j++] = finalState.getValue();
+                bestFinalStateValues[i++] = finalState.getValue();
 
             plyIncreases = aiContainer.getPlyManager().getPlyIncreases(bestFinalStateValues);
 
@@ -211,7 +217,7 @@ public class GameState {
             }
         }
 
-        printBestN(5);
+        printFinalStateStack(bestFinalStates);
     }
 
     public Status getStatus() {
@@ -238,7 +244,7 @@ public class GameState {
                 // For each of the best final states given this choice
 
                 // Changed N to 1 here, because finding more than just the best route given this choice
-                // means taking less-optimal routes (eg. the opponent doesn't chose the most devistating routes)
+                // means taking less-optimal routes (eg. the opponent doesn't chose the most devastating routes)
                 // which is not as likely.
                 // The point of this method is to get the most desirable next_states to pursue further.
                 for (Map.Entry<Choice, GameState> e_child : next_state.getNBestChoicesAndFinalStates(1)) {
@@ -286,7 +292,7 @@ public class GameState {
 
     }
 
-    private Status getDesiredStatus() {
+    public Status getDesiredStatus() {
         if (status == Status.IS_LEAF)
             return Status.IS_LEAF;
         if (memo.getMovesPlayed() + ply > moveNumber)
@@ -360,10 +366,6 @@ public class GameState {
             return ( (double) sizeOfOpponentHand) / total_possible_opponent_bones;
     }
 
-    public double probThatBoneYardHasBone() {
-        return 1 - probThatOpponentHasBone();
-    }
-
     public Set<Bone2> getPossibleOpponentBones() {
         Set<Bone2> possible_opponent_bones = new HashSet<Bone2>(getAllBones());
         possible_opponent_bones.removeAll(myBones);
@@ -397,8 +399,9 @@ public class GameState {
         System.out.println(sbuilder.toString());
     }
 
-    public void printBestN(int N) {
-        for (GameState final_state : getBestNFinalStates(N)) {
+    public void printFinalStateStack(List<GameState> finalStates) {
+        //for (GameState final_state : getBestNFinalStates(N)) {
+        for (GameState final_state : finalStates) {
             printMovesUpToFinalState(final_state);
         }
     }
@@ -408,6 +411,8 @@ public class GameState {
     }
 
     private List<GameState> getFutureStates(GameState finalState) {
+        // TODO: create a similar function for Route objects.  Use to compare stack traces of StateSelectorImpl and the print methods here...
+
         LinkedList<GameState> list = new LinkedList<GameState>();
 
         do {

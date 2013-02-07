@@ -12,11 +12,13 @@ public class DefaultAIContainer implements AIContainer {
     private final HandEvaluator handEvaluator;
     private final PlyManager plyManager;
     private final StateEnumerator stateEnumerator;
+    private final StateSelector stateSelector;
 
     public DefaultAIContainer(Set<Bone2> myBones, boolean isMyTurn) {
         handEvaluator = new ExpectationWeightEvaluator();
         plyManager = new LinearPlyManager();
         stateEnumerator = new StateEnumeratorImpl();
+        stateSelector = new StateSelectorImpl();
 
         currentState = new GameState(this, myBones, isMyTurn);
     }
@@ -41,8 +43,12 @@ public class DefaultAIContainer implements AIContainer {
         return stateEnumerator;
     }
 
+    @Override
+    public StateSelector getStateSelector() {
+        return stateSelector;
+    }
 
-    // populate choices (calculateChildren)
+
     // determine which final states should be pursued (getNBestChoicesAndFinalStates)
 
 }

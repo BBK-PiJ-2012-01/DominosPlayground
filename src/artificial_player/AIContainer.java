@@ -13,4 +13,7 @@ public interface AIContainer {
     PlyManager getPlyManager();
 
     StateEnumerator getStateEnumerator();
+
+
+    StateSelector getStateSelector();
 }
