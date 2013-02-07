@@ -1,5 +1,14 @@
 package artificial_player;
 
+import artificial_player.algorithm.AIController;
+import artificial_player.algorithm.first_attempt.ExpectationWeightEvaluator;
+import artificial_player.algorithm.first_attempt.LinearPlyManager;
+import artificial_player.algorithm.first_attempt.StateEnumeratorImpl;
+import artificial_player.algorithm.first_attempt.StateSelectorImpl;
+import artificial_player.algorithm.helper.Bones;
+import artificial_player.algorithm.helper.Choice;
+import artificial_player.algorithm.helper.CopiedBone;
+import artificial_player.algorithm.helper.Route;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,7 +21,7 @@ import java.util.*;
  */
 public class AIControllerTest {
     private AIController ai;
-    private Set<Bone2> my_bones;
+    private Set<CopiedBone> my_bones;
 
     @Before
     public void setUp() throws Exception {
@@ -23,8 +32,8 @@ public class AIControllerTest {
                 new ExpectationWeightEvaluator()
         );
 
-        my_bones = new HashSet<Bone2>();
-        List<Bone2> all_bones = new LinkedList<Bone2>(GameState.getAllBones());
+        my_bones = new HashSet<CopiedBone>();
+        List<CopiedBone> all_bones = new LinkedList<CopiedBone>(Bones.getAllBones());
         Collections.shuffle(all_bones);
         my_bones.addAll(all_bones.subList(0, 7));
     }

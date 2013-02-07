@@ -1,8 +1,10 @@
-package artificial_player;
+package artificial_player.algorithm.helper;
 
 public class Choice {
-    private final GameState.Action action;
-    private final Bone2 bone;
+    public static enum Action {PLACED_RIGHT, PLACED_LEFT, PICKED_UP, PASS}
+
+    private final Action action;
+    private final CopiedBone bone;
 
     @Override
     public boolean equals(Object o) {
@@ -29,16 +31,16 @@ public class Choice {
         return result;
     }
 
-    Choice(GameState.Action action, Bone2 bone) {
+    public Choice(Action action, CopiedBone bone) {
         this.action = action;
         this.bone = bone;
     }
 
-    public GameState.Action getAction() {
+    public Action getAction() {
         return action;
     }
 
-    public Bone2 getBone() {
+    public CopiedBone getBone() {
         return bone;
     }
 

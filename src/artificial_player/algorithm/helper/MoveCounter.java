@@ -1,4 +1,4 @@
-package artificial_player;
+package artificial_player.algorithm.helper;
 
 /**
  * User: Sam Wright

@@ -1,41 +1,43 @@
-package artificial_player;
+package artificial_player.algorithm.virtual;
+
+import artificial_player.algorithm.helper.Choice;
+import artificial_player.algorithm.GameState;
+import artificial_player.algorithm.helper.Route;
 
 import java.util.*;
 
 /**
  * User: Sam Wright
- * Date: 06/02/2013
- * Time: 21:55
+ * Date: 07/02/2013
+ * Time: 17:19
  */
-public class StateSelectorImpl implements StateSelector {
-
+public abstract class AbstractStateSelector implements StateSelector {
     private static final Comparator<Map.Entry<Choice, Route>> mapComparator = new Comparator<Map.Entry<Choice, Route>>() {
         @Override
         public int compare (Map.Entry < Choice, Route > o1, Map.Entry < Choice, Route > o2){
-        return Double.compare(
-                o1.getValue().getCumulativeValue(),
-                o2.getValue().getCumulativeValue()
-            );
+            return compareRoutes(o1.getValue(), o2.getValue());
         }
     };
-
     private static final Comparator<Route> listComparator = new Comparator<Route>() {
         @Override
         public int compare(Route o1, Route o2) {
-            return Double.compare(o1.getCumulativeValue(), o2.getCumulativeValue());
+            return compareRoutes(o1, o2);
         }
     };
 
-    @Override
-    public Route getBestRoute(GameState state) {
+    private static int compareRoutes(Route o1, Route o2) {
+        int route_comparison = Double.compare(
+                o1.getValue(),
+                o2.getValue()
+        );
 
-        Map<Choice, Route> bestRoutesToChildStates = getBestRoutesToChildStates(state);
-
-        if (bestRoutesToChildStates == null)
-            return new Route(state);
-
-        // Otherwise reduce (or combine) those routes
-        return getReducedRoute(state, bestRoutesToChildStates);
+        if (route_comparison == 0)
+            return Double.compare(
+                    o1.getFinalState().getValue(),
+                    o1.getFinalState().getValue()
+            );
+        else
+            return route_comparison;
     }
 
     @Override
@@ -51,18 +53,31 @@ public class StateSelectorImpl implements StateSelector {
 
         // So now the state MUST have child states.
 
-        Map<Choice, Route> bestRoutesToChildStates = new HashMap<Choice, Route>();
+        Map<Choice, Route> bestRoutes = new HashMap<Choice, Route>();
+        Map<Choice, Route> bestRoutesToChildStates;
+        Route bestRouteToChild;
 
         for (Map.Entry<Choice, GameState> e : state.getValidChoices().entrySet()) {
             // For each childState...
             Choice choice = e.getKey();
             GameState childState = e.getValue();
 
-            // .. collect the best route to it.
-            bestRoutesToChildStates.put(choice, getBestRoute(childState));
+            // .. get the best routes to this childState. (This is the recursive line)
+            bestRoutesToChildStates = getBestRoutesToChildStates(childState);
+
+
+            if (bestRoutesToChildStates == null)
+                // If there are no grandchildren, this is the start of the route
+                bestRouteToChild = new Route(state);
+            else
+                // If there's one or more, use a reduced/combined route of them all
+                bestRouteToChild = getReducedRoute(childState, bestRoutesToChildStates);
+
+            // and store the best route to this child.
+            bestRoutes.put(choice, bestRouteToChild);
         }
 
-        return bestRoutesToChildStates;
+        return bestRoutes;
     }
 
     @Override
@@ -77,32 +92,22 @@ public class StateSelectorImpl implements StateSelector {
         Route bestRoute = bestChoiceAndRoute.getValue();
 
         // The combined route will still lead to the best final state...
-        extendRouteToStateThroughChoice(bestRoute, newEarliestState, choiceLeadingToBestRoute);
+        Route extendedBestRoute = new Route(newEarliestState, choiceLeadingToBestRoute, bestRoute);
 
         // ... but the combined route's value will be some aggregate of the routes,
         // eg. so that a route with lots of good deviations can be preferred over
-        // a route with one excellent best route while any deviation is terrible.
+        // a route with one excellent best route but any deviation is terrible.
 
-        double newValue = bestRoute.getCumulativeValue();
+        Collection<Route> discardedRoutes = childRoutes.values();
+        discardedRoutes.remove(bestRoute);
+        double extraValue = extraValueFromDiscardedRoutes(bestRoute, discardedRoutes);
+        extendedBestRoute.increaseValue(extraValue);
 
-        for (Route route : childRoutes.values()) {
-            if (route.getCumulativeValue() > bestRoute.getCumulativeValue() - 2)
-                newValue += 1;
-        }
-
-        bestRoute.setCumulativeValue(newValue);
-
-        // PS. I've made Route mutable and have reused instead of created a new Route
-        // because these Routes are used on the way up the decision tree - ie. they are
-        // never used again.  Is this a case of premature optimisation??
-
-        return bestRoute;
+        return extendedBestRoute;
     }
 
-    private void extendRouteToStateThroughChoice(Route route, GameState state, Choice choice) {
-        route.setEarliestChoice(choice);
-        route.setEarliestState(state);
-    }
+    @Override
+    public abstract double extraValueFromDiscardedRoutes(Route chosen, Collection<Route> discardedRoutes);
 
     @Override
     public List<Route> getBestRoutes(GameState state) {
@@ -116,10 +121,12 @@ public class StateSelectorImpl implements StateSelector {
         }
 
         for (Map.Entry<Choice, Route> e : bestRoutesToChildStates.entrySet()) {
-            extendRouteToStateThroughChoice(e.getValue(), state, e.getKey());
+            Choice choice = e.getKey();
+            Route routeToExtendBackward = e.getValue();
+
+            routes.add(new Route(state, choice, routeToExtendBackward));
         }
 
-        routes.addAll(bestRoutesToChildStates.values());
         Collections.sort(routes, listComparator);
 
         if (state.isMyTurn())
@@ -127,5 +134,4 @@ public class StateSelectorImpl implements StateSelector {
 
         return routes;
     }
-
 }

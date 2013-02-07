@@ -1,6 +1,4 @@
-package artificial_player;
-
-import java.util.List;
+package artificial_player.algorithm.virtual;
 
 /**
  * The ply is the limit applied to the number of levels allowed in the decision tree.

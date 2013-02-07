@@ -1,4 +1,6 @@
-package artificial_player;
+package artificial_player.algorithm.helper;
+
+import artificial_player.algorithm.GameState;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -10,47 +12,51 @@ import java.util.List;
  */
 public class Route {
     private final GameState finalState;
-    private GameState earliestState;
-    private double cumulativeValue;
-    private Choice earliestChoice;
+    private final GameState earliestState;
+    private final Choice earliestChoice;
+    private final int size;
+
+    private double value;
 
     public Route(GameState finalState) {
         this.finalState = finalState;
-        cumulativeValue = finalState.getValue();
+        value = finalState.getValue();
         earliestState = finalState;
+        earliestChoice = null;
+        size = 0;
+    }
+
+    public Route(GameState state, Choice choice, Route routeToExtendBackward) {
+        finalState = routeToExtendBackward.getFinalState();
+        value = routeToExtendBackward.getValue();
+        earliestChoice = choice;
+        earliestState = state;
+        size = routeToExtendBackward.size() + 1;
+    }
+
+    public int size() {
+        return size;
     }
 
     public Choice getEarliestChoice() {
         return earliestChoice;
     }
 
-    public void setEarliestChoice(Choice earliestChoice) {
-        this.earliestChoice = earliestChoice;
-    }
-
     public GameState getFinalState() {
         return finalState;
     }
 
-    public double getCumulativeValue() {
-        return cumulativeValue;
+    public double getValue() {
+        return value;
     }
 
-    public void setCumulativeValue(double cumulativeValue) {
-        this.cumulativeValue = cumulativeValue;
-    }
-
-    public GameState getEarliestState() {
-        return earliestState;
-    }
-
-    public void setEarliestState(GameState earliestState) {
-        this.earliestState = earliestState;
+    public void increaseValue(double cumulativeValue) {
+        this.value = cumulativeValue;
     }
 
     public String toString() {
         String header = String.format("%n--- Choices (value = %.1f -> %.1f, route value = %.1f) ----%n",
-                earliestState.getValue(), finalState.getValue(), cumulativeValue);
+                earliestState.getValue(), finalState.getValue(), value);
 
         StringBuilder sbuilder = new StringBuilder(header);
 

@@ -1,11 +1,13 @@
-package artificial_player;
+package artificial_player.algorithm.first_attempt;
 
+
+import artificial_player.algorithm.virtual.PlyManager;
 
 public class LinearPlyManager implements PlyManager {
 
     @Override
     public int getInitialPly() {
-        return 4;
+        return 6;
     }
 
     @Override
@@ -13,7 +15,7 @@ public class LinearPlyManager implements PlyManager {
         int[] ply_increases = new int[bestFinalStateValues.length];
 
         for (int i = 0; i < ply_increases.length; ++i) {
-            ply_increases[i] = 2;
+            ply_increases[i] = 6;
         }
 
         return ply_increases;

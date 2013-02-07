@@ -1,4 +1,7 @@
-package artificial_player;
+package artificial_player.algorithm.virtual;
+
+import artificial_player.algorithm.helper.Choice;
+import artificial_player.algorithm.GameState;
 
 /**
  * Swappable component of AIContainer that associates a value with each GameState.

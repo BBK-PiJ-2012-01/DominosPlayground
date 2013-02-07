@@ -1,4 +1,9 @@
-package artificial_player;
+package artificial_player.algorithm.first_attempt;
+
+import artificial_player.algorithm.helper.CopiedBone;
+import artificial_player.algorithm.helper.Choice;
+import artificial_player.algorithm.GameState;
+import artificial_player.algorithm.virtual.HandEvaluator;
 
 /**
  * Evaluates the state value as the expectation value of the opponent's hand's weight minus
@@ -12,12 +17,12 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
     public double evaluateInitialValue(GameState initialState) {
         int opponentHandWeight = 0;
 
-        for (Bone2 bone : initialState.getPossibleOpponentBones())
+        for (CopiedBone bone : initialState.getPossibleOpponentBones())
             opponentHandWeight += bone.weight();
 
         int my_hand_weight = 0;
 
-        for (Bone2 bone : initialState.getMyBones())
+        for (CopiedBone bone : initialState.getMyBones())
             my_hand_weight += bone.weight();
 
         return opponentHandWeight * initialState.probThatOpponentHasBone() - my_hand_weight;
@@ -27,8 +32,8 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
     public double addedValueFromChoice(Choice choice, GameState state) {
         int addedValue = 2;
 
-        if (choice.getAction() == GameState.Action.PLACED_RIGHT
-                || choice.getAction() == GameState.Action.PLACED_LEFT) {
+        if (choice.getAction() == Choice.Action.PLACED_RIGHT
+                || choice.getAction() == Choice.Action.PLACED_LEFT) {
 
             if (state.isMyTurn()) {
                 addedValue += choice.getBone().weight();
@@ -36,10 +41,10 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
                 addedValue -= choice.getBone().weight() * state.probThatOpponentHasBone();
             }
 
-        } else if (choice.getAction() == GameState.Action.PICKED_UP) {
+        } else if (choice.getAction() == Choice.Action.PICKED_UP) {
 
             double average_of_boneyard_cards = 0;
-            for (Bone2 pickupable_bone : state.getPossibleOpponentBones()) {
+            for (CopiedBone pickupable_bone : state.getPossibleOpponentBones()) {
                 average_of_boneyard_cards += pickupable_bone.weight();
             }
             average_of_boneyard_cards /= state.getSizeOfBoneyard() + state.getSizeOfOpponentHand();
@@ -50,7 +55,7 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
                 addedValue += average_of_boneyard_cards + VALUE_OF_OPPONENT_PICKUP;
             }
 
-        } else if (choice.getAction() == GameState.Action.PASS) {
+        } else if (choice.getAction() == Choice.Action.PASS) {
 
             addedValue += 0;
 

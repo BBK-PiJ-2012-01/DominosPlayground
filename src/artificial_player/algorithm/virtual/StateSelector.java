@@ -1,5 +1,10 @@
-package artificial_player;
+package artificial_player.algorithm.virtual;
 
+import artificial_player.algorithm.helper.Choice;
+import artificial_player.algorithm.GameState;
+import artificial_player.algorithm.helper.Route;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -9,15 +14,6 @@ import java.util.Map;
  * Time: 00:47
  */
 public interface StateSelector {
-    /**
-     * Returns the "best" route from the given state to some final state (either the
-     * end of the game, or a state far enough into the future to not care about).
-     *
-     * @param state the state from which to find the best route.
-     * @return the "best" route to the "end".
-     */
-    Route getBestRoute(GameState state);
-
     /**
      * Returns a mapping of choices to routes where each choice, from the given state, would
      * lead to the associated route (which goes on to the end of the tree).
@@ -45,4 +41,6 @@ public interface StateSelector {
      * @return a sorted (best-first) list of Routes from the given state.
      */
     List<Route> getBestRoutes(GameState state);
+
+    double extraValueFromDiscardedRoutes(Route chosen, Collection<Route> discardedRoutes);
 }

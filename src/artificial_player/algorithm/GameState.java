@@ -1,42 +1,26 @@
-package artificial_player;
+package artificial_player.algorithm;
+
+import artificial_player.algorithm.helper.Bones;
+import artificial_player.algorithm.helper.Choice;
+import artificial_player.algorithm.helper.CopiedBone;
+import artificial_player.algorithm.helper.MoveCounter;
+import artificial_player.algorithm.virtual.HandEvaluator;
+import artificial_player.algorithm.virtual.StateEnumerator;
 
 import java.util.*;
+import static artificial_player.algorithm.helper.Choice.Action;
 
 
 public class GameState {
-    public static enum Action { PLACED_RIGHT, PLACED_LEFT, PICKED_UP, PASS }
     public static enum Status { NOT_YET_CALCULATED, HAS_CHILD_STATES, IS_LEAF }
-    private static final Set<Bone2> allBones;
-
-    static {
-        // Enumerate all bones
-        Set<Bone2> tempAllBones = new HashSet<Bone2>();
-        for (int i = 0; i < 7; ++i) {
-            for (int j = 0; j < 7; ++j) {
-                tempAllBones.add(new Bone2(i, j));
-            }
-        }
-        allBones = Collections.unmodifiableSet(tempAllBones);
-    }
-
-    public static Set<Bone2> getAllBones() {
-        Set<Bone2> tempAllBones = new HashSet<Bone2>();
-
-        for (Bone2 bone : allBones) {
-            tempAllBones.add(new Bone2(bone));
-        }
-
-        return tempAllBones;
-    }
 
     private final StateEnumerator stateEnumerator;
-
     private final HandEvaluator handEvaluator;
     private final int sizeOfOpponentHand;
     private final int sizeOfBoneyard;
     private final double value;
-    private final Set<Bone2> myBones;
-    private final LinkedList<Bone2> layout;
+    private final Set<CopiedBone> myBones;
+    private final LinkedList<CopiedBone> layout;
     private final boolean isMyTurn;
     private final int moveNumber;
     private final MoveCounter moveCounter;
@@ -46,17 +30,18 @@ public class GameState {
     private Status status = Status.NOT_YET_CALCULATED;
 
     private int ply;
+
     public GameState(StateEnumerator stateEnumerator, HandEvaluator handEvaluator, MoveCounter moveCounter,
-                     int initialPly, Set<Bone2> myBones, boolean isMyTurn) {
+                     int initialPly, Set<CopiedBone> myBones, boolean isMyTurn) {
         this.isMyTurn = isMyTurn;
         this.myBones = myBones;
         this.stateEnumerator = stateEnumerator;
         this.handEvaluator = handEvaluator;
         this.moveCounter = moveCounter;
 
-        layout = new LinkedList<Bone2>();
+        layout = new LinkedList<CopiedBone>();
         sizeOfOpponentHand = myBones.size();
-        sizeOfBoneyard = allBones.size() - 2 * sizeOfOpponentHand;
+        sizeOfBoneyard = Bones.getAllBones().size() - 2 * sizeOfOpponentHand;
         previous = null;
         moveNumber = 0;
         choiceTaken = null;
@@ -65,7 +50,12 @@ public class GameState {
         ply = initialPly;
     }
 
-    public Set<Bone2> getMyBones() {
+    public Map<Choice,GameState> getValidChoices() {
+        lazyChoicesInitialisation();
+        return Collections.unmodifiableMap(validChoices);
+    }
+
+    public Set<CopiedBone> getMyBones() {
         return Collections.unmodifiableSet(myBones);
     }
 
@@ -81,11 +71,6 @@ public class GameState {
         return previous;
     }
 
-    public Map<Choice,GameState> getValidChoices() {
-        lazyChoicesInitialisation();
-        return Collections.unmodifiableMap(validChoices);
-    }
-
     public int getPly() {
         return ply;
     }
@@ -95,8 +80,8 @@ public class GameState {
     }
 
     private GameState(GameState previous, Choice choiceTaken) {
-        this.myBones = new HashSet<Bone2>(previous.myBones);
-        this.layout = new LinkedList<Bone2>(previous.layout);
+        this.myBones = new HashSet<CopiedBone>(previous.myBones);
+        this.layout = new LinkedList<CopiedBone>(previous.layout);
         this.choiceTaken = choiceTaken;
         this.isMyTurn = !previous.isMyTurn;
         this.moveNumber = previous.moveNumber + 1;
@@ -211,8 +196,8 @@ public class GameState {
             return ( (double) sizeOfOpponentHand) / total_possible_opponent_bones;
     }
 
-    public Set<Bone2> getPossibleOpponentBones() {
-        Set<Bone2> possible_opponent_bones = new HashSet<Bone2>(getAllBones());
+    public Set<CopiedBone> getPossibleOpponentBones() {
+        Set<CopiedBone> possible_opponent_bones = new HashSet<CopiedBone>(Bones.getAllBones());
         possible_opponent_bones.removeAll(myBones);
         possible_opponent_bones.removeAll(layout);
         return possible_opponent_bones;

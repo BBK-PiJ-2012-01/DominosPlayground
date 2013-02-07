@@ -1,4 +1,13 @@
-package artificial_player;
+package artificial_player.algorithm;
+
+import artificial_player.algorithm.helper.Choice;
+import artificial_player.algorithm.helper.CopiedBone;
+import artificial_player.algorithm.helper.MoveCounter;
+import artificial_player.algorithm.helper.Route;
+import artificial_player.algorithm.virtual.HandEvaluator;
+import artificial_player.algorithm.virtual.PlyManager;
+import artificial_player.algorithm.virtual.StateEnumerator;
+import artificial_player.algorithm.virtual.StateSelector;
 
 import java.util.List;
 import java.util.Set;
@@ -15,7 +24,6 @@ public class AIController {
     private final HandEvaluator handEvaluator;
 
     private GameState currentState;
-    private MoveCounter moveCounter;
 
     public AIController(PlyManager plyManager, StateSelector stateSelector,
                         StateEnumerator stateEnumerator, HandEvaluator handEvaluator) {
@@ -26,9 +34,8 @@ public class AIController {
         this.handEvaluator = handEvaluator;
     }
 
-    public void setInitialState(Set<Bone2> myBones, boolean isMyTurn) {
-        moveCounter = new MoveCounter();
-        currentState = new GameState(stateEnumerator, handEvaluator, moveCounter,
+    public void setInitialState(Set<CopiedBone> myBones, boolean isMyTurn) {
+        currentState = new GameState(stateEnumerator, handEvaluator, new MoveCounter(),
                 plyManager.getInitialPly(), myBones, isMyTurn);
     }
 
@@ -44,7 +51,7 @@ public class AIController {
             double[] bestRouteValues = new double[bestRoutes.size()];
             i = 0;
             for (Route route : bestRoutes)
-                bestRouteValues[i++] = route.getCumulativeValue();
+                bestRouteValues[i++] = route.getValue();
 
             plyIncreases = plyManager.getPlyIncreases(bestRouteValues);
 
@@ -53,7 +60,7 @@ public class AIController {
                 GameState finalState = route.getFinalState();
                 finalState.setPly(finalState.getPly() + plyIncreases[i++]);
             }
-        } while(n++ < 5);
+        } while(n++ < 100);
 
         return bestRoutes;
     }
