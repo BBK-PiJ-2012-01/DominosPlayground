@@ -32,16 +32,16 @@ public class GameStateTest {
         Collections.shuffle(all_bones);
         my_bones.addAll(all_bones.subList(0, 7));
 
-        AIContainer ai = new DefaultAIContainer(my_bones, true);
-        my_state = ai.getCurrentState();
-
-        all_bones = new LinkedList<Bone2>(GameState.getAllBones());
-        all_bones.removeAll(my_bones);
-        Collections.shuffle(all_bones);
-        opponent_bones = new HashSet<Bone2>();
-
-        AIContainer ai_opponent = new DefaultAIContainer(opponent_bones, false);
-        opponent_state = ai_opponent.getCurrentState();
+//        AIContainer ai = new DefaultAIContainer();
+//        my_state = new GameState(ai, my_bones, true);
+//
+//        all_bones = new LinkedList<Bone2>(GameState.getAllBones());
+//        all_bones.removeAll(my_bones);
+//        Collections.shuffle(all_bones);
+//        opponent_bones = new HashSet<Bone2>();
+//
+//        AIContainer ai_opponent = new DefaultAIContainer();
+//        opponent_state = new GameState(ai_opponent, opponent_bones, false);
     }
 
 //    @Test
@@ -59,10 +59,10 @@ public class GameStateTest {
 //        my_state.printBestN(50);
 //    }
 
-    @Test
-    public void testWithExtraPly() throws Exception {
-        my_state.printBestAfterSelectivelyIncreasingPly(100);
-    }
+//    @Test
+//    public void testWithExtraPly() throws Exception {
+//        my_state.printBestAfterSelectivelyIncreasingPly(1000);
+//    }
 
 //    @Test
 //    public void testOpponent() throws Exception {

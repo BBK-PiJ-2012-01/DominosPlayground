@@ -5,7 +5,7 @@ package artificial_player;
  * Date: 02/02/2013
  * Time: 16:47
  */
-public class Memo {
+public class MoveCounter {
     private int moves_played = 0;
 
     public void incrementMovesPlayed() {

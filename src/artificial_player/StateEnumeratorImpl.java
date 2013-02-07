@@ -83,17 +83,20 @@ public class StateEnumeratorImpl implements StateEnumerator {
     }
 
     @Override
-    public Set<Choice> getOpponentValidChoices(LinkedList<Bone2> layout, Set<Bone2> possibleOpponentBones) {
+    public Set<Choice> getOpponentValidChoices(LinkedList<Bone2> layout, Set<Bone2> possibleOpponentBones, int sizeOfBoneyard) {
         Set<Choice> validChoices;
 
         // Assuming the opponent can place a bone
         validChoices = getValidPlacingChoices(possibleOpponentBones, layout.getFirst().left(), layout.getLast().right());
 
         // Assuming the opponent can't place a bone, but can pick up:
-        validChoices.addAll(getValidPickupChoices(possibleOpponentBones));
-
-        // Assuming the opponent can't place or pick up a bone:
-        validChoices.add(new Choice(GameState.Action.PASS, null));
+        if (sizeOfBoneyard != 0) {
+            //validChoices.addAll(getValidPickupChoices(possibleOpponentBones));
+            validChoices.add(new Choice(GameState.Action.PICKED_UP, null));
+        } else {
+            // Assuming the opponent can't place or pick up a bone:
+            validChoices.add(new Choice(GameState.Action.PASS, null));
+        }
 
         return validChoices;
     }

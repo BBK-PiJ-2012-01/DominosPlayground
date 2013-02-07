@@ -25,7 +25,7 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
 
     @Override
     public double addedValueFromChoice(Choice choice, GameState state) {
-        int addedValue = 0;
+        int addedValue = 2;
 
         if (choice.getAction() == GameState.Action.PLACED_RIGHT
                 || choice.getAction() == GameState.Action.PLACED_LEFT) {

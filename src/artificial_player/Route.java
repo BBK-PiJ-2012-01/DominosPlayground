@@ -1,5 +1,8 @@
 package artificial_player;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * User: Sam Wright
  * Date: 06/02/2013
@@ -13,6 +16,8 @@ public class Route {
 
     public Route(GameState finalState) {
         this.finalState = finalState;
+        cumulativeValue = finalState.getValue();
+        earliestState = finalState;
     }
 
     public Choice getEarliestChoice() {
@@ -41,5 +46,32 @@ public class Route {
 
     public void setEarliestState(GameState earliestState) {
         this.earliestState = earliestState;
+    }
+
+    public String toString() {
+        String header = String.format("%n--- Choices (value = %.1f -> %.1f, route value = %.1f) ----%n",
+                earliestState.getValue(), finalState.getValue(), cumulativeValue);
+
+        StringBuilder sbuilder = new StringBuilder(header);
+
+        for (GameState nextState : getAllStates()) {
+            sbuilder.append(nextState.toString());
+            sbuilder.append("\n");
+        }
+
+        return sbuilder.toString();
+    }
+
+    public List<GameState> getAllStates() {
+        LinkedList<GameState> stack = new LinkedList<GameState>();
+
+        GameState state = finalState;
+
+        do {
+            stack.addFirst(state);
+            state = state.getPrevious();
+        } while (state != earliestState);
+
+        return stack;
     }
 }

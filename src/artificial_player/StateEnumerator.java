@@ -55,7 +55,8 @@ public interface StateEnumerator {
      *
      * @param layout the bones that have already been placed in the layout.
      * @param possibleOpponentBones all bones that might be in the opponent's hand.
+     * @param sizeOfBoneyard the size of the boneyard.
      * @return all valid choices the AI's opponent could make.
      */
-    Set<Choice> getOpponentValidChoices(LinkedList<Bone2> layout, Set<Bone2> possibleOpponentBones);
+    Set<Choice> getOpponentValidChoices(LinkedList<Bone2> layout, Set<Bone2> possibleOpponentBones, int sizeOfBoneyard);
 }

@@ -83,12 +83,12 @@ public class StateSelectorImpl implements StateSelector {
         // eg. so that a route with lots of good deviations can be preferred over
         // a route with one excellent best route while any deviation is terrible.
 
-        double newValue = bestRoute.getCumulativeValue() + newEarliestState.getValue();
+        double newValue = bestRoute.getCumulativeValue();
 
-//        for (Route route : routes.values()) {
-//            if (route.getCumulativeValue() > bestRoute.getCumulativeValue() - 2)
-//                newValue += 1;
-//        }
+        for (Route route : childRoutes.values()) {
+            if (route.getCumulativeValue() > bestRoute.getCumulativeValue() - 2)
+                newValue += 1;
+        }
 
         bestRoute.setCumulativeValue(newValue);
 
