@@ -46,6 +46,6 @@ public class Choice {
 
     @Override
     public String toString() {
-        return action + " bone " + bone;
+        return action + (bone == null? "" : " bone " + bone);
     }
 }

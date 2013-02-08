@@ -6,8 +6,8 @@ import artificial_player.algorithm.helper.MoveCounter;
 import artificial_player.algorithm.helper.Route;
 import artificial_player.algorithm.virtual.HandEvaluator;
 import artificial_player.algorithm.virtual.PlyManager;
+import artificial_player.algorithm.virtual.RouteSelector;
 import artificial_player.algorithm.virtual.StateEnumerator;
-import artificial_player.algorithm.virtual.StateSelector;
 
 import java.util.List;
 import java.util.Set;
@@ -19,21 +19,20 @@ import java.util.Set;
  */
 public class AIController {
     private final PlyManager plyManager;
-    private final StateSelector stateSelector;
+    private final RouteSelector routeSelector;
     private final StateEnumerator stateEnumerator;
     private final HandEvaluator handEvaluator;
 
     private  MoveCounter moveCounter;
     private GameState currentState;
 
-    public AIController(PlyManager plyManager, StateSelector stateSelector,
+    public AIController(PlyManager plyManager, RouteSelector routeSelector,
                         StateEnumerator stateEnumerator, HandEvaluator handEvaluator) {
 
         this.plyManager = plyManager;
-        this.stateSelector = stateSelector;
+        this.routeSelector = routeSelector;
         this.stateEnumerator = stateEnumerator;
         this.handEvaluator = handEvaluator;
-        this.moveCounter = moveCounter;
     }
 
     public void setInitialState(Set<CopiedBone> myBones, boolean isMyTurn) {
@@ -47,9 +46,9 @@ public class AIController {
         int[] plyIncreases;
         int i;
 
-        int n = 0;
-        do {
-            bestRoutes = stateSelector.getBestRoutes(currentState);
+        //int n = 0;
+        //do {
+            bestRoutes = routeSelector.getBestRoutes(currentState);
 
             double[] bestRouteValues = new double[bestRoutes.size()];
             i = 0;
@@ -61,9 +60,10 @@ public class AIController {
             i = 0;
             for (Route route : bestRoutes) {
                 GameState finalState = route.getFinalState();
-                finalState.setPly(finalState.getPly() + plyIncreases[i++]);
+                //int new_ply = finalState.getPly() + plyIncreases[i++];
+                finalState.increasePly(plyIncreases[i++]);
             }
-        } while(n++ < 100);
+        //} while(n++ < 0);
 
         return bestRoutes;
     }
@@ -71,10 +71,41 @@ public class AIController {
     public void choose(Choice choice) {
         GameState nextState = currentState.getValidChoices().get(choice);
         if (nextState == null)
-            throw new RuntimeException("Choice was not valid: " + choice);
+            throw new RuntimeException("Choice was not valid: " + choice + " and opponent bones were: " + currentState);
+
         moveCounter.incrementMovesPlayed();
 
         currentState = nextState;
+    }
+
+    public Set<CopiedBone> getMyBones() {
+        return currentState.getMyBones();
+    }
+
+    public List<CopiedBone> getLayout() {
+        return currentState.getLayout();
+    }
+
+    public GameState getState() {
+        return currentState;
+    }
+
+    public RouteSelector getRouteSelector() {
+        return routeSelector;
+    }
+
+    public Choice getBestChoice() {
+        List<Route> bestRoutes = getBestRoutes();
+//        if (bestRoutes.isEmpty()) {
+//            System.out.println("Problem in AIController.getBestRoute");
+//            System.out.println(currentState);
+//            System.out.println(currentState.getValidChoices());
+//            System.out.println(currentState.getDesiredStatus());
+//        }
+        if (bestRoutes.isEmpty())
+            return null;
+        else
+            return bestRoutes.get(0).getEarliestChoice();
     }
 
 }

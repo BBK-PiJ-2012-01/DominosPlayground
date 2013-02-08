@@ -12,6 +12,10 @@ import static artificial_player.algorithm.helper.Choice.Action;
 
 
 public class GameState {
+    public Choice getChoiceTaken() {
+        return choiceTaken;
+    }
+
     public static enum Status { NOT_YET_CALCULATED, HAS_CHILD_STATES, IS_LEAF }
 
     private final StateEnumerator stateEnumerator;
@@ -97,6 +101,16 @@ public class GameState {
             else
                 throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
         }
+
+        if (sizeOfBoneyard < 0) {
+            throw new RuntimeException("Size of boneyard < 0 (inside GameState initialiser) because of " +
+                    (previous.isMyTurn() ? "my" : "else") + " choice: " + choiceTaken);
+        }
+
+        if (sizeOfOpponentHand < 0) {
+            throw new RuntimeException("Size of opponent hand < 0 (inside GameState initialiser) because of " +
+                    (previous.isMyTurn() ? "my" : "opponent's") + " choice: " + choiceTaken);
+        }
     }
 
     public Status getDesiredStatus() {
@@ -116,25 +130,32 @@ public class GameState {
             return;
 
         if (desired_status == Status.HAS_CHILD_STATES) {
-            Set<Choice> validChoicesList = new HashSet<Choice>();
+            Set<Choice> validChoicesList;
 
-            if (isMyTurn) {
-                if (!myBones.isEmpty())
-                    validChoicesList = stateEnumerator.getMyValidChoices(layout, myBones, getPossibleOpponentBones());
-            } else {
-                if (sizeOfOpponentHand != 0)
-                    validChoicesList = stateEnumerator.getOpponentValidChoices(layout, getPossibleOpponentBones(), sizeOfBoneyard);
-            }
+            if (isMyTurn)
+                validChoicesList = stateEnumerator.getMyValidChoices(this);
+            else
+                validChoicesList = stateEnumerator.getOpponentValidChoices(this);
 
             for (Choice choice : validChoicesList)
                 validChoices.put(choice, createNextState(choice));
 
+            // If this is the second pass in a row, it's game over
+            if (choiceTaken != null                                        // Not the first move
+                    && validChoices.size() == 1                                 // There is only one possible choice
+                    && validChoices.containsKey(new Choice(Action.PASS, null))  // and that choice is PASS
+                    && choiceTaken.getAction() == Action.PASS)                  // and the previous move was also a PASS
+                validChoices.clear();
+
+            // If the opponent has placed all of their bones, it's game over
+            if (sizeOfOpponentHand == 0)
+                validChoices.clear();
+
+            // If I have placed all of my bones, it's game over
+            if (myBones.isEmpty())
+                validChoices.clear();
+
             if (validChoices.isEmpty())
-                status = Status.IS_LEAF;
-            else if (choiceTaken != null
-                    && choiceTaken.getAction() == Action.PASS
-                    && validChoices.size() == 1
-                    && validChoices.containsKey(new Choice(Action.PASS, null)))
                 status = Status.IS_LEAF;
             else
                 status = Status.HAS_CHILD_STATES;
@@ -183,8 +204,8 @@ public class GameState {
         return ply;
     }
 
-    public void setPly(int ply) {
-        this.ply = ply;
+    public void increasePly(int plyIncrease) {
+        ply += plyIncrease;
     }
 
     public double getValue() {
@@ -198,6 +219,19 @@ public class GameState {
     public int getSizeOfBoneyard() {
         return sizeOfBoneyard;
     }
+
+    public List<CopiedBone> getLayout() {
+        return Collections.unmodifiableList(layout);
+    }
+
+    public int getLayoutRight() {
+        return layout.getFirst().left();
+    }
+
+    public int getLayoutLeft() {
+        return layout.getLast().right();
+    }
+
 
     @Override
     public String toString() {

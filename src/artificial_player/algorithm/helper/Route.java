@@ -12,10 +12,9 @@ import java.util.List;
  */
 public class Route {
     private final GameState finalState;
-    private final GameState earliestState;
-    private final Choice earliestChoice;
-    private final int size;
 
+    private GameState earliestState;
+    private Choice earliestChoice;
     private double value;
 
     public Route(GameState finalState) {
@@ -23,19 +22,11 @@ public class Route {
         value = finalState.getValue();
         earliestState = finalState;
         earliestChoice = null;
-        size = 0;
     }
 
-    public Route(GameState state, Choice choice, Route routeToExtendBackward) {
-        finalState = routeToExtendBackward.getFinalState();
-        value = routeToExtendBackward.getValue();
-        earliestChoice = choice;
-        earliestState = state;
-        size = routeToExtendBackward.size() + 1;
-    }
-
-    public int size() {
-        return size;
+    public void extendBackward() {
+        earliestChoice = earliestState.getChoiceTaken();
+        earliestState = earliestState.getPrevious();
     }
 
     public Choice getEarliestChoice() {
