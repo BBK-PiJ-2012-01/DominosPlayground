@@ -6,11 +6,11 @@ package artificial_player.algorithm.helper;
  * Date: 31/01/2013
  * Time: 12:12
  */
-public class CopiedBone {
+public class ImmutableBone {
     private int left, right;
     private int weight;
 
-    public CopiedBone(int left, int right) {
+    public ImmutableBone(int left, int right) {
         setValues(left, right);
     }
 
@@ -18,16 +18,6 @@ public class CopiedBone {
         this.weight = left + right;
         this.right = right;
         this.left = left;
-    }
-
-    public CopiedBone(CopiedBone to_copy) {
-        setValues(to_copy.left(), to_copy.right());
-    }
-
-    public void flip() {
-        int temp = left;
-        left = right;
-        right = temp;
     }
 
     public int left() {
@@ -45,9 +35,9 @@ public class CopiedBone {
     @Override
     public boolean equals(Object o) {
         if (o == null) return false;
-        if (!(o instanceof CopiedBone)) return false;
+        if (!(o instanceof ImmutableBone)) return false;
 
-        CopiedBone b = (CopiedBone) o;
+        ImmutableBone b = (ImmutableBone) o;
 
         if (left() == b.left() && right() == b.right()) return true;
         if (left() == b.right() && right() == b.left()) return true;
@@ -57,7 +47,7 @@ public class CopiedBone {
 
     @Override
     public int hashCode() {
-        return weight();
+        return weight;
     }
 
     @Override

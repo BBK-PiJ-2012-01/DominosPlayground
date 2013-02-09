@@ -1,7 +1,7 @@
 package artificial_player.algorithm.first_attempt;
 
 import artificial_player.algorithm.GameState;
-import artificial_player.algorithm.helper.CopiedBone;
+import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.virtual.AbstractStateEnumerator;
 
@@ -19,7 +19,7 @@ public class StateEnumeratorImpl extends AbstractStateEnumerator {
     public Set<Choice> getMyValidChoices(GameState state) {
         Set<Choice> validChoices;
 
-        if (state.getLayout().isEmpty())
+        if (state.getChoiceTaken() == null)
             validChoices = getValidInitialChoices(state.getMyBones());
         else
             validChoices = getValidPlacingChoices(state.getMyBones(), state.getLayoutLeft(), state.getLayoutRight());
@@ -38,9 +38,9 @@ public class StateEnumeratorImpl extends AbstractStateEnumerator {
     @Override
     public Set<Choice> getOpponentValidChoices(GameState state) {
         Set<Choice> validChoices;
-        Set<CopiedBone> possibleOpponentBones = state.getPossibleOpponentBones();
+        Set<ImmutableBone> possibleOpponentBones = state.getPossibleOpponentBones();
 
-        if (state.getLayout().isEmpty()) {
+        if (state.getChoiceTaken() == null) {
             // If this is the first move of the game, the opponent will definitely place.
             validChoices = getValidInitialChoices(possibleOpponentBones);
         } else {

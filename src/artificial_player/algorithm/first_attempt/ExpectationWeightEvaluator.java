@@ -1,6 +1,6 @@
 package artificial_player.algorithm.first_attempt;
 
-import artificial_player.algorithm.helper.CopiedBone;
+import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.GameState;
 import artificial_player.algorithm.virtual.HandEvaluator;
@@ -17,12 +17,12 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
     public double evaluateInitialValue(GameState initialState) {
         int opponentHandWeight = 0;
 
-        for (CopiedBone bone : initialState.getPossibleOpponentBones())
+        for (ImmutableBone bone : initialState.getPossibleOpponentBones())
             opponentHandWeight += bone.weight();
 
         int my_hand_weight = 0;
 
-        for (CopiedBone bone : initialState.getMyBones())
+        for (ImmutableBone bone : initialState.getMyBones())
             my_hand_weight += bone.weight();
 
         return opponentHandWeight * initialState.probThatOpponentHasBone() - my_hand_weight;
@@ -44,7 +44,7 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
         } else if (choice.getAction() == Choice.Action.PICKED_UP) {
 
             double average_of_boneyard_cards = 0;
-            for (CopiedBone pickupable_bone : state.getPossibleOpponentBones()) {
+            for (ImmutableBone pickupable_bone : state.getPossibleOpponentBones()) {
                 average_of_boneyard_cards += pickupable_bone.weight();
             }
             average_of_boneyard_cards /= state.getSizeOfBoneyard() + state.getSizeOfOpponentHand();

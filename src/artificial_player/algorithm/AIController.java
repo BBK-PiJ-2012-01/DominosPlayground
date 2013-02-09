@@ -1,7 +1,7 @@
 package artificial_player.algorithm;
 
 import artificial_player.algorithm.helper.Choice;
-import artificial_player.algorithm.helper.CopiedBone;
+import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.MoveCounter;
 import artificial_player.algorithm.helper.Route;
 import artificial_player.algorithm.virtual.HandEvaluator;
@@ -35,7 +35,7 @@ public class AIController {
         this.handEvaluator = handEvaluator;
     }
 
-    public void setInitialState(Set<CopiedBone> myBones, boolean isMyTurn) {
+    public void setInitialState(Set<ImmutableBone> myBones, boolean isMyTurn) {
         moveCounter = new MoveCounter();
         currentState = new GameState(stateEnumerator, handEvaluator, moveCounter,
                 plyManager.getInitialPly(), myBones, isMyTurn);
@@ -78,11 +78,11 @@ public class AIController {
         currentState = nextState;
     }
 
-    public Set<CopiedBone> getMyBones() {
+    public Set<ImmutableBone> getMyBones() {
         return currentState.getMyBones();
     }
 
-    public List<CopiedBone> getLayout() {
+    public Set<ImmutableBone> getLayout() {
         return currentState.getLayout();
     }
 
@@ -93,6 +93,8 @@ public class AIController {
     public RouteSelector getRouteSelector() {
         return routeSelector;
     }
+
+    // TODO: only apply ply update when isMyTurn.  Also, can choosing opponent move be made less expensive?
 
     public Choice getBestChoice() {
         List<Route> bestRoutes = getBestRoutes();

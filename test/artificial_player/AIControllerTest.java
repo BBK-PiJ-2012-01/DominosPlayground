@@ -7,7 +7,7 @@ import artificial_player.algorithm.first_attempt.RouteSelectorImpl;
 import artificial_player.algorithm.first_attempt.StateEnumeratorImpl;
 import artificial_player.algorithm.helper.Bones;
 import artificial_player.algorithm.helper.Choice;
-import artificial_player.algorithm.helper.CopiedBone;
+import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.Route;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,8 +23,8 @@ import static org.junit.Assert.assertEquals;
  */
 public class AIControllerTest {
     private AIController my_ai, opponent_ai;
-    private Set<CopiedBone> my_bones, opponent_bones;
-    private List<CopiedBone> boneyard_bones;
+    private Set<ImmutableBone> my_bones, opponent_bones;
+    private List<ImmutableBone> boneyard_bones;
 
     private AIController createAI() {
         return new AIController(
@@ -39,12 +39,14 @@ public class AIControllerTest {
         my_ai = createAI();
         opponent_ai = createAI();
 
-        List<CopiedBone> all_bones = new LinkedList<CopiedBone>(Bones.getAllBones());
+        Set<ImmutableBone> allBones = Bones.getAllBones();
+
+        List<ImmutableBone> all_bones = new LinkedList<ImmutableBone>(Bones.getAllBones());
         Collections.shuffle(all_bones);
 
-        my_bones = new HashSet<CopiedBone>(all_bones.subList(0, 7));
-        opponent_bones = new HashSet<CopiedBone>(all_bones.subList(7, 14));
-        boneyard_bones = new LinkedList<CopiedBone>(all_bones.subList(14, 28));
+        my_bones = new HashSet<ImmutableBone>(all_bones.subList(0, 7));
+        opponent_bones = new HashSet<ImmutableBone>(all_bones.subList(7, 14));
+        boneyard_bones = new LinkedList<ImmutableBone>(all_bones.subList(14, 28));
 
         assertEquals(14, boneyard_bones.size());
 
@@ -131,7 +133,6 @@ public class AIControllerTest {
             System.out.println("\t" + opponent_ai.getLayout() + " size = " + opponent_ai.getLayout().size());
             System.out.println("\tmy bones = " + my_ai.getMyBones() + " , opp_bones = " + opponent_ai.getMyBones() + " boneyard = " + boneyard_bones);
 
-            // TODO: Deal with Route.choiceTaken (should initialise to null, then this should be converted to a PICKED_UP or a PASS somewhere...
         }
     }
 

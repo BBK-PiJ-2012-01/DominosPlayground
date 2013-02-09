@@ -2,7 +2,7 @@ package artificial_player;
 
 import artificial_player.algorithm.GameState;
 import artificial_player.algorithm.helper.Bones;
-import artificial_player.algorithm.helper.CopiedBone;
+import artificial_player.algorithm.helper.ImmutableBone;
 import org.junit.Before;
 
 import java.util.*;
@@ -15,32 +15,32 @@ import java.util.*;
 public class GameStateTest {
     private GameState my_state;
     private GameState opponent_state;
-    private Set<CopiedBone> my_bones;
-    private Set<CopiedBone> opponent_bones;
+    private Set<ImmutableBone> my_bones;
+    private Set<ImmutableBone> opponent_bones;
 
     @Before
     public void setUp() throws Exception {
-        my_bones = new HashSet<CopiedBone>();
+        my_bones = new HashSet<ImmutableBone>();
 
-//        my_bones.add(new CopiedBone(0, 0, true));
-//        my_bones.add(new CopiedBone(0, 1, true));
-//        my_bones.add(new CopiedBone(1, 1, true));
-//        my_bones.add(new CopiedBone(2, 1, true));
-//        my_bones.add(new CopiedBone(2, 2, true));
-//        my_bones.add(new CopiedBone(2, 3, true));
-//        my_bones.add(new CopiedBone(3, 3, true));
+//        my_bones.add(new ImmutableBone(0, 0, true));
+//        my_bones.add(new ImmutableBone(0, 1, true));
+//        my_bones.add(new ImmutableBone(1, 1, true));
+//        my_bones.add(new ImmutableBone(2, 1, true));
+//        my_bones.add(new ImmutableBone(2, 2, true));
+//        my_bones.add(new ImmutableBone(2, 3, true));
+//        my_bones.add(new ImmutableBone(3, 3, true));
 
-        List<CopiedBone> all_bones = new LinkedList<CopiedBone>(Bones.getAllBones());
+        List<ImmutableBone> all_bones = new LinkedList<ImmutableBone>(Bones.getAllBones());
         Collections.shuffle(all_bones);
         my_bones.addAll(all_bones.subList(0, 7));
 
 //        AIContainer ai = new DefaultAIContainer();
 //        my_state = new GameState(ai, my_bones, true);
 //
-//        all_bones = new LinkedList<CopiedBone>(GameState.getAllBones());
+//        all_bones = new LinkedList<ImmutableBone>(GameState.getAllBones());
 //        all_bones.removeAll(my_bones);
 //        Collections.shuffle(all_bones);
-//        opponent_bones = new HashSet<CopiedBone>();
+//        opponent_bones = new HashSet<ImmutableBone>();
 //
 //        AIContainer ai_opponent = new DefaultAIContainer();
 //        opponent_state = new GameState(ai_opponent, opponent_bones, false);

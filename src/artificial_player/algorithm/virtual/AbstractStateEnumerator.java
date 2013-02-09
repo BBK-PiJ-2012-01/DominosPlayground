@@ -1,6 +1,6 @@
 package artificial_player.algorithm.virtual;
 
-import artificial_player.algorithm.helper.CopiedBone;
+import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.Choice;
 
 import java.util.HashSet;
@@ -19,10 +19,10 @@ public abstract class AbstractStateEnumerator implements StateEnumerator {
      * @param availableBones the bones that can be placed.
      * @return the complete set of valid initial choices.
      */
-    public Set<Choice> getValidInitialChoices(Set<CopiedBone> availableBones) {
+    public Set<Choice> getValidInitialChoices(Set<ImmutableBone> availableBones) {
         Set<Choice> new_states = new HashSet<Choice>();
 
-        for (CopiedBone bone : availableBones) {
+        for (ImmutableBone bone : availableBones) {
             // Can place any of my bones
             new_states.add(new Choice(Choice.Action.PLACED_RIGHT, bone));
         }
@@ -39,28 +39,18 @@ public abstract class AbstractStateEnumerator implements StateEnumerator {
      * @param layoutRight the rightmost value in the layout.
      * @return the complete set of valid placing choices.
      */
-    public Set<Choice> getValidPlacingChoices(Set<CopiedBone> availableBones, int layoutLeft, int layoutRight) {
+    public Set<Choice> getValidPlacingChoices(Set<ImmutableBone> availableBones, int layoutLeft, int layoutRight) {
         Set<Choice> validChoices = new HashSet<Choice>();
 
         // Bones have already been placed
-        for (CopiedBone bone : availableBones) {
+        for (ImmutableBone bone : availableBones) {
             // Check right/last of placed bones
-            if (layoutRight == bone.left()) {
+            if (layoutRight == bone.left() || layoutRight == bone.right())
                 validChoices.add(new Choice(Choice.Action.PLACED_RIGHT, bone));
-            } else if (layoutRight == bone.right()) {
-                CopiedBone flipped_bone = new CopiedBone(bone);
-                flipped_bone.flip();
-                validChoices.add(new Choice(Choice.Action.PLACED_RIGHT, flipped_bone));
-            }
 
             // Check left/first of placed bones
-            if (layoutLeft == bone.right()) {
+            if (layoutLeft == bone.right() || layoutLeft == bone.left())
                 validChoices.add(new Choice(Choice.Action.PLACED_LEFT, bone));
-            } else if (layoutLeft == bone.left()) {
-                CopiedBone flipped_bone = new CopiedBone(bone);
-                flipped_bone.flip();
-                validChoices.add(new Choice(Choice.Action.PLACED_LEFT, flipped_bone));
-            }
         }
 
         return validChoices;
@@ -73,10 +63,10 @@ public abstract class AbstractStateEnumerator implements StateEnumerator {
      * @param bonesThatCanBePickedUp the set of bones that could be picked up.
      * @return the complete set of valid pickup choices.
      */
-    public Set<Choice> getValidPickupChoices(Set<CopiedBone> bonesThatCanBePickedUp) {
+    public Set<Choice> getValidPickupChoices(Set<ImmutableBone> bonesThatCanBePickedUp) {
         Set<Choice> validChoices = new HashSet<Choice>();
 
-        for (CopiedBone bone : bonesThatCanBePickedUp) {
+        for (ImmutableBone bone : bonesThatCanBePickedUp) {
             validChoices.add(new Choice(Choice.Action.PICKED_UP, bone));
         }
 

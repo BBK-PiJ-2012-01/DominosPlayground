@@ -2,7 +2,7 @@ package artificial_player.algorithm;
 
 import artificial_player.algorithm.helper.Bones;
 import artificial_player.algorithm.helper.Choice;
-import artificial_player.algorithm.helper.CopiedBone;
+import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.MoveCounter;
 import artificial_player.algorithm.virtual.HandEvaluator;
 import artificial_player.algorithm.virtual.StateEnumerator;
@@ -23,27 +23,30 @@ public class GameState {
     private final int sizeOfOpponentHand;
     private final int sizeOfBoneyard;
     private final double value;
-    private final Set<CopiedBone> myBones;
-    private final LinkedList<CopiedBone> layout;
+    private final Set<ImmutableBone> myBones;
+    private final Set<ImmutableBone> layout;
     private final boolean isMyTurn;
     private final int moveNumber;
     private final MoveCounter moveCounter;
     private final GameState previous;
     private final Choice choiceTaken;
     private final Map<Choice,GameState> validChoices = new HashMap<Choice, GameState>();
+    private final int layoutLeft, layoutRight;
 
     private Status status = Status.NOT_YET_CALCULATED;
     private int ply;
 
     public GameState(StateEnumerator stateEnumerator, HandEvaluator handEvaluator, MoveCounter moveCounter,
-                     int initialPly, Set<CopiedBone> myBones, boolean isMyTurn) {
+                     int initialPly, Set<ImmutableBone> myBones, boolean isMyTurn) {
         this.isMyTurn = isMyTurn;
         this.myBones = myBones;
         this.stateEnumerator = stateEnumerator;
         this.handEvaluator = handEvaluator;
         this.moveCounter = moveCounter;
 
-        layout = new LinkedList<CopiedBone>();
+        layout = new HashSet<ImmutableBone>();
+        layoutLeft = -1;
+        layoutRight = -1;
         sizeOfOpponentHand = myBones.size();
         sizeOfBoneyard = Bones.getAllBones().size() - 2 * sizeOfOpponentHand;
         previous = null;
@@ -55,8 +58,8 @@ public class GameState {
     }
 
     private GameState(GameState previous, Choice choiceTaken) {
-        this.myBones = new HashSet<CopiedBone>(previous.myBones);
-        this.layout = new LinkedList<CopiedBone>(previous.layout);
+        this.myBones = new HashSet<ImmutableBone>(previous.myBones);
+        this.layout = new HashSet<ImmutableBone>(previous.layout);
         this.choiceTaken = choiceTaken;
         this.isMyTurn = !previous.isMyTurn;
         this.moveNumber = previous.moveNumber + 1;
@@ -73,15 +76,38 @@ public class GameState {
 
         if (choiceTaken.getAction() == Action.PLACED_LEFT || choiceTaken.getAction() == Action.PLACED_RIGHT) {
             sizeOfBoneyard = previous.getSizeOfBoneyard();
-            if (choiceTaken.getAction() == Action.PLACED_RIGHT)
-                layout.addLast(choiceTaken.getBone());
-            else
-                layout.addFirst(choiceTaken.getBone());
+
+            // Update layout end values.
+
+            boolean onRight = choiceTaken.getAction() == Action.PLACED_RIGHT;
+            ImmutableBone bone = choiceTaken.getBone();
+
+            if (layout.isEmpty()) {
+                layoutLeft = bone.left();
+                layoutRight = bone.right();
+            } else {
+                int oldValue = onRight ? previous.getLayoutRight() : previous.getLayoutLeft();
+                int newValue = (bone.left() == oldValue) ? bone.right() : bone.left();
+                if (onRight) {
+                    layoutLeft = previous.getLayoutLeft();
+                    layoutRight = newValue;
+                } else {
+                    layoutLeft = newValue;
+                    layoutRight = previous.getLayoutRight();
+                }
+            }
+
+            layout.add(bone);
+
         } else if (choiceTaken.getAction() == Action.PICKED_UP) {
+            layoutLeft = previous.getLayoutLeft();
+            layoutRight = previous.getLayoutRight();
             sizeOfBoneyard = previous.getSizeOfBoneyard() - 1;
-        } else if (choiceTaken.getAction() == Action.PASS)
+        } else if (choiceTaken.getAction() == Action.PASS) {
+            layoutLeft = previous.getLayoutLeft();
+            layoutRight = previous.getLayoutRight();
             sizeOfBoneyard = previous.sizeOfBoneyard;
-        else throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
+        } else throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
 
         if (previous.isMyTurn()) {
             sizeOfOpponentHand = previous.getSizeOfOpponentHand();
@@ -167,8 +193,8 @@ public class GameState {
         return Collections.unmodifiableMap(validChoices);
     }
 
-    public Set<CopiedBone> getPossibleOpponentBones() {
-        Set<CopiedBone> possible_opponent_bones = new HashSet<CopiedBone>(Bones.getAllBones());
+    public Set<ImmutableBone> getPossibleOpponentBones() {
+        Set<ImmutableBone> possible_opponent_bones = new HashSet<ImmutableBone>(Bones.getAllBones());
         possible_opponent_bones.removeAll(myBones);
         possible_opponent_bones.removeAll(layout);
         return possible_opponent_bones;
@@ -188,7 +214,7 @@ public class GameState {
         return isMyTurn;
     }
 
-    public Set<CopiedBone> getMyBones() {
+    public Set<ImmutableBone> getMyBones() {
         return Collections.unmodifiableSet(myBones);
     }
 
@@ -220,23 +246,22 @@ public class GameState {
         return sizeOfBoneyard;
     }
 
-    public List<CopiedBone> getLayout() {
-        return Collections.unmodifiableList(layout);
+    public Set<ImmutableBone> getLayout() {
+        return Collections.unmodifiableSet(layout);
     }
 
     public int getLayoutRight() {
-        return layout.getFirst().left();
+        return layoutRight;
     }
 
     public int getLayoutLeft() {
-        return layout.getLast().right();
+        return layoutLeft;
     }
-
 
     @Override
     public String toString() {
-        return String.format("%s %s , now value = %.1f , i have %d, opponent has %d, boneyard has %d%n\t%s",
+        return String.format("%s %s , now value = %.1f , i have %d, opponent has %d, boneyard has %d%n",
                 (isMyTurn ? "opponent" : "I"), choiceTaken, getValue(), myBones.size(),
-                sizeOfOpponentHand, sizeOfBoneyard, layout.toString());
+                sizeOfOpponentHand, sizeOfBoneyard);
     }
 }

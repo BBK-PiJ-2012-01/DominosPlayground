@@ -4,7 +4,7 @@ public class Choice {
     public static enum Action {PLACED_RIGHT, PLACED_LEFT, PICKED_UP, PASS}
 
     private final Action action;
-    private final CopiedBone bone;
+    private final ImmutableBone bone;
 
     @Override
     public boolean equals(Object o) {
@@ -31,7 +31,7 @@ public class Choice {
         return result;
     }
 
-    public Choice(Action action, CopiedBone bone) {
+    public Choice(Action action, ImmutableBone bone) {
         this.action = action;
         this.bone = bone;
     }
@@ -40,7 +40,7 @@ public class Choice {
         return action;
     }
 
-    public CopiedBone getBone() {
+    public ImmutableBone getBone() {
         return bone;
     }
 
