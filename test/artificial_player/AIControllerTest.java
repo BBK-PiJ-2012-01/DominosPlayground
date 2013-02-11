@@ -22,14 +22,46 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * User: Sam Wright
- * Date: 07/02/2013
- * Time: 14:22
+ * A bit slow: My bones: [[4,5], [0,2], [3,3], [2,3], [3,5], [6,6], [2,6]] , opp bones: [[0,1], [1,2], [0,5], [5,5], [3,6], [1,5], [4,4]]
+ * More slow: My bones: [[3,4], [1,4], [1,5], [1,2], [0,6], [0,3], [3,6]], opp bones: [[0,2], [0,4], [1,1], [0,0], [0,5], [5,5], [1,6]]
  */
 public class AIControllerTest {
     private AIController my_ai, opponent_ai;
     private List<ImmutableBone> my_bones, opponent_bones;
     private List<ImmutableBone> boneyard_bones;
+
+    @Test
+    public void testSlowHand() throws Exception {
+        my_bones = new LinkedList<ImmutableBone>();
+        my_bones.add(new ImmutableBone(3,4));
+        my_bones.add(new ImmutableBone(1, 4));
+        my_bones.add(new ImmutableBone(1, 5));
+        my_bones.add(new ImmutableBone(1, 2));
+        my_bones.add(new ImmutableBone(0, 6));
+        my_bones.add(new ImmutableBone(0, 3));
+        my_bones.add(new ImmutableBone(3, 6));
+
+        opponent_bones = new LinkedList<ImmutableBone>();
+        opponent_bones.add(new ImmutableBone(0, 2));
+        opponent_bones.add(new ImmutableBone(0, 4));
+        opponent_bones.add(new ImmutableBone(1, 1));
+        opponent_bones.add(new ImmutableBone(0, 0));
+        opponent_bones.add(new ImmutableBone(0, 5));
+        opponent_bones.add(new ImmutableBone(5, 5));
+        opponent_bones.add(new ImmutableBone(1, 6));
+
+        boneyard_bones = new LinkedList<ImmutableBone>(Bones.getAllBones());
+        boneyard_bones.removeAll(my_bones);
+        boneyard_bones.removeAll(opponent_bones);
+        Collections.shuffle(boneyard_bones);
+
+        assertEquals(14, boneyard_bones.size());
+
+        my_ai.setInitialState(my_bones, true);
+        opponent_ai.setInitialState(opponent_bones, false);
+
+        testCompetition();
+    }
 
     private AIController createAI() {
         return new AIControllerImpl(

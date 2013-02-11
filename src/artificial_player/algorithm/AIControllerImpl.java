@@ -37,21 +37,29 @@ public class AIControllerImpl implements AIController {
     }
 
     /**
-     * Gets the best possible routes from the current state.  This is where the ply of good states is incremented.
+     * Gets the best possible choice from the current state.  This is where the ply of good states is incremented.
      *
-     * @return a list of the best routes, ordered best-first.
+     * @return the best possible choice from the current state.
      */
-    private List<Route> getBestRoutes() {
+    private Choice getBestChoiceAfterIncreasingPly() {
         List<Route> bestRoutes;
         int[] plyIncreases;
         int i;
 
-
         // TODO: make this nicer, with adaptive maximum for n (ie. if taken too long or result is static, reduce it.) possibly put in PlyManager?
 
         int n = 0;
+        Choice bestChoice = null;
+        int iterationsBestChoiceHasBeenBestFor = 0;
+        int minIterationsBestChoiceMustBeBestFor = 500;
+//        System.out.println("Number of child states = " + currentState.getChildStates().size());
         do {
             bestRoutes = routeSelector.getBestRoutes(currentState, true);
+
+            if (bestRoutes.isEmpty())
+                return null;
+            else if (bestRoutes.size() == 1)
+                return bestRoutes.get(0).getEarliestChoice();
 
             double[] bestRouteValues = new double[bestRoutes.size()];
             i = 0;
@@ -66,10 +74,27 @@ public class AIControllerImpl implements AIController {
                 GameState finalState = route.getFinalState();
                 finalState.increasePly(plyIncreases[i++]);
             }
-        } while(n++ < 200);
+
+            Choice newBestChoice = bestRoutes.get(0).getEarliestChoice();
+
+            if (bestChoice != newBestChoice) {
+                iterationsBestChoiceHasBeenBestFor = 0;
+                bestChoice = newBestChoice;
+            } else if (bestChoice != null && iterationsBestChoiceHasBeenBestFor == minIterationsBestChoiceMustBeBestFor) {
+                break;
+            } else {
+                ++iterationsBestChoiceHasBeenBestFor;
+            }
+
+            if (plyIncreases[0] == 0) {
+                break;
+            }
 
 
-        return bestRoutes;
+        } while(n++ < 5000);
+
+
+        return bestChoice;
     }
 
     @Override
@@ -79,16 +104,16 @@ public class AIControllerImpl implements AIController {
 
     @Override
     public Choice getBestChoice() {
-        List<Route> bestRoutes = getBestRoutes();
+        Choice bestChoice = getBestChoiceAfterIncreasingPly();
 
-        // getBestRoutes() is empty if I need to pick up
-        if (bestRoutes.isEmpty()) {
+        // getBestChoiceAfterIncreasingPly is null if I need to pick up
+        if (bestChoice == null) {
             if (currentState.getStatus() == GameStateImpl.Status.GAME_OVER)
                 throw new GameOverException();
             else
                 return new Choice(Choice.Action.PICKED_UP, null);
         } else
-            return bestRoutes.get(0).getEarliestChoice();
+            return bestChoice;
     }
 
 

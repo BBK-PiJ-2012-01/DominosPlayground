@@ -32,19 +32,19 @@ public class GameStateImpl implements GameState {
 
     private List<GameState> childStates = Collections.emptyList();
     private Status status = Status.NOT_YET_CALCULATED;
-    private int ply;
+    private int extraPly;
 
     /**
      * Creates an initial GameState (ie. at the beginning of the game, with an empty layout).
      *
      * @param stateEnumerator the StateEnumerator object to use to enumerate child states.
      * @param handEvaluator the HandEvaluator object to use to evaluate this and future hands.
-     * @param initialPly the initial ply to give to this and all child states.
+     * @param minPly the initial extraPly to give to this and all child states.
      * @param myBones the bones I have been dealt.
      * @param isMyTurn true iff the first turn is mine.
      */
     public GameStateImpl(StateEnumerator stateEnumerator, HandEvaluator handEvaluator,
-                         int initialPly, List<ImmutableBone> myBones, boolean isMyTurn) {
+                         int minPly, List<ImmutableBone> myBones, boolean isMyTurn) {
         this.isMyTurn = isMyTurn;
         this.myBones = myBones;
         this.stateEnumerator = stateEnumerator;
@@ -53,7 +53,7 @@ public class GameStateImpl implements GameState {
         possibleOpponentBones = new ArrayList<ImmutableBone>(Bones.getAllBones());
         possibleOpponentBones.removeAll(myBones);
 
-        moveCounter = new MoveCounter();
+        moveCounter = new MoveCounter(minPly);
         layout = Collections.emptyList();
         layoutLeft = -1;
         layoutRight = -1;
@@ -64,7 +64,7 @@ public class GameStateImpl implements GameState {
         choiceTaken = null;
 
         value = handEvaluator.evaluateInitialValue(this);
-        ply = initialPly;
+        extraPly = 0;
     }
 
     /**
@@ -91,13 +91,13 @@ public class GameStateImpl implements GameState {
         this.moveNumber = parent.moveNumber + 1;
         this.moveCounter = parent.moveCounter;
         this.parent = parent;
-        this.ply = parent.ply;
+        this.extraPly = parent.extraPly;
         this.handEvaluator = parent.handEvaluator;
         this.stateEnumerator = parent.stateEnumerator;
         this.possibleOpponentBones = new ArrayList<ImmutableBone>(parent.possibleOpponentBones);
 
         this.value = handEvaluator.addedValueFromChoice(choiceTaken, parent);
-        ply = parent.ply;
+        extraPly = Math.max(parent.extraPly - 1, 0);
 
         // Set sizeOfOpponentHand, sizeOfBoneyard, myBones, and layout
 
@@ -220,9 +220,9 @@ public class GameStateImpl implements GameState {
     public Status getStatus() {
         if (status == Status.GAME_OVER)
             return Status.GAME_OVER;
-        if (moveCounter.getMovesPlayed() + ply > moveNumber)
+        if (moveCounter.getMovesPlayed() + moveCounter.getMinPly() + extraPly > moveNumber)
             return Status.HAS_CHILD_STATES;
-        if (moveCounter.getMovesPlayed() + ply <= moveNumber)
+        if (moveCounter.getMovesPlayed() + moveCounter.getMinPly() + extraPly <= moveNumber)
             return Status.NOT_YET_CALCULATED;
 
         throw new RuntimeException("getStatus broke");
@@ -245,7 +245,7 @@ public class GameStateImpl implements GameState {
                     break;
                 }
             }
-            childStates.clear(); // To help GC  - TODO: does it work???
+            //childStates.clear(); // To help GC  - TODO: does it work???
 
         } else if (status == Status.NOT_YET_CALCULATED && getValidChoices().contains(choice)) {
             chosenState = createNextState(choice);
@@ -257,8 +257,10 @@ public class GameStateImpl implements GameState {
                 validChoices.add(childState.getChoiceTaken());
             }
             throw new RuntimeException("Choice was not valid: " + choice +
-                    "\nValid choices were: " + validChoices + "\nStatus is " + status +
-                    "\n possibleOpponentBones = " + getPossibleOpponentBones());
+                    "\nValid choices were: " + validChoices + " (should be " + getValidChoices() + ")" +
+                    "\nStatus is " + status +
+                    "\n possibleOpponentBones = " + getPossibleOpponentBones() +
+                    "\n childStates.size() = " + getChildStates().size()) ;
         }
 
         moveCounter.incrementMovesPlayed();
@@ -292,7 +294,7 @@ public class GameStateImpl implements GameState {
 
     @Override
     public void increasePly(int plyIncrease) {
-        ply += plyIncrease;
+        extraPly += plyIncrease;
     }
 
     @Override

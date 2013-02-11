@@ -110,4 +110,5 @@ public interface GameState {
      * @return the left value of the leftmost bone in the layout.
      */
     int getLayoutLeft();
+
 }

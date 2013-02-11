@@ -7,7 +7,7 @@ public class LinearPlyManager implements PlyManager {
 
     @Override
     public int getInitialPly() {
-        return 2;
+        return 4;
     }
 
     @Override
@@ -15,7 +15,7 @@ public class LinearPlyManager implements PlyManager {
         int[] ply_increases = new int[bestFinalStateValues.length];
 
         for (int i = 0; i < ply_increases.length; ++i) {
-            ply_increases[i] = 2;
+            ply_increases[i] = 4;
         }
 
         return ply_increases;

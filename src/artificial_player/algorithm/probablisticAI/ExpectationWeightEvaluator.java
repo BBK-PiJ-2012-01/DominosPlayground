@@ -10,8 +10,8 @@ import artificial_player.algorithm.virtual.HandEvaluator;
  * my hand's weight.
  */
 public class ExpectationWeightEvaluator implements HandEvaluator {
-    private static final int COST_OF_MY_PICKUP = 20;
-    private static final int VALUE_OF_OPPONENT_PICKUP = 5;
+    private static final int COST_OF_MY_PICKUP = 0;
+    private static final int VALUE_OF_OPPONENT_PICKUP = 0;
 
     @Override
     public double evaluateInitialValue(GameState initialState) {

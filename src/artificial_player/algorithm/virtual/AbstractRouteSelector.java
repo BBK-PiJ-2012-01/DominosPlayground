@@ -52,7 +52,7 @@ public abstract class AbstractRouteSelector implements RouteSelector {
         // So now the state MUST have child states.
 
         // TODO: if there's only one childState, just pick it... but that won't work nicely if called by getBestRoute...
-
+//        System.out.format("level %d has %d children%n", state.depth(), childStates.size());
 
         for (GameState childState : childStates) {
             // If excludePickup, then skip if this childState is a pick-up

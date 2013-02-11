@@ -4,13 +4,22 @@ package artificial_player.algorithm.helper;
  * A memo object shared among nodes in the GameState tree to record the number of moves played.
  */
 public class MoveCounter {
-    private int moves_played = 0;
+    private int movesPlayed = 0;
+    private final int minPly;
+
+    public MoveCounter(int minPly) {
+        this.minPly = minPly;
+    }
 
     public void incrementMovesPlayed() {
-        ++moves_played;
+        ++movesPlayed;
     }
 
     public int getMovesPlayed() {
-        return moves_played;
+        return movesPlayed;
+    }
+
+    public int getMinPly() {
+        return minPly;
     }
 }
