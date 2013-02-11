@@ -91,6 +91,18 @@ public class AIControllerImpl implements AIController {
             return bestRoutes.get(0).getEarliestChoice();
     }
 
+
+    @Override
+    public int getScore() {
+        int score = 0;
+
+        for (ImmutableBone bone : currentState.getMyBones()) {
+            score -= bone.weight();
+        }
+
+        return score;
+    }
+
     @Override
     public String toString() {
         StringBuilder sbuilder = new StringBuilder();
