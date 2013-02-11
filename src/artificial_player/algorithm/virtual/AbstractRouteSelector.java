@@ -53,21 +53,14 @@ public abstract class AbstractRouteSelector implements RouteSelector {
         // If the state "desires" to be final (a LEAF or NOT_YET_CALCULATED) or "desires"
         // to have children but doesn't (short-circuited to avoid unnecessarily initialising
         // state.validChoices) ...
-        if (state.getDesiredStatus() != GameState.Status.HAS_CHILD_STATES
-                || state.getValidChoices().isEmpty()) {
+        if (state.getDesiredStatus() != GameState.Status.HAS_CHILD_STATES) {
             // ... then define the route as ending here:
-            if (!state.getValidChoices().isEmpty()) {
-                System.out.println("valid choices were: " + state.getValidChoices().keySet()
-                        + "\n and desired status was " + state.getDesiredStatus());
-                throw new RuntimeException("huh?");
-            }
-
             return bestRoutes;
         }
 
         // So now the state MUST have child states.
 
-        for (GameState childState : state.getValidChoices().values()) {
+        for (GameState childState : state.getChildStates()) {
             // Get the best route to each childState (from the final state)
             Route bestRoute = getBestRoute(childState);
 

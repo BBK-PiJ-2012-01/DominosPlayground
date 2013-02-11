@@ -30,20 +30,20 @@ public class GameState {
     private final MoveCounter moveCounter;
     private final GameState previous;
     private final Choice choiceTaken;
-    private final Map<Choice,GameState> validChoices = new HashMap<Choice, GameState>();
     private final int layoutLeft, layoutRight;
 
+    private List<GameState> childStates;
     private Status status = Status.NOT_YET_CALCULATED;
     private int ply;
 
-    public GameState(StateEnumerator stateEnumerator, HandEvaluator handEvaluator, MoveCounter moveCounter,
+    public GameState(StateEnumerator stateEnumerator, HandEvaluator handEvaluator,
                      int initialPly, Set<ImmutableBone> myBones, boolean isMyTurn) {
         this.isMyTurn = isMyTurn;
         this.myBones = myBones;
         this.stateEnumerator = stateEnumerator;
         this.handEvaluator = handEvaluator;
-        this.moveCounter = moveCounter;
 
+        moveCounter = new MoveCounter();
         layout = new HashSet<ImmutableBone>();
         layoutLeft = -1;
         layoutRight = -1;
@@ -163,34 +163,53 @@ public class GameState {
             else
                 validChoicesList = stateEnumerator.getOpponentValidChoices(this);
 
+            childStates = new ArrayList<GameState>(validChoicesList.size());
+
             for (Choice choice : validChoicesList)
-                validChoices.put(choice, createNextState(choice));
+                childStates.add( createNextState(choice) );
 
             // If this is the second pass in a row, it's game over
-            if (choiceTaken != null                                        // Not the first move
-                    && validChoices.size() == 1                                 // There is only one possible choice
-                    && validChoices.containsKey(new Choice(Action.PASS, null))  // and that choice is PASS
-                    && choiceTaken.getAction() == Action.PASS)                  // and the previous move was also a PASS
-                validChoices.clear();
+            if (choiceTaken != null                                                          // Not the first move
+                    && childStates.size() == 1                                               // There is only one possible choice
+                    && childStates.get(0).getChoiceTaken() == new Choice(Action.PASS, null)  // and that choice is PASS
+                    && choiceTaken.getAction() == Action.PASS)                               // and the previous move was also a PASS
+                childStates.clear();
 
             // If the opponent has placed all of their bones, it's game over
             if (sizeOfOpponentHand == 0)
-                validChoices.clear();
+                childStates.clear();
 
             // If I have placed all of my bones, it's game over
             if (myBones.isEmpty())
-                validChoices.clear();
+                childStates.clear();
 
-            if (validChoices.isEmpty())
+            if (childStates.isEmpty())
                 status = Status.IS_LEAF;
             else
                 status = Status.HAS_CHILD_STATES;
         }
     }
 
-    public Map<Choice,GameState> getValidChoices() {
+    public List<GameState> getChildStates() {
         lazyChoicesInitialisation();
-        return Collections.unmodifiableMap(validChoices);
+        return Collections.unmodifiableList(childStates);
+    }
+
+    public GameState choose(Choice choice) {
+        GameState chosenState = null;
+
+        for (GameState childState : childStates) {
+            if (childState.getChoiceTaken() == choice) {
+                chosenState = childState;
+                break;
+            }
+        }
+
+        if (chosenState == null)
+            throw new RuntimeException("Choice was not valid: " + choice);
+
+        moveCounter.incrementMovesPlayed();
+        return chosenState;
     }
 
     public Set<ImmutableBone> getPossibleOpponentBones() {

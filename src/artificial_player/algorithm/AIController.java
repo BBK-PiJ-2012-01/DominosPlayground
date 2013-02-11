@@ -23,7 +23,6 @@ public class AIController {
     private final StateEnumerator stateEnumerator;
     private final HandEvaluator handEvaluator;
 
-    private  MoveCounter moveCounter;
     private GameState currentState;
 
     public AIController(PlyManager plyManager, RouteSelector routeSelector,
@@ -36,8 +35,7 @@ public class AIController {
     }
 
     public void setInitialState(Set<ImmutableBone> myBones, boolean isMyTurn) {
-        moveCounter = new MoveCounter();
-        currentState = new GameState(stateEnumerator, handEvaluator, moveCounter,
+        currentState = new GameState(stateEnumerator, handEvaluator,
                 plyManager.getInitialPly(), myBones, isMyTurn);
     }
 
@@ -69,13 +67,7 @@ public class AIController {
     }
 
     public void choose(Choice choice) {
-        GameState nextState = currentState.getValidChoices().get(choice);
-        if (nextState == null)
-            throw new RuntimeException("Choice was not valid: " + choice + " and opponent bones were: " + currentState);
-
-        moveCounter.incrementMovesPlayed();
-
-        currentState = nextState;
+        currentState = currentState.choose(choice);
     }
 
     public Set<ImmutableBone> getMyBones() {

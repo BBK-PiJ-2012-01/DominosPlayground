@@ -106,7 +106,6 @@ public class AIControllerTest {
             my_choice = makePickupRandom(my_ai.getBestChoice());
             if (my_choice == null) {
                 System.out.println("My desired status: " + my_ai.getState().getDesiredStatus());
-                System.out.println("My possible choices: " + my_ai.getState().getValidChoices().keySet());
                 System.out.println("My choice was null!\n" + my_ai.getState());
                 //System.out.println(my_ai.getBestRoute());
             }
@@ -121,7 +120,6 @@ public class AIControllerTest {
 
             if (opponent_choice == null) {
                 System.out.println("Opponent desired status: " + my_ai.getState().getDesiredStatus());
-                System.out.println("Opponent possible choices: " + my_ai.getState().getValidChoices().keySet());
                 System.out.println("Opponent choice was null!\n" + opponent_ai.getState());
 //                System.out.println(my_ai.getBestRoute());
             }
