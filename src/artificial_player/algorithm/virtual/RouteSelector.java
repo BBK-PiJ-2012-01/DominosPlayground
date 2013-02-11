@@ -6,9 +6,7 @@ import artificial_player.algorithm.helper.Route;
 import java.util.List;
 
 /**
- * User: Sam Wright
- * Date: 07/02/2013
- * Time: 00:47
+ * Class to calculate the best routes to take from a GameState.
  */
 public interface RouteSelector {
 

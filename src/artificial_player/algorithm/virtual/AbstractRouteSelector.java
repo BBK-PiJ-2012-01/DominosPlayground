@@ -1,6 +1,7 @@
 package artificial_player.algorithm.virtual;
 
 import artificial_player.algorithm.GameState;
+import artificial_player.algorithm.GameStateImpl;
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.helper.Route;
 
@@ -43,7 +44,7 @@ public abstract class AbstractRouteSelector implements RouteSelector {
         // If the state "desires" to be final (a LEAF or NOT_YET_CALCULATED) or "desires"
         // to have children but doesn't (short-circuited to avoid unnecessarily initialising
         // state.validChoices) ...
-        if (state.getDesiredStatus() != GameState.Status.HAS_CHILD_STATES) {
+        if (state.getStatus() != GameStateImpl.Status.HAS_CHILD_STATES) {
             // ... then define the route as ending here:
             return bestRoutes;
         }

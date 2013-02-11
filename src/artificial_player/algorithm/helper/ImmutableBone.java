@@ -2,9 +2,7 @@ package artificial_player.algorithm.helper;
 
 
 /**
- * User: Sam Wright
- * Date: 31/01/2013
- * Time: 12:12
+ * An immutable bone (like dominoes.Bone, but not flippable).
  */
 public class ImmutableBone {
     private int left, right;

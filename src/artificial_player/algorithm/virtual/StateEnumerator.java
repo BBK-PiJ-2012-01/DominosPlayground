@@ -6,9 +6,7 @@ import artificial_player.algorithm.helper.Choice;
 import java.util.List;
 
 /**
- * User: Sam Wright
- * Date: 06/02/2013
- * Time: 20:54
+ * Class to enumerate all possible future states from a GameState.
  */
 public interface StateEnumerator {
 

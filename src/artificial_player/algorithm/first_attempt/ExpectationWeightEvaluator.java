@@ -25,7 +25,7 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
         for (ImmutableBone bone : initialState.getMyBones())
             my_hand_weight += bone.weight();
 
-        return opponentHandWeight * initialState.probThatOpponentHasBone() - my_hand_weight;
+        return opponentHandWeight * probThatOpponentHasBone(initialState) - my_hand_weight;
     }
 
     @Override
@@ -38,7 +38,7 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
             if (state.isMyTurn()) {
                 addedValue += choice.getBone().weight();
             } else {
-                addedValue -= choice.getBone().weight() * state.probThatOpponentHasBone();
+                addedValue -= choice.getBone().weight() * probThatOpponentHasBone(state);
             }
 
         } else if (choice.getAction() == Choice.Action.PICKED_UP) {
@@ -64,5 +64,15 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
         }
 
         return addedValue;
+    }
+
+    private double probThatOpponentHasBone(GameState state) {
+        // TODO: if opponent picks up with 1s on left and right, prob of having a 1 bone is low
+        int totalPossibleOpponentBones = state.getSizeOfBoneyard() + state.getSizeOfOpponentHand();
+
+        if (totalPossibleOpponentBones == 0)
+            return 0;
+        else
+            return ((double) state.getSizeOfOpponentHand()) / totalPossibleOpponentBones;
     }
 }

@@ -6,9 +6,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * User: Sam Wright
- * Date: 06/02/2013
- * Time: 22:20
+ * A LinkedList of GameStates, first defined at the final state then progressively
+ * extended backward to the current state (with value being added along the way).
  */
 public class Route {
     private final GameState finalState;
@@ -26,7 +25,7 @@ public class Route {
 
     public void extendBackward() {
         earliestChoice = earliestState.getChoiceTaken();
-        earliestState = earliestState.getPrevious();
+        earliestState = earliestState.getParent();
     }
 
     public Choice getEarliestChoice() {
@@ -66,7 +65,7 @@ public class Route {
 
         do {
             stack.addFirst(state);
-            state = state.getPrevious();
+            state = state.getParent();
         } while (state != earliestState);
 
         return stack;

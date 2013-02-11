@@ -1,9 +1,7 @@
 package artificial_player.algorithm.helper;
 
 /**
- * User: Sam Wright
- * Date: 02/02/2013
- * Time: 16:47
+ * A memo object shared among nodes in the GameState tree to record the number of moves played.
  */
 public class MoveCounter {
     private int moves_played = 0;

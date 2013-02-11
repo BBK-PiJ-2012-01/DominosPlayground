@@ -5,12 +5,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * User: Sam Wright
- * Date: 07/02/2013
- * Time: 17:40
+ * Helper class for Bones
  */
 public class Bones {
-    private static Set<ImmutableBone> allBones;
+    private static final Set<ImmutableBone> allBones;
 
     static {
         // Enumerate all bones
@@ -23,6 +21,11 @@ public class Bones {
         allBones = Collections.unmodifiableSet(tempAllBones);
     }
 
+    /**
+     * Returns an immutable set of all possible immutable bones.
+     *
+     * @return an immutable set of all possible immutable bones.
+     */
     public static Set<ImmutableBone> getAllBones() {
         return allBones;
     }

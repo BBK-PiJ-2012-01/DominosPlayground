@@ -1,5 +1,8 @@
 package artificial_player.algorithm.helper;
 
+/**
+ * Class representing a choice which takes the game from one GameState to another GameState.
+ */
 public class Choice {
     public static enum Action {PLACED_RIGHT, PLACED_LEFT, PICKED_UP, PASS}
 
