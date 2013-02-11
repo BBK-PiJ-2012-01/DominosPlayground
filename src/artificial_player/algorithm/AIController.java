@@ -51,21 +51,21 @@ public class AIController {
             double[] bestRoutePlys = new double[bestRoutes.size()];
             i = 0;
             for (Route route : bestRoutes) {
-                bestRouteValues[i] = route.getValue();
-                bestRoutePlys[i++] = route.getFinalState().getMoveNumber();
+                bestRoutePlys[i] = route.getFinalState().getMoveNumber();
+                bestRouteValues[i++] = route.getValue();
             }
 
-            System.out.println("Best finalState moveNumbers: " + Arrays.toString(bestRoutePlys));
+            if (n == 20)
+                System.out.println("\t\tBest finalState moveNumbers after state " + currentState.getMoveNumber() + " are: " + Arrays.toString(bestRoutePlys));
 
             plyIncreases = plyManager.getPlyIncreases(bestRouteValues);
 
             i = 0;
             for (Route route : bestRoutes) {
                 GameState finalState = route.getFinalState();
-                //int new_ply = finalState.getPly() + plyIncreases[i++];
                 finalState.increasePly(plyIncreases[i++]);
             }
-        } while(n++ < 2);
+        } while(n++ < 200);
 
 
         return bestRoutes;
@@ -89,12 +89,7 @@ public class AIController {
 
     public Choice getBestChoice() {
         List<Route> bestRoutes = getBestRoutes();
-//        if (bestRoutes.isEmpty()) {
-//            System.out.println("Problem in AIController.getBestRoute");
-//            System.out.println(currentState);
-//            System.out.println(currentState.getValidChoices());
-//            System.out.println(currentState.getDesiredStatus());
-//        }
+
         // getBestRoutes() is empty if I need to pick up
         if (bestRoutes.isEmpty()) {
             if (currentState.getDesiredStatus() == GameState.Status.IS_LEAF)
