@@ -23,9 +23,9 @@ public class GameState {
     private final int sizeOfOpponentHand;
     private final int sizeOfBoneyard;
     private final double value;
-    private final Set<ImmutableBone> myBones;
-    private final Set<ImmutableBone> possibleOpponentBones;
-    private final Set<ImmutableBone> layout;
+    private final List<ImmutableBone> myBones;
+    private final List<ImmutableBone> possibleOpponentBones;
+    private final List<ImmutableBone> layout;
     private final boolean isMyTurn;
     private final int moveNumber;
     private final MoveCounter moveCounter;
@@ -33,22 +33,22 @@ public class GameState {
     private final Choice choiceTaken;
     private final int layoutLeft, layoutRight;
 
-    private List<GameState> childStates;
+    private List<GameState> childStates = Collections.emptyList();
     private Status status = Status.NOT_YET_CALCULATED;
     private int ply;
 
     public GameState(StateEnumerator stateEnumerator, HandEvaluator handEvaluator,
-                     int initialPly, Set<ImmutableBone> myBones, boolean isMyTurn) {
+                     int initialPly, List<ImmutableBone> myBones, boolean isMyTurn) {
         this.isMyTurn = isMyTurn;
         this.myBones = myBones;
         this.stateEnumerator = stateEnumerator;
         this.handEvaluator = handEvaluator;
 
-        possibleOpponentBones = new HashSet<ImmutableBone>(Bones.getAllBones());
+        possibleOpponentBones = new ArrayList<ImmutableBone>(Bones.getAllBones());
         possibleOpponentBones.removeAll(myBones);
 
         moveCounter = new MoveCounter();
-        layout = new HashSet<ImmutableBone>();
+        layout = Collections.emptyList();
         layoutLeft = -1;
         layoutRight = -1;
         sizeOfOpponentHand = myBones.size();
@@ -61,9 +61,13 @@ public class GameState {
         ply = initialPly;
     }
 
+    public int getMoveNumber() {
+        return moveNumber;
+    }
+
     private GameState(GameState previous, Choice choiceTaken) {
-        this.myBones = new HashSet<ImmutableBone>(previous.myBones);
-        this.layout = new HashSet<ImmutableBone>(previous.layout);
+        this.myBones = new ArrayList<ImmutableBone>(previous.myBones);
+        this.layout = new ArrayList<ImmutableBone>(previous.layout);
         this.choiceTaken = choiceTaken;
         this.isMyTurn = !previous.isMyTurn;
         this.moveNumber = previous.moveNumber + 1;
@@ -72,7 +76,7 @@ public class GameState {
         this.ply = previous.ply;
         this.handEvaluator = previous.handEvaluator;
         this.stateEnumerator = previous.stateEnumerator;
-        this.possibleOpponentBones = new HashSet<ImmutableBone>(previous.possibleOpponentBones);
+        this.possibleOpponentBones = new ArrayList<ImmutableBone>(previous.possibleOpponentBones);
 
         this.value = handEvaluator.addedValueFromChoice(choiceTaken, previous);
         ply = previous.getPly();
@@ -157,7 +161,7 @@ public class GameState {
         throw new RuntimeException("getDesiredStatus broke");
     }
 
-    private Set<Choice> getValidChoices() {
+    private List<Choice> getValidChoices() {
         if (isMyTurn)
             return stateEnumerator.getMyValidChoices(this);
         else
@@ -170,7 +174,7 @@ public class GameState {
             return;
 
         if (desired_status == Status.HAS_CHILD_STATES) {
-            Set<Choice> validChoicesList = getValidChoices();
+            List<Choice> validChoicesList = getValidChoices();
 
             childStates = new ArrayList<GameState>(validChoicesList.size());
 
@@ -212,6 +216,7 @@ public class GameState {
                     break;
                 }
             }
+            childStates.clear(); // To help GC  - TODO: does it work???
         } else if (status == Status.NOT_YET_CALCULATED && getValidChoices().contains(choice)) {
             chosenState = createNextState(choice);
         }
@@ -236,12 +241,12 @@ public class GameState {
         return chosenState;
     }
 
-    public Set<ImmutableBone> getPossibleOpponentBones() {
+    public List<ImmutableBone> getPossibleOpponentBones() {
 //        Set<ImmutableBone> possible_opponent_bones = new HashSet<ImmutableBone>(Bones.getAllBones());
 //        possible_opponent_bones.removeAll(myBones);
 //        possible_opponent_bones.removeAll(layout);
 //        return possible_opponent_bones;
-        return Collections.unmodifiableSet(possibleOpponentBones);
+        return Collections.unmodifiableList(possibleOpponentBones);
     }
 
     public double probThatOpponentHasBone() {
@@ -258,8 +263,8 @@ public class GameState {
         return isMyTurn;
     }
 
-    public Set<ImmutableBone> getMyBones() {
-        return Collections.unmodifiableSet(myBones);
+    public List<ImmutableBone> getMyBones() {
+        return Collections.unmodifiableList(myBones);
     }
 
     private GameState createNextState(Choice choice) {
@@ -290,8 +295,8 @@ public class GameState {
         return sizeOfBoneyard;
     }
 
-    public Set<ImmutableBone> getLayout() {
-        return Collections.unmodifiableSet(layout);
+    public List<ImmutableBone> getLayout() {
+        return Collections.unmodifiableList(layout);
     }
 
     public int getLayoutRight() {

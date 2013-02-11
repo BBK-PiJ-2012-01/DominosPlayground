@@ -14,7 +14,7 @@ public class LinearPlyManager implements PlyManager {
     public int[] getPlyIncreases(double[] bestFinalStateValues) {
         int[] ply_increases = new int[bestFinalStateValues.length];
 
-        for (int i = 0; i < ply_increases.length; ++i) {
+        for (int i = 0; i < ply_increases.length && i < 3; ++i) {
             ply_increases[i] = 4;
         }
 

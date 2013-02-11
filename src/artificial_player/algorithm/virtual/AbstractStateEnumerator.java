@@ -3,8 +3,7 @@ package artificial_player.algorithm.virtual;
 import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.Choice;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * User: Sam Wright
@@ -19,8 +18,8 @@ public abstract class AbstractStateEnumerator implements StateEnumerator {
      * @param availableBones the bones that can be placed.
      * @return the complete set of valid initial choices.
      */
-    public Set<Choice> getValidInitialChoices(Set<ImmutableBone> availableBones) {
-        Set<Choice> new_states = new HashSet<Choice>();
+    public List<Choice> getValidInitialChoices(List<ImmutableBone> availableBones) {
+        List<Choice> new_states = new ArrayList<Choice>(availableBones.size());
 
         for (ImmutableBone bone : availableBones) {
             // Can place any of my bones
@@ -39,8 +38,8 @@ public abstract class AbstractStateEnumerator implements StateEnumerator {
      * @param layoutRight the rightmost value in the layout.
      * @return the complete set of valid placing choices.
      */
-    public Set<Choice> getValidPlacingChoices(Set<ImmutableBone> availableBones, int layoutLeft, int layoutRight) {
-        Set<Choice> validChoices = new HashSet<Choice>();
+    public List<Choice> getValidPlacingChoices(List<ImmutableBone> availableBones, int layoutLeft, int layoutRight) {
+        List<Choice> validChoices = new LinkedList<Choice>();
 
         // Bones have already been placed
         for (ImmutableBone bone : availableBones) {
@@ -63,8 +62,8 @@ public abstract class AbstractStateEnumerator implements StateEnumerator {
      * @param bonesThatCanBePickedUp the set of bones that could be picked up.
      * @return the complete set of valid pickup choices.
      */
-    public Set<Choice> getValidPickupChoices(Set<ImmutableBone> bonesThatCanBePickedUp) {
-        Set<Choice> validChoices = new HashSet<Choice>();
+    public List<Choice> getValidPickupChoices(List<ImmutableBone> bonesThatCanBePickedUp) {
+        List<Choice> validChoices = new ArrayList<Choice>(bonesThatCanBePickedUp.size());
 
         for (ImmutableBone bone : bonesThatCanBePickedUp) {
             validChoices.add(new Choice(Choice.Action.PICKED_UP, bone));

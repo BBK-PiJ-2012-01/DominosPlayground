@@ -37,7 +37,8 @@ public abstract class AbstractRouteSelector implements RouteSelector {
 
     @Override
     public List<Route> getBestRoutes(GameState state, boolean excludePickup) {
-        List<Route> bestRoutes = new LinkedList<Route>();
+        List<GameState> childStates = state.getChildStates();
+        List<Route> bestRoutes = new ArrayList<Route>(childStates.size());
 
         // If the state "desires" to be final (a LEAF or NOT_YET_CALCULATED) or "desires"
         // to have children but doesn't (short-circuited to avoid unnecessarily initialising
@@ -52,7 +53,7 @@ public abstract class AbstractRouteSelector implements RouteSelector {
         // TODO: if there's only one childState, just pick it... but that won't work nicely if called by getBestRoute...
 
 
-        for (GameState childState : state.getChildStates()) {
+        for (GameState childState : childStates) {
             // If excludePickup, then skip if this childState is a pick-up
             if (excludePickup) {
                 Choice choiceTaken = childState.getChoiceTaken();
@@ -85,11 +86,11 @@ public abstract class AbstractRouteSelector implements RouteSelector {
     private Route getBestRoute(GameState state) {
         List<Route> bestRoutes = getBestRoutes(state, false);
 
-        // If the given state is a leaf, create the route from here
         if (bestRoutes.isEmpty())
+            // If the given state is a leaf, create the route from here
             return new Route(state);
-            // Else choose the best of the best routes
         else
+            // Else choose the best of the best routes
             return getReducedRoute(bestRoutes, state.isMyTurn());
     }
 

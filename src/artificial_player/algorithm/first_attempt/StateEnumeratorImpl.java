@@ -5,8 +5,8 @@ import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.virtual.AbstractStateEnumerator;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * User: Sam Wright
@@ -16,8 +16,8 @@ import java.util.Set;
 public class StateEnumeratorImpl extends AbstractStateEnumerator {
 
     @Override
-    public Set<Choice> getMyValidChoices(GameState state) {
-        Set<Choice> validChoices;
+    public List<Choice> getMyValidChoices(GameState state) {
+        List<Choice> validChoices;
 
         if (state.getChoiceTaken() == null)
             validChoices = getValidInitialChoices(state.getMyBones());
@@ -38,19 +38,20 @@ public class StateEnumeratorImpl extends AbstractStateEnumerator {
     }
 
     @Override
-    public Set<Choice> getOpponentValidChoices(GameState state) {
-        Set<Choice> validChoices;
-        Set<ImmutableBone> possibleOpponentBones = state.getPossibleOpponentBones();
+    public List<Choice> getOpponentValidChoices(GameState state) {
+        List<Choice> validChoices;
+        List<ImmutableBone> possibleOpponentBones = state.getPossibleOpponentBones();
 
         if (state.getChoiceTaken() == null) {
             // If this is the first move of the game, the opponent will definitely place.
             validChoices = getValidInitialChoices(possibleOpponentBones);
         } else {
-            validChoices = new HashSet<Choice>();
 
             if (state.getSizeOfOpponentHand() > 0)
                 // Assuming the opponent can place a bone
                 validChoices = getValidPlacingChoices(possibleOpponentBones, state.getLayoutLeft(), state.getLayoutRight());
+            else
+                validChoices = new ArrayList<Choice>(1);
 
             if (state.getSizeOfBoneyard() > 0) {
                 // Assuming the opponent can't place a bone, but can pick up:

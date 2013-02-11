@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class AIControllerTest {
     private AIController my_ai, opponent_ai;
-    private Set<ImmutableBone> my_bones, opponent_bones;
+    private List<ImmutableBone> my_bones, opponent_bones;
     private List<ImmutableBone> boneyard_bones;
 
     private AIController createAI() {
@@ -42,8 +42,8 @@ public class AIControllerTest {
         List<ImmutableBone> all_bones = new LinkedList<ImmutableBone>(Bones.getAllBones());
         Collections.shuffle(all_bones);
 
-        my_bones = new HashSet<ImmutableBone>(all_bones.subList(0, 7));
-        opponent_bones = new HashSet<ImmutableBone>(all_bones.subList(7, 14));
+        my_bones = all_bones.subList(0, 7);
+        opponent_bones = all_bones.subList(7, 14);
         boneyard_bones = new LinkedList<ImmutableBone>(all_bones.subList(14, 28));
 
         assertEquals(14, boneyard_bones.size());

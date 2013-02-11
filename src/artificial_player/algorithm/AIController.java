@@ -8,8 +8,8 @@ import artificial_player.algorithm.virtual.PlyManager;
 import artificial_player.algorithm.virtual.RouteSelector;
 import artificial_player.algorithm.virtual.StateEnumerator;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 /**
  * User: Sam Wright
@@ -33,7 +33,7 @@ public class AIController {
         this.handEvaluator = handEvaluator;
     }
 
-    public void setInitialState(Set<ImmutableBone> myBones, boolean isMyTurn) {
+    public void setInitialState(List<ImmutableBone> myBones, boolean isMyTurn) {
         currentState = new GameState(stateEnumerator, handEvaluator,
                 plyManager.getInitialPly(), myBones, isMyTurn);
     }
@@ -43,14 +43,19 @@ public class AIController {
         int[] plyIncreases;
         int i;
 
-        //int n = 0;
-        //do {
+        int n = 0;
+        do {
             bestRoutes = routeSelector.getBestRoutes(currentState, true);
 
             double[] bestRouteValues = new double[bestRoutes.size()];
+            double[] bestRoutePlys = new double[bestRoutes.size()];
             i = 0;
-            for (Route route : bestRoutes)
-                bestRouteValues[i++] = route.getValue();
+            for (Route route : bestRoutes) {
+                bestRouteValues[i] = route.getValue();
+                bestRoutePlys[i++] = route.getFinalState().getMoveNumber();
+            }
+
+            System.out.println("Best finalState moveNumbers: " + Arrays.toString(bestRoutePlys));
 
             plyIncreases = plyManager.getPlyIncreases(bestRouteValues);
 
@@ -60,7 +65,7 @@ public class AIController {
                 //int new_ply = finalState.getPly() + plyIncreases[i++];
                 finalState.increasePly(plyIncreases[i++]);
             }
-        //} while(n++ < 0);
+        } while(n++ < 2);
 
 
         return bestRoutes;
@@ -70,11 +75,11 @@ public class AIController {
         currentState = currentState.choose(choice);
     }
 
-    public Set<ImmutableBone> getMyBones() {
+    public List<ImmutableBone> getMyBones() {
         return currentState.getMyBones();
     }
 
-    public Set<ImmutableBone> getLayout() {
+    public List<ImmutableBone> getLayout() {
         return currentState.getLayout();
     }
 
