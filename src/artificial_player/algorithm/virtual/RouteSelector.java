@@ -11,21 +11,16 @@ import java.util.List;
  * Time: 00:47
  */
 public interface RouteSelector {
-    /**
-     * Gets the route from the given state to the best final state.
-     *
-     * @param state the state the route starts from.
-     * @return the route from the given state to the best final state.
-     */
-    Route getBestRoute(GameState state);
 
     /**
      * Gets the list of best routes from the given state to the best final state,
      * ordered from best to worst.  Each route corresponds to the best route for
-     * a choice in state.getValidChoices().
+     * a choice in state.getValidChoices().  If 'excludePickup' is true, routes starting
+     * with a pickup will be ignored.
      *
      * @param state the state the routes starts from.
+     * @param excludePickup only return routes which do NOT start with a pick up.
      * @return the route from the given state to the best final state.
      */
-    List<Route> getBestRoutes(GameState state);
+    List<Route> getBestRoutes(GameState state, boolean excludePickup);
 }

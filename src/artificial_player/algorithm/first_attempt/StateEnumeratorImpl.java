@@ -24,9 +24,11 @@ public class StateEnumeratorImpl extends AbstractStateEnumerator {
         else
             validChoices = getValidPlacingChoices(state.getMyBones(), state.getLayoutLeft(), state.getLayoutRight());
 
-        if (validChoices.isEmpty() && state.getSizeOfBoneyard() > 0)
+        if (validChoices.isEmpty() && state.getSizeOfBoneyard() > 0) {
             // No possible move - must pick up from boneyard
             validChoices.addAll(getValidPickupChoices( state.getPossibleOpponentBones() ));
+        }
+
 
         if (validChoices.isEmpty())
             // Nothing to pick up from boneyard, so pass

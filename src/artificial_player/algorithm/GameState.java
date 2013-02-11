@@ -24,6 +24,7 @@ public class GameState {
     private final int sizeOfBoneyard;
     private final double value;
     private final Set<ImmutableBone> myBones;
+    private final Set<ImmutableBone> possibleOpponentBones;
     private final Set<ImmutableBone> layout;
     private final boolean isMyTurn;
     private final int moveNumber;
@@ -42,6 +43,9 @@ public class GameState {
         this.myBones = myBones;
         this.stateEnumerator = stateEnumerator;
         this.handEvaluator = handEvaluator;
+
+        possibleOpponentBones = new HashSet<ImmutableBone>(Bones.getAllBones());
+        possibleOpponentBones.removeAll(myBones);
 
         moveCounter = new MoveCounter();
         layout = new HashSet<ImmutableBone>();
@@ -68,6 +72,7 @@ public class GameState {
         this.ply = previous.ply;
         this.handEvaluator = previous.handEvaluator;
         this.stateEnumerator = previous.stateEnumerator;
+        this.possibleOpponentBones = new HashSet<ImmutableBone>(previous.possibleOpponentBones);
 
         this.value = handEvaluator.addedValueFromChoice(choiceTaken, previous);
         ply = previous.getPly();
@@ -113,14 +118,16 @@ public class GameState {
             sizeOfOpponentHand = previous.getSizeOfOpponentHand();
             if (choiceTaken.getAction() == Action.PLACED_LEFT || choiceTaken.getAction() == Action.PLACED_RIGHT)
                 myBones.remove(choiceTaken.getBone());
-            else if (choiceTaken.getAction() == Action.PICKED_UP)
+            else if (choiceTaken.getAction() == Action.PICKED_UP) {
                 myBones.add(choiceTaken.getBone());
-            else if (choiceTaken.getAction() != Action.PASS)
+                possibleOpponentBones.remove(choiceTaken.getBone());
+            } else if (choiceTaken.getAction() != Action.PASS)
                 throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
         } else {
-            if (choiceTaken.getAction() == Action.PLACED_LEFT || choiceTaken.getAction() == Action.PLACED_RIGHT)
+            if (choiceTaken.getAction() == Action.PLACED_LEFT || choiceTaken.getAction() == Action.PLACED_RIGHT) {
                 sizeOfOpponentHand = previous.getSizeOfOpponentHand() - 1;
-            else if (choiceTaken.getAction() == Action.PICKED_UP)
+                possibleOpponentBones.remove(choiceTaken.getBone());
+            } else if (choiceTaken.getAction() == Action.PICKED_UP)
                 sizeOfOpponentHand = previous.getSizeOfOpponentHand() + 1;
             else if (choiceTaken.getAction() == Action.PASS)
                 sizeOfOpponentHand = previous.getSizeOfOpponentHand();
@@ -150,18 +157,20 @@ public class GameState {
         throw new RuntimeException("getDesiredStatus broke");
     }
 
-    private void lazyChoicesInitialisation() {
+    private Set<Choice> getValidChoices() {
+        if (isMyTurn)
+            return stateEnumerator.getMyValidChoices(this);
+        else
+            return stateEnumerator.getOpponentValidChoices(this);
+    }
+
+    private void lazyChildrenInitialisation() {
         Status desired_status = getDesiredStatus();
         if (desired_status == status)
             return;
 
         if (desired_status == Status.HAS_CHILD_STATES) {
-            Set<Choice> validChoicesList;
-
-            if (isMyTurn)
-                validChoicesList = stateEnumerator.getMyValidChoices(this);
-            else
-                validChoicesList = stateEnumerator.getOpponentValidChoices(this);
+            Set<Choice> validChoicesList = getValidChoices();
 
             childStates = new ArrayList<GameState>(validChoicesList.size());
 
@@ -169,10 +178,8 @@ public class GameState {
                 childStates.add( createNextState(choice) );
 
             // If this is the second pass in a row, it's game over
-            if (choiceTaken != null                                                          // Not the first move
-                    && childStates.size() == 1                                               // There is only one possible choice
-                    && childStates.get(0).getChoiceTaken() == new Choice(Action.PASS, null)  // and that choice is PASS
-                    && choiceTaken.getAction() == Action.PASS)                               // and the previous move was also a PASS
+            if (choiceTaken != null && choiceTaken.getAction() == Action.PASS
+                    && previous.getChoiceTaken() != null && previous.getChoiceTaken().getAction() == Action.PASS)
                 childStates.clear();
 
             // If the opponent has placed all of their bones, it's game over
@@ -191,32 +198,50 @@ public class GameState {
     }
 
     public List<GameState> getChildStates() {
-        lazyChoicesInitialisation();
+        lazyChildrenInitialisation();
         return Collections.unmodifiableList(childStates);
     }
 
     public GameState choose(Choice choice) {
         GameState chosenState = null;
 
-        for (GameState childState : childStates) {
-            if (childState.getChoiceTaken() == choice) {
-                chosenState = childState;
-                break;
+        if (status == Status.HAS_CHILD_STATES) {
+            for (GameState childState : getChildStates()) {
+                if (childState.getChoiceTaken().equals(choice)) {
+                    chosenState = childState;
+                    break;
+                }
             }
+        } else if (status == Status.NOT_YET_CALCULATED && getValidChoices().contains(choice)) {
+            chosenState = createNextState(choice);
         }
+//        } else if (status == Status.NOT_YET_CALCULATED) {
+//            Set<Choice> validChoices = getValidChoices();
+//            if (validChoices.contains(choice))
+//                chosenState = createNextState(choice);
+//            else
+//                throw new RuntimeException("Could not create next state from choice: " + choice);
+//        }
 
-        if (chosenState == null)
-            throw new RuntimeException("Choice was not valid: " + choice);
+        if (chosenState == null) {
+            Set<Choice> validChoices = new HashSet<Choice>();
+            for (GameState childState : getChildStates()) {
+                validChoices.add(childState.getChoiceTaken());
+            }
+            throw new RuntimeException("Choice was not valid: " + choice +
+                    "\nValid choices were: " + validChoices + "\nStatus is " + status + "\n possibleOpponentBones = " + getPossibleOpponentBones());
+        }
 
         moveCounter.incrementMovesPlayed();
         return chosenState;
     }
 
     public Set<ImmutableBone> getPossibleOpponentBones() {
-        Set<ImmutableBone> possible_opponent_bones = new HashSet<ImmutableBone>(Bones.getAllBones());
-        possible_opponent_bones.removeAll(myBones);
-        possible_opponent_bones.removeAll(layout);
-        return possible_opponent_bones;
+//        Set<ImmutableBone> possible_opponent_bones = new HashSet<ImmutableBone>(Bones.getAllBones());
+//        possible_opponent_bones.removeAll(myBones);
+//        possible_opponent_bones.removeAll(layout);
+//        return possible_opponent_bones;
+        return Collections.unmodifiableSet(possibleOpponentBones);
     }
 
     public double probThatOpponentHasBone() {

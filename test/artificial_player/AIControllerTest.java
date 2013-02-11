@@ -39,8 +39,6 @@ public class AIControllerTest {
         my_ai = createAI();
         opponent_ai = createAI();
 
-        Set<ImmutableBone> allBones = Bones.getAllBones();
-
         List<ImmutableBone> all_bones = new LinkedList<ImmutableBone>(Bones.getAllBones());
         Collections.shuffle(all_bones);
 
@@ -63,7 +61,7 @@ public class AIControllerTest {
     public void testChoosing() throws Exception {
         my_ai.setInitialState(my_bones, true);
 
-        Choice choice = my_ai.getRouteSelector().getBestRoute(my_ai.getState()).getEarliestChoice();
+        Choice choice = my_ai.getBestChoice();
 
         while (choice != null) {
             my_ai.choose(choice);
@@ -98,6 +96,10 @@ public class AIControllerTest {
         }
     }
 
+    private String getLayoutString(AIController ai) {
+        return String.format("[%d, ... , %d]", ai.getState().getLayoutLeft(), ai.getState().getLayoutRight());
+    }
+
     @Test
     public void testCompetition() throws Exception {
         Choice opponent_choice, my_choice;
@@ -109,11 +111,21 @@ public class AIControllerTest {
                 System.out.println("My choice was null!\n" + my_ai.getState());
                 //System.out.println(my_ai.getBestRoute());
             }
-            my_ai.choose(my_choice);
-            opponent_ai.choose(makePickupUnknown(my_choice));
+
+            try {
+                my_ai.choose(my_choice);
+            } catch (OutOfMemoryError err) {
+                throw new RuntimeException();
+            }
+
+            try {
+                opponent_ai.choose(makePickupUnknown(my_choice));
+            } catch (OutOfMemoryError err) {
+                throw new RuntimeException();
+            }
 
             System.out.println("My move - " + my_choice);
-            System.out.println("\t" + my_ai.getLayout() + " size = " + my_ai.getLayout().size());
+            System.out.println("\t" + getLayoutString(my_ai) + " size = " + my_ai.getLayout().size());
             System.out.println("\tmy bones = " + my_ai.getMyBones() + " , opp_bones = " + opponent_ai.getMyBones() + " boneyard = " + boneyard_bones);
 
             opponent_choice = makePickupRandom(opponent_ai.getBestChoice());
@@ -124,11 +136,19 @@ public class AIControllerTest {
 //                System.out.println(my_ai.getBestRoute());
             }
 
-            opponent_ai.choose(opponent_choice);
-            my_ai.choose(makePickupUnknown(opponent_choice));
+            try {
+                opponent_ai.choose(opponent_choice);
+            } catch (OutOfMemoryError err) {
+                throw new RuntimeException();
+            }
+            try {
+                my_ai.choose(makePickupUnknown(opponent_choice));
+            } catch (OutOfMemoryError err) {
+                throw new RuntimeException();
+            }
 
             System.out.println("Opponent move - " + opponent_choice);
-            System.out.println("\t" + opponent_ai.getLayout() + " size = " + opponent_ai.getLayout().size());
+            System.out.println("\t" + getLayoutString(opponent_ai) + " size = " + opponent_ai.getLayout().size());
             System.out.println("\tmy bones = " + my_ai.getMyBones() + " , opp_bones = " + opponent_ai.getMyBones() + " boneyard = " + boneyard_bones);
 
         }

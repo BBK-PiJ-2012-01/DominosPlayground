@@ -2,7 +2,6 @@ package artificial_player.algorithm;
 
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.helper.ImmutableBone;
-import artificial_player.algorithm.helper.MoveCounter;
 import artificial_player.algorithm.helper.Route;
 import artificial_player.algorithm.virtual.HandEvaluator;
 import artificial_player.algorithm.virtual.PlyManager;
@@ -46,7 +45,7 @@ public class AIController {
 
         //int n = 0;
         //do {
-            bestRoutes = routeSelector.getBestRoutes(currentState);
+            bestRoutes = routeSelector.getBestRoutes(currentState, true);
 
             double[] bestRouteValues = new double[bestRoutes.size()];
             i = 0;
@@ -62,6 +61,7 @@ public class AIController {
                 finalState.increasePly(plyIncreases[i++]);
             }
         //} while(n++ < 0);
+
 
         return bestRoutes;
     }
@@ -82,12 +82,6 @@ public class AIController {
         return currentState;
     }
 
-    public RouteSelector getRouteSelector() {
-        return routeSelector;
-    }
-
-    // TODO: only apply ply update when isMyTurn.  Also, can choosing opponent move be made less expensive?
-
     public Choice getBestChoice() {
         List<Route> bestRoutes = getBestRoutes();
 //        if (bestRoutes.isEmpty()) {
@@ -96,9 +90,13 @@ public class AIController {
 //            System.out.println(currentState.getValidChoices());
 //            System.out.println(currentState.getDesiredStatus());
 //        }
-        if (bestRoutes.isEmpty())
-            return null;
-        else
+        // getBestRoutes() is empty if I need to pick up
+        if (bestRoutes.isEmpty()) {
+            if (currentState.getDesiredStatus() == GameState.Status.IS_LEAF)
+                throw new RuntimeException("Game over!");
+            else
+                return new Choice(Choice.Action.PICKED_UP, null);
+        } else
             return bestRoutes.get(0).getEarliestChoice();
     }
 

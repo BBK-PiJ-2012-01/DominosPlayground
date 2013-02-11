@@ -1,6 +1,7 @@
 package artificial_player.algorithm.virtual;
 
 import artificial_player.algorithm.GameState;
+import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.helper.Route;
 
 import java.util.*;
@@ -35,19 +36,7 @@ public abstract class AbstractRouteSelector implements RouteSelector {
     }
 
     @Override
-    public Route getBestRoute(GameState state) {
-        List<Route> bestRoutes = getBestRoutes(state);
-
-        // If the given state is a leaf, create the route from here
-        if (bestRoutes.isEmpty())
-            return new Route(state);
-        // Else choose the best of the best routes
-        else
-            return getReducedRoute(bestRoutes, state.isMyTurn());
-    }
-
-    @Override
-    public List<Route> getBestRoutes(GameState state) {
+    public List<Route> getBestRoutes(GameState state, boolean excludePickup) {
         List<Route> bestRoutes = new LinkedList<Route>();
 
         // If the state "desires" to be final (a LEAF or NOT_YET_CALCULATED) or "desires"
@@ -60,7 +49,18 @@ public abstract class AbstractRouteSelector implements RouteSelector {
 
         // So now the state MUST have child states.
 
+        // TODO: if there's only one childState, just pick it... but that won't work nicely if called by getBestRoute...
+
+
         for (GameState childState : state.getChildStates()) {
+            // If excludePickup, then skip if this childState is a pick-up
+            if (excludePickup) {
+                Choice choiceTaken = childState.getChoiceTaken();
+                if (choiceTaken != null && choiceTaken.getAction() == Choice.Action.PICKED_UP) {
+                    continue;
+                }
+            }
+
             // Get the best route to each childState (from the final state)
             Route bestRoute = getBestRoute(childState);
 
@@ -72,6 +72,25 @@ public abstract class AbstractRouteSelector implements RouteSelector {
 
         // Return the reduced version of these routes
         return bestRoutes;
+    }
+
+    /**
+     * Gets the route from the given state to the best final state.
+     *
+     * NB. This calls getBestRoutes with 'excludePickup == false'.
+     *
+     * @param state the state the route starts from.
+     * @return the route from the given state to the best final state.
+     */
+    private Route getBestRoute(GameState state) {
+        List<Route> bestRoutes = getBestRoutes(state, false);
+
+        // If the given state is a leaf, create the route from here
+        if (bestRoutes.isEmpty())
+            return new Route(state);
+            // Else choose the best of the best routes
+        else
+            return getReducedRoute(bestRoutes, state.isMyTurn());
     }
 
     private Route getReducedRoute(Collection<Route> routes, boolean isMyTurn) {
