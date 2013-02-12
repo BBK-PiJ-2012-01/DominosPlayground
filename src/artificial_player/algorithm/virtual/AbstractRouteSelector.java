@@ -72,6 +72,15 @@ public abstract class AbstractRouteSelector implements RouteSelector {
             bestRoutes.add(bestRoute);
         }
 
+        // Sort the routes by "best" (according to who's turn it is):
+
+        // Sort ascending (ie. lowest value first = order if it's the opponent's turn)
+        Collections.sort(bestRoutes, routeValueComparator);
+
+        // If my turn, reverse it so the best route comes first.
+        if (state.isMyTurn())
+            Collections.reverse(bestRoutes);
+
         // Return the reduced version of these routes
         return bestRoutes;
     }
@@ -84,7 +93,7 @@ public abstract class AbstractRouteSelector implements RouteSelector {
      * @param state the state the route starts from.
      * @return the route from the given state to the best final state.
      */
-    private Route getBestRoute(GameState state) {
+    public Route getBestRoute(GameState state) {
         List<Route> bestRoutes = getBestRoutes(state, false);
 
         if (bestRoutes.isEmpty())
@@ -95,21 +104,21 @@ public abstract class AbstractRouteSelector implements RouteSelector {
             return getReducedRoute(bestRoutes, state.isMyTurn());
     }
 
-    private Route getReducedRoute(List<Route> routes, boolean isMyTurn) {
+    public Route getReducedRoute(List<Route> routes, boolean isMyTurn) {
         Route bestRoute;
 
         // The combined route will still lead to the best final state...
-        if (isMyTurn)
-            bestRoute = Collections.max(routes, routeValueComparator);
-        else
-            bestRoute = Collections.min(routes, routeValueComparator);
-        routes.remove(bestRoute);
+//        if (isMyTurn)
+//            bestRoute = Collections.max(routes, routeValueComparator);
+//        else
+//            bestRoute = Collections.min(routes, routeValueComparator);
+//        routes.remove(bestRoute);
 
 //        Collections.sort(routes, routeValueComparator);
 //        if (isMyTurn)
 //            Collections.reverse(routes);
 //
-//        bestRoute = routes.remove(0);
+        bestRoute = routes.remove(0);
 
         // ... but the combined route's value will be increased by some aggregate of the routes,
         // eg. so that a route with lots of good deviations can be preferred over

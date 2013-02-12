@@ -25,18 +25,18 @@ public class RouteSelectorImpl extends AbstractRouteSelector {
 //            if (!isMyTurn) extraValue += discardedRoutes.get(i).getValue() / (i+1);
 //        }
 
-        if (!isMyTurn) {
-            int n = 0;
-            for (Route route : discardedRoutes) {
-//                extraValue += chosen.getValue() / (1 + 0.5 * Math.abs(route.getValue() - chosen.getValue()));
-                if (route.getValue() < 0) {
-                    extraValue += route.getValue();
-                    n += 1;
-                }
-            }
-            if (n > 0)
-                extraValue /= n;
-        }
+//        if (!isMyTurn) {
+//            int n = 0;
+//            for (Route route : discardedRoutes) {
+////                extraValue += chosen.getValue() / (1 + 0.5 * Math.abs(route.getValue() - chosen.getValue()));
+//                if (route.getValue() < 0) {
+//                    extraValue += route.getValue();
+//                    n += 1;
+//                }
+//            }
+//            if (n > 0)
+//                extraValue /= n;
+//        }
 
         return extraValue;
     }

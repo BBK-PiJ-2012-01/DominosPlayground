@@ -166,7 +166,7 @@ public class AIControllerTest {
     @Test
     public void testAgainstRandomLots() throws Exception {
         AIController randomAI = createRandomAI();
-        assertEquals(my_ai, testAIs(my_ai, randomAI, 10000));
+        assertEquals(my_ai, testAIs(my_ai, randomAI, 1000));
     }
 
     @Test
