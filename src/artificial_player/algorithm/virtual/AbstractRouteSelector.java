@@ -95,25 +95,30 @@ public abstract class AbstractRouteSelector implements RouteSelector {
             return getReducedRoute(bestRoutes, state.isMyTurn());
     }
 
-    private Route getReducedRoute(Collection<Route> routes, boolean isMyTurn) {
+    private Route getReducedRoute(List<Route> routes, boolean isMyTurn) {
         Route bestRoute;
 
         // The combined route will still lead to the best final state...
+//        if (isMyTurn)
+//            bestRoute = Collections.max(routes, routeValueComparator);
+//        else
+//            bestRoute = Collections.min(routes, routeValueComparator);
+        Collections.sort(routes, routeValueComparator);
         if (isMyTurn)
-            bestRoute = Collections.max(routes, routeValueComparator);
-        else
-            bestRoute = Collections.min(routes, routeValueComparator);
+            Collections.reverse(routes);
+
+        bestRoute = routes.remove(0);
 
         // ... but the combined route's value will be increased by some aggregate of the routes,
         // eg. so that a route with lots of good deviations can be preferred over
         // a route with one excellent best route but any deviation is terrible.
 
-        routes.remove(bestRoute);
-        double extraValue = extraValueFromDiscardedRoutes(bestRoute, routes);
-        bestRoute.increaseValue(extraValue * (isMyTurn? 1 : -1));
+//        routes.remove(bestRoute);
+        double extraValue = extraValueFromDiscardedRoutes(bestRoute, routes, isMyTurn);
+        bestRoute.increaseValue(extraValue);// * (isMyTurn? 1 : -1));
 
         return bestRoute;
     }
 
-    public abstract double extraValueFromDiscardedRoutes(Route chosen, Collection<Route> discardedRoutes);
+    public abstract double extraValueFromDiscardedRoutes(Route chosen, List<Route> discardedRoutes, boolean isMyTurn);
 }

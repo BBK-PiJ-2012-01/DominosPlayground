@@ -151,9 +151,9 @@ public class AIControllerTest {
                 playOnceEach(my_ai, randomAI, true);
             }
         } catch (GameOverException err) {
-            System.out.println("My AI scored: " + my_ai.getScore());
-            System.out.println("Random AI scored: " + randomAI.getScore());
-            assertTrue(my_ai.getScore() > randomAI.getScore());
+            System.out.println("My AI scored: " + my_ai.getHandWeight());
+            System.out.println("Random AI scored: " + randomAI.getHandWeight());
+            assertTrue(my_ai.getHandWeight() < randomAI.getHandWeight());
         }
     }
 
@@ -169,8 +169,15 @@ public class AIControllerTest {
         testAIs(my_ai, randomAI);
     }
 
+    @Test
+    public void testRandomAgainstRandomLots() throws Exception {
+        AIController randomAI = createRandomAI();
+        my_ai = createRandomAI();
+        testAIs(my_ai, randomAI);
+    }
+
     private void testAIs(AIController me, AIController opponent) {
-        int myScore = 0, randomScore = 0, myWins = 0, randomWins = 0;
+        int myScore = 0, opponentScore = 0, myWins = 0, opponentWins = 0;
 
         for (int i = 0; i < 100; ++i) {
             setUpBones();
@@ -183,21 +190,38 @@ public class AIControllerTest {
                     playOnceEach(me, opponent, false);
                 }
             } catch (GameOverException err) {
-                System.out.format("Game %d: I %s (%d vs %d)%n", i + 1, (me.getScore() > opponent.getScore() ? "won" : "lost"),
-                        me.getScore(), opponent.getScore());
+                final AIController winner;
+                if (me.hasEmptyHand() && !opponent.hasEmptyHand())
+                    winner = me;
+                else if (!me.hasEmptyHand() && opponent.hasEmptyHand())
+                    winner = opponent;
+                else {
+                    if (me.getHandWeight() < opponent.getHandWeight())
+                        winner = me;
+                    else if (me.getHandWeight() > opponent.getHandWeight())
+                        winner = opponent;
+                    else
+                        winner = null;
+                }
 
-                if (me.getScore() > opponent.getScore()) {
+                System.out.format("Game %d: I %s (%d vs %d)%n", i + 1,
+                        (winner == me ? "won" : (winner == opponent ? "lost" : "draw") ),
+                        me.getHandWeight(), opponent.getHandWeight());
+
+                if (winner == me) {
                     myWins += 1;
-                    myScore -= opponent.getScore();
+                    myScore += opponent.getHandWeight();
+                } else if (winner == opponent) {
+                    opponentWins += 1;
+                    opponentScore += me.getHandWeight();
                 } else {
-                    randomWins += 1;
-                    randomScore -= me.getScore();
+                    --i;    // If draw, replay.
                 }
             }
         }
 
         System.out.format("I won %d and scored a total of %d%n", myWins, myScore);
-        System.out.format("Opponent won %d and scored a total of %d", randomWins, randomScore);
+        System.out.format("Opponent won %d and scored a total of %d", opponentWins, opponentScore);
     }
 
     private Choice makePickupRandom(Choice choice) {

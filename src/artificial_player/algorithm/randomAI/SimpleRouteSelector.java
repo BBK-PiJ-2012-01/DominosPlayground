@@ -54,6 +54,7 @@ public class SimpleRouteSelector implements RouteSelector {
         }
 
         // Return the reduced version of these routes
+        //Collections.shuffle(bestRoutes);
         return bestRoutes;
     }
 }

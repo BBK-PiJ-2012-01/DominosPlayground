@@ -15,17 +15,20 @@ public class Route {
     private GameState earliestState;
     private Choice earliestChoice;
     private double value;
+    private int length;
 
     public Route(GameState finalState) {
         this.finalState = finalState;
         value = finalState.getValue();
         earliestState = finalState;
         earliestChoice = null;
+        length = 1;
     }
 
     public void extendBackward() {
         earliestChoice = earliestState.getChoiceTaken();
         earliestState = earliestState.getParent();
+        length += 1;
     }
 
     public Choice getEarliestChoice() {
@@ -41,7 +44,7 @@ public class Route {
     }
 
     public void increaseValue(double cumulativeValue) {
-        this.value = cumulativeValue;
+        this.value += cumulativeValue;
     }
 
     public String toString() {
@@ -69,5 +72,9 @@ public class Route {
         } while (state != earliestState);
 
         return stack;
+    }
+
+    public int length() {
+        return length;
     }
 }

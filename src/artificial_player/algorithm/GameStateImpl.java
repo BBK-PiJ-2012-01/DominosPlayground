@@ -96,7 +96,7 @@ public class GameStateImpl implements GameState {
         this.stateEnumerator = parent.stateEnumerator;
         this.possibleOpponentBones = new ArrayList<ImmutableBone>(parent.possibleOpponentBones);
 
-        this.value = handEvaluator.addedValueFromChoice(choiceTaken, parent);
+        this.value = parent.getValue() + handEvaluator.addedValueFromChoice(choiceTaken, parent);
         extraPly = Math.max(parent.extraPly - 1, 0);
 
         // Set sizeOfOpponentHand, sizeOfBoneyard, myBones, and layout

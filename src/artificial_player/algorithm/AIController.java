@@ -35,12 +35,19 @@ public interface AIController {
     Choice getBestChoice();
 
     /**
-     * Returns the AI's score for this round from the bones in its hand (ie. ignoring the opponent's hand).
+     * Returns the weight of the AI's hand (ie. ignoring the opponent's hand).
      *
-     * Eg. if the AI has only a [1,2] bone in its hand, this will return '-3'.  If the AI has no bones
+     * Eg. if the AI has only a [1,2] bone in its hand, this will return '3'.  If the AI has no bones
      * in its hand, this will return '0'.
      *
-     * @return the score from the AI's hand.
+     * @return the weight of the AI's hand.
      */
-    int getScore();
+    int getHandWeight();
+
+    /**
+     * Returns true iff the AI's hand is empty.
+     *
+     * @return true iff the AI's hand is empty.
+     */
+    boolean hasEmptyHand();
 }

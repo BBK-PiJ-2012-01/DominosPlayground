@@ -10,8 +10,11 @@ import artificial_player.algorithm.virtual.HandEvaluator;
  * my hand's weight.
  */
 public class ExpectationWeightEvaluator implements HandEvaluator {
-    private static final int COST_OF_MY_PICKUP = 0;
-    private static final int VALUE_OF_OPPONENT_PICKUP = 0;
+    private static final int COST_OF_MY_PICKUP = 20;
+    private static final int VALUE_OF_OPPONENT_PICKUP = 5;
+    private static final int COST_OF_LOSING = 300;
+    private static final int VALUE_OF_WINNING = 300;
+    private static final int COST_OF_IMPASS = 0;
 
     @Override
     public double evaluateInitialValue(GameState initialState) {
@@ -62,6 +65,18 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
         } else {
             throw new RuntimeException("Unhandled action");
         }
+
+        if (choice.getAction() == Choice.Action.PLACED_LEFT || choice.getAction() == Choice.Action.PLACED_RIGHT) {
+            if (state.isMyTurn() && state.getMyBones().size() == 1)
+                addedValue += VALUE_OF_WINNING;
+            else if (!state.isMyTurn() && state.getSizeOfOpponentHand() == 1)
+                addedValue -= COST_OF_LOSING;
+        }
+
+        if (choice.getAction() == Choice.Action.PASS && state.getChoiceTaken().getAction() == Choice.Action.PASS) {
+            addedValue -= COST_OF_IMPASS;
+        }
+
 
         return addedValue;
     }

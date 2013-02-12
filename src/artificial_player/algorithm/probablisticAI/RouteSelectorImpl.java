@@ -13,13 +13,17 @@ import java.util.*;
 public class RouteSelectorImpl extends AbstractRouteSelector {
 
     @Override
-    public double extraValueFromDiscardedRoutes(Route chosen, Collection<Route> discardedRoutes) {
+    public double extraValueFromDiscardedRoutes(Route chosen, List<Route> discardedRoutes, boolean isMyTurn) {
         double extraValue = 0;
 
-        for (Route route : discardedRoutes) {
-            if (Math.abs(route.getValue() - chosen.getValue()) < 2)
-                extraValue += 1;
-        }
+//        for (Route route : discardedRoutes) {
+//            if (Math.abs(route.getValue() - chosen.getValue()) < 4)
+//                extraValue += 3;
+//        }
+
+//        for (int i = 0; i < discardedRoutes.size() / 2 && i < 3; ++i) {
+//            if (!isMyTurn) extraValue += discardedRoutes.get(i).getValue() / (i+1);
+//        }
 
         return extraValue;
     }

@@ -46,12 +46,10 @@ public class AIControllerImpl implements AIController {
         int[] plyIncreases;
         int i;
 
-        // TODO: make this nicer, with adaptive maximum for n (ie. if taken too long or result is static, reduce it.) possibly put in PlyManager?
-
         int n = 0;
         Choice bestChoice = null;
         int iterationsBestChoiceHasBeenBestFor = 0;
-        int minIterationsBestChoiceMustBeBestFor = 500;
+        int minIterationsBestChoiceMustBeBestFor = 150;
 //        System.out.println("Number of child states = " + currentState.getChildStates().size());
         do {
             bestRoutes = routeSelector.getBestRoutes(currentState, true);
@@ -91,9 +89,9 @@ public class AIControllerImpl implements AIController {
             }
 
 
-        } while(n++ < 5000);
+        } while(n++ < 300);
 
-
+//        System.out.println("Best route length is " + bestRoutes.get(0).length() + " with value " + bestRoutes.get(0).getValue());
         return bestChoice;
     }
 
@@ -118,14 +116,19 @@ public class AIControllerImpl implements AIController {
 
 
     @Override
-    public int getScore() {
+    public int getHandWeight() {
         int score = 0;
 
         for (ImmutableBone bone : currentState.getMyBones()) {
-            score -= bone.weight();
+            score += bone.weight();
         }
 
         return score;
+    }
+
+    @Override
+    public boolean hasEmptyHand() {
+        return currentState.getMyBones().isEmpty();
     }
 
     @Override
