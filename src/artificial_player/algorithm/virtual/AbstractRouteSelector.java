@@ -99,21 +99,22 @@ public abstract class AbstractRouteSelector implements RouteSelector {
         Route bestRoute;
 
         // The combined route will still lead to the best final state...
-//        if (isMyTurn)
-//            bestRoute = Collections.max(routes, routeValueComparator);
-//        else
-//            bestRoute = Collections.min(routes, routeValueComparator);
-        Collections.sort(routes, routeValueComparator);
         if (isMyTurn)
-            Collections.reverse(routes);
+            bestRoute = Collections.max(routes, routeValueComparator);
+        else
+            bestRoute = Collections.min(routes, routeValueComparator);
+        routes.remove(bestRoute);
 
-        bestRoute = routes.remove(0);
+//        Collections.sort(routes, routeValueComparator);
+//        if (isMyTurn)
+//            Collections.reverse(routes);
+//
+//        bestRoute = routes.remove(0);
 
         // ... but the combined route's value will be increased by some aggregate of the routes,
         // eg. so that a route with lots of good deviations can be preferred over
         // a route with one excellent best route but any deviation is terrible.
 
-//        routes.remove(bestRoute);
         double extraValue = extraValueFromDiscardedRoutes(bestRoute, routes, isMyTurn);
         bestRoute.increaseValue(extraValue);// * (isMyTurn? 1 : -1));
 

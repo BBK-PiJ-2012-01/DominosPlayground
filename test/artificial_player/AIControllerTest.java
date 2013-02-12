@@ -125,20 +125,20 @@ public class AIControllerTest {
         }
     }
 
-    private void playOnceEach(AIController me, AIController opponent, boolean verbose) {
-        Choice my_choice = me.getBestChoice();
-        me.choose(makePickupRandom(my_choice));
-        opponent.choose(my_choice);
+    private void playOnceEach(AIController player1, AIController player2, boolean verbose) {
+        Choice my_choice = player1.getBestChoice();
+        player1.choose(makePickupRandom(my_choice));
+        player2.choose(my_choice);
 
         if (verbose)
-            System.out.println("My " + me);
+            System.out.println("Player 1 " + player1);
 
-        Choice opponent_choice = opponent.getBestChoice();
-        opponent.choose(makePickupRandom(opponent_choice));
-        me.choose(opponent_choice);
+        Choice opponent_choice = player2.getBestChoice();
+        player2.choose(makePickupRandom(opponent_choice));
+        player1.choose(opponent_choice);
 
         if (verbose)
-            System.out.println("Opponent " + opponent);
+            System.out.println("Player 2 " + player2);
     }
 
     @Test
@@ -178,16 +178,20 @@ public class AIControllerTest {
 
     private void testAIs(AIController me, AIController opponent) {
         int myScore = 0, opponentScore = 0, myWins = 0, opponentWins = 0;
+        boolean meFirst = true;
 
         for (int i = 0; i < 100; ++i) {
             setUpBones();
-            opponent.setInitialState(opponent_bones, false);
-            me.setInitialState(my_bones, true);
+            opponent.setInitialState(opponent_bones, !meFirst);
+            me.setInitialState(my_bones, meFirst);
             System.gc();
 
             try {
                 while (true) {
-                    playOnceEach(me, opponent, false);
+                    if (meFirst)
+                        playOnceEach(me, opponent, false);
+                    else
+                        playOnceEach(opponent, me, false);
                 }
             } catch (GameOverException err) {
                 final AIController winner;
@@ -217,6 +221,8 @@ public class AIControllerTest {
                 } else {
                     --i;    // If draw, replay.
                 }
+
+                meFirst = !meFirst;
             }
         }
 

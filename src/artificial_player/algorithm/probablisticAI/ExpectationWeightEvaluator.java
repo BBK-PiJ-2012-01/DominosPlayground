@@ -14,7 +14,7 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
     private static final int VALUE_OF_OPPONENT_PICKUP = 5;
     private static final int COST_OF_LOSING = 300;
     private static final int VALUE_OF_WINNING = 300;
-    private static final int COST_OF_IMPASS = 0;
+    private static final double COST_FACTOR_OF_IMPASS = 10;
 
     @Override
     public double evaluateInitialValue(GameState initialState) {
@@ -74,7 +74,7 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
         }
 
         if (choice.getAction() == Choice.Action.PASS && state.getChoiceTaken().getAction() == Choice.Action.PASS) {
-            addedValue -= COST_OF_IMPASS;
+            addedValue *= COST_FACTOR_OF_IMPASS;
         }
 
 
