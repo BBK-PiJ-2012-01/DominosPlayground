@@ -134,7 +134,7 @@ public class AIControllerImpl implements AIController {
     @Override
     public String toString() {
         StringBuilder sbuilder = new StringBuilder();
-        if (currentState.getParent().isMyTurn())
+        if (!currentState.isMyTurn())
             sbuilder.append("Move was ");
         else
             sbuilder.append("Opponent's move was ");

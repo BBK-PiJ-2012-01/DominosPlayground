@@ -160,27 +160,38 @@ public class AIControllerTest {
 
     @Test
     public void testAgainstMyselfLots() throws Exception {
-        testAIs(my_ai, opponent_ai);
+        testAIs(my_ai, opponent_ai, 1000);
     }
 
     @Test
     public void testAgainstRandomLots() throws Exception {
         AIController randomAI = createRandomAI();
-        testAIs(my_ai, randomAI);
+        assertEquals(my_ai, testAIs(my_ai, randomAI, 10000));
     }
 
     @Test
     public void testRandomAgainstRandomLots() throws Exception {
         AIController randomAI = createRandomAI();
         my_ai = createRandomAI();
-        testAIs(my_ai, randomAI);
+        testAIs(my_ai, randomAI, 1000);
     }
 
-    private void testAIs(AIController me, AIController opponent) {
-        int myScore = 0, opponentScore = 0, myWins = 0, opponentWins = 0;
+    /**
+     * Plays a game of dominos between the two AIControllers - first to get pointsToWin wins
+     * (and is returned).
+     *
+     * @param me the player representing me (ie. the AIController to test).
+     * @param opponent the player representing the opponent (ie. the AIController to benchmark against).
+     * @param pointsToWin the number of points required to win the game.
+     * @return the winning AIController.
+     */
+    private AIController testAIs(AIController me, AIController opponent, int pointsToWin) {
+        int myScore = 0, opponentScore = 0, myWins = 0, opponentWins = 0, i = 0;
         boolean meFirst = true;
 
-        for (int i = 0; i < 100; ++i) {
+        while (myScore < pointsToWin && opponentScore < pointsToWin) {
+            i += 1;
+
             setUpBones();
             opponent.setInitialState(opponent_bones, !meFirst);
             me.setInitialState(my_bones, meFirst);
@@ -208,7 +219,7 @@ public class AIControllerTest {
                         winner = null;
                 }
 
-                System.out.format("Game %d: I %s (%d vs %d)%n", i + 1,
+                System.out.format("Game %d: I %s (%d vs %d)%n", i,
                         (winner == me ? "won" : (winner == opponent ? "lost" : "draw") ),
                         me.getHandWeight(), opponent.getHandWeight());
 
@@ -228,6 +239,10 @@ public class AIControllerTest {
 
         System.out.format("I won %d and scored a total of %d%n", myWins, myScore);
         System.out.format("Opponent won %d and scored a total of %d", opponentWins, opponentScore);
+
+        if (myScore > opponentScore)
+            return my_ai;
+        else return opponent_ai;
     }
 
     private Choice makePickupRandom(Choice choice) {
