@@ -30,6 +30,17 @@ public class ImmutableBone {
         return weight;
     }
 
+    /**
+     * Returns false if neither left nor right match the given number, or true
+     * if either left or right match the given number.
+     *
+     * @param number the number to check for matches against.
+     * @return whether the given number matches either left or right.
+     */
+    public boolean matches(int number) {
+        return left() == number || right() == number;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null) return false;

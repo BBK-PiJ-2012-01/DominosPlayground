@@ -1,14 +1,12 @@
 package artificial_player.algorithm;
 
-import artificial_player.algorithm.helper.Bones;
-import artificial_player.algorithm.helper.Choice;
-import artificial_player.algorithm.helper.ImmutableBone;
-import artificial_player.algorithm.helper.MoveCounter;
+import artificial_player.algorithm.helper.*;
 import artificial_player.algorithm.virtual.HandEvaluator;
 import artificial_player.algorithm.virtual.StateEnumerator;
 
 import java.util.*;
 import static artificial_player.algorithm.helper.Choice.Action;
+import static junit.framework.Assert.assertEquals;
 
 /**
  * Implementation of GameState, which uses lazy initialisation of child states.
@@ -21,7 +19,6 @@ public class GameStateImpl implements GameState {
     private final int sizeOfBoneyard;
     private final double value;
     private final List<ImmutableBone> myBones;
-    private final List<ImmutableBone> possibleOpponentBones;
     private final List<ImmutableBone> layout;
     private final boolean isMyTurn;
     private final int moveNumber;
@@ -29,6 +26,8 @@ public class GameStateImpl implements GameState {
     private final GameState parent;
     private final Choice choiceTaken;
     private final int layoutLeft, layoutRight;
+    private final List<ImmutableBone> possibleOpponentBones;
+    private final BoneManager boneManager;
 
     private List<GameState> childStates = Collections.emptyList();
     private Status status = Status.NOT_YET_CALCULATED;
@@ -62,10 +61,13 @@ public class GameStateImpl implements GameState {
         parent = null;
         moveNumber = 0;
         choiceTaken = null;
+        boneManager = new BoneManager(myBones);
+
 
         value = handEvaluator.evaluateInitialValue(this);
         extraPly = 0;
     }
+
 
     /**
      * A helper function to clarify calls to the GameState(GameState previous, Choice choiceTaken) constructor.
@@ -95,6 +97,8 @@ public class GameStateImpl implements GameState {
         this.handEvaluator = parent.handEvaluator;
         this.stateEnumerator = parent.stateEnumerator;
         this.possibleOpponentBones = new ArrayList<ImmutableBone>(parent.possibleOpponentBones);
+
+        this.boneManager = parent.boneManager.createNext(choiceTaken, parent.isMyTurn());
 
         this.value = parent.getValue() + handEvaluator.addedValueFromChoice(choiceTaken, parent);
         extraPly = Math.max(parent.extraPly - 1, 0);
@@ -130,10 +134,12 @@ public class GameStateImpl implements GameState {
             layoutLeft = parent.getLayoutLeft();
             layoutRight = parent.getLayoutRight();
             sizeOfBoneyard = parent.getSizeOfBoneyard() - 1;
+
         } else if (choiceTaken.getAction() == Action.PASS) {
             layoutLeft = parent.getLayoutLeft();
             layoutRight = parent.getLayoutRight();
             sizeOfBoneyard = parent.sizeOfBoneyard;
+
         } else throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
 
         if (parent.isMyTurn()) {
@@ -149,23 +155,33 @@ public class GameStateImpl implements GameState {
             if (choiceTaken.getAction() == Action.PLACED_LEFT || choiceTaken.getAction() == Action.PLACED_RIGHT) {
                 sizeOfOpponentHand = parent.getSizeOfOpponentHand() - 1;
                 possibleOpponentBones.remove(choiceTaken.getBone());
-            } else if (choiceTaken.getAction() == Action.PICKED_UP)
+
+            } else if (choiceTaken.getAction() == Action.PICKED_UP) {
                 sizeOfOpponentHand = parent.getSizeOfOpponentHand() + 1;
-            else if (choiceTaken.getAction() == Action.PASS)
+
+            } else if (choiceTaken.getAction() == Action.PASS) {
                 sizeOfOpponentHand = parent.getSizeOfOpponentHand();
-            else
+
+            } else
                 throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
         }
 
-        if (sizeOfBoneyard < 0) {
+        if (sizeOfBoneyard < 0)
             throw new RuntimeException("Size of boneyard < 0 (inside GameState initialiser) because of " +
                     (parent.isMyTurn() ? "my" : "else") + " choice: " + choiceTaken);
-        }
 
-        if (sizeOfOpponentHand < 0) {
+        if (sizeOfOpponentHand < 0)
             throw new RuntimeException("Size of opponent hand < 0 (inside GameState initialiser) because of " +
                     (parent.isMyTurn() ? "my" : "opponent's") + " choice: " + choiceTaken);
-        }
+
+        assertEquals(myBones, boneManager.getMyBones());
+        assertEquals(layout, boneManager.getLayout());
+        assertEquals(layoutLeft, boneManager.getLayoutLeft());
+        assertEquals(layoutRight, boneManager.getLayoutRight());
+
+        assertEquals(new HashSet(possibleOpponentBones), new HashSet(boneManager.getUnknownBones()));
+        assertEquals(sizeOfBoneyard, boneManager.getSizeOfBoneyard());
+        assertEquals(sizeOfOpponentHand, boneManager.getSizeOfOpponentHand());
     }
 
     /**
@@ -268,7 +284,7 @@ public class GameStateImpl implements GameState {
 
     @Override
     public List<ImmutableBone> getPossibleOpponentBones() {
-        return Collections.unmodifiableList(possibleOpponentBones);
+        return Collections.unmodifiableList(boneManager.getUnknownBones());
     }
 
     @Override
@@ -283,7 +299,7 @@ public class GameStateImpl implements GameState {
 
     @Override
     public List<ImmutableBone> getMyBones() {
-        return Collections.unmodifiableList(myBones);
+        return Collections.unmodifiableList(boneManager.getMyBones());
     }
 
     @Override
@@ -303,22 +319,22 @@ public class GameStateImpl implements GameState {
 
     @Override
     public int getSizeOfOpponentHand() {
-        return sizeOfOpponentHand;
+        return boneManager.getSizeOfOpponentHand();
     }
 
     @Override
     public int getSizeOfBoneyard() {
-        return sizeOfBoneyard;
+        return boneManager.getSizeOfBoneyard();
     }
 
     @Override
     public int getLayoutRight() {
-        return layoutRight;
+        return boneManager.getLayoutRight();
     }
 
     @Override
     public int getLayoutLeft() {
-        return layoutLeft;
+        return boneManager.getLayoutLeft();
     }
 
     @Override

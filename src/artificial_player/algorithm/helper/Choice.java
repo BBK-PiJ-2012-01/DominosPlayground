@@ -4,7 +4,19 @@ package artificial_player.algorithm.helper;
  * Class representing a choice which takes the game from one GameState to another GameState.
  */
 public class Choice {
-    public static enum Action {PLACED_RIGHT, PLACED_LEFT, PICKED_UP, PASS}
+    public static enum Action {
+        PLACED_RIGHT(true), PLACED_LEFT(true), PICKED_UP(false), PASS(false);
+
+        private final boolean isPlacement;
+
+        Action(boolean isPlacement) {
+            this.isPlacement = isPlacement;
+        }
+
+        public boolean isPlacement() {
+            return isPlacement;
+        }
+    }
 
     private final Action action;
     private final ImmutableBone bone;

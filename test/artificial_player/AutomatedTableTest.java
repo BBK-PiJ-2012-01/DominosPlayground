@@ -19,7 +19,7 @@ public class AutomatedTableTest {
     }
 
     @Test
-    public void testCompeteAIs() throws Exception {
+    public void testAiInTournament() throws Exception {
         AIController probabilisticAI = AIControllerImpl.createProbablisticAI();
         AIController randomAI = AIControllerImpl.createRandomAI();
         AIController winner;
@@ -27,15 +27,12 @@ public class AutomatedTableTest {
         int probWins = 0, randomWins = 0;
 
         for (int i = 0; i < 100; ++i) {
-            winner = table.competeAIs(probabilisticAI, randomAI, 100);
+            winner = playGame(probabilisticAI, randomAI, 100);
 
-            if (winner == probabilisticAI) {
-                System.out.println(" ===== Hurray!  Probabilistic AI beat the random AI. ===== ");
+            if (winner == probabilisticAI)
                 probWins += 1;
-            } else {
-                System.out.println(" ===== Aww... random AI beat the probabilistic AI. ===== ");
+            else
                 randomWins += 1;
-            }
 
             System.out.format("Probabilistic won %d vs Random won %d%n", probWins, randomWins);
         }
@@ -43,4 +40,23 @@ public class AutomatedTableTest {
         System.out.println("\n\n ========== Tournament over! ==========");
         System.out.format("Probabilistic won %d vs Random won %d%n", probWins, randomWins);
     }
+
+    private AIController playGame(AIController player1, AIController player2, int pointsToWin) {
+        AIController winner = table.competeAIs(player1, player2, pointsToWin);
+
+        if (winner == player1)
+            System.out.println(" ===== Hurray!  Probabilistic AI beat the random AI. ===== ");
+        else
+            System.out.println(" ===== Aww... random AI beat the probabilistic AI. ===== ");
+
+        return winner;
+    }
+
+    @Test
+    public void testAiInLongGame() throws Exception {
+        AIController probabilisticAI = AIControllerImpl.createProbablisticAI();
+        AIController randomAI = AIControllerImpl.createRandomAI();
+        AIController winner = playGame(probabilisticAI, randomAI, 1000);
+    }
 }
+

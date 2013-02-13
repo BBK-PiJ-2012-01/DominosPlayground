@@ -13,10 +13,6 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * A bit slow: My bones: [[4,5], [0,2], [3,3], [2,3], [3,5], [6,6], [2,6]] , opp bones: [[0,1], [1,2], [0,5], [5,5], [3,6], [1,5], [4,4]]
- * More slow: My bones: [[3,4], [1,4], [1,5], [1,2], [0,6], [0,3], [3,6]], opp bones: [[0,2], [0,4], [1,1], [0,0], [0,5], [5,5], [1,6]]
- */
 public class AIControllerTest {
     private AIController my_ai, opponent_ai;
     private List<ImmutableBone> my_bones, opponent_bones;
@@ -127,8 +123,8 @@ public class AIControllerTest {
                 playOnceEach(my_ai, randomAI, true);
             }
         } catch (GameOverException err) {
-            System.out.println("My AI scored: " + my_ai.getHandWeight());
-            System.out.println("Random AI scored: " + randomAI.getHandWeight());
+            System.out.println("My AI hand weighed: " + my_ai.getHandWeight());
+            System.out.println("Random AI's hand weighed: " + randomAI.getHandWeight());
             //assertTrue(my_ai.getHandWeight() < randomAI.getHandWeight());
             if (my_ai.hasEmptyHand() || my_ai.getHandWeight() < randomAI.getHandWeight())
                 System.out.println("I beat the random AI!");

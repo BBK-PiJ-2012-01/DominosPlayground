@@ -30,12 +30,12 @@ public class RouteSelectorImpl extends AbstractRouteSelector {
             for (Route route : discardedRoutes) {
 //                extraValue += chosen.getValue() / (1 + 0.5 * Math.abs(route.getValue() - chosen.getValue()));
                 if (route.getValue() < 0) {
-                    extraValue += route.getValue();
                     n += 1;
+                    extraValue += route.getValue() / n;
                 }
             }
-            if (n > 0)
-                extraValue /= n;
+//            if (n > 0)
+//                extraValue /= n;
         }
 
         return extraValue;

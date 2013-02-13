@@ -44,11 +44,11 @@ public abstract class AbstractStateEnumerator implements StateEnumerator {
         // Bones have already been placed
         for (ImmutableBone bone : availableBones) {
             // Check right/last of placed bones
-            if (layoutRight == bone.left() || layoutRight == bone.right())
+            if (bone.matches(layoutRight))
                 validChoices.add(new Choice(Choice.Action.PLACED_RIGHT, bone));
 
             // Check left/first of placed bones
-            if (layoutLeft == bone.right() || layoutLeft == bone.left())
+            if (bone.matches(layoutLeft))
                 validChoices.add(new Choice(Choice.Action.PLACED_LEFT, bone));
         }
 
