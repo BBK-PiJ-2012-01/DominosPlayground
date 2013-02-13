@@ -11,8 +11,8 @@ import static junit.framework.Assert.assertEquals;
  * Time: 17:54
  */
 public class ImmutableBoneTest {
-    ImmutableBone bone;
-    int left = 2, right = 3;
+    private ImmutableBone bone;
+    private final int left = 2, right = 3;
 
     @Before
     public void setUp() throws Exception {

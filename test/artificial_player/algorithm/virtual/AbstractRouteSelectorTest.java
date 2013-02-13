@@ -18,8 +18,8 @@ import static junit.framework.Assert.assertEquals;
  * Time: 19:55
  */
 public class AbstractRouteSelectorTest {
-    AbstractRouteSelector routeSelector;
-    MockGameState parent, child1, child2, grandChild1a, grandChild1b, grandChild2a, grandChild2b;
+    private AbstractRouteSelector routeSelector;
+    private MockGameState parent, child1, child2, grandChild1a, grandChild1b, grandChild2a, grandChild2b;
 
 
     @Before

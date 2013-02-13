@@ -17,7 +17,7 @@ public class RouteTest {
     private Route route;
     private MockGameState parent;
     private MockGameState child;
-    private int childValue = 150;
+    private final int childValue = 150;
 
     @Before
     public void setUp() throws Exception {

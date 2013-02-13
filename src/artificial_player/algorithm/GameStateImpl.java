@@ -245,7 +245,6 @@ public class GameStateImpl implements GameState {
                     break;
                 }
             }
-            //childStates.clear(); // To help GC  - TODO: does it work???
 
         } else if (status == Status.NOT_YET_CALCULATED && getValidChoices().contains(choice)) {
             chosenState = createNextState(choice);

@@ -3,6 +3,13 @@ package artificial_player.algorithm;
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.Route;
+import artificial_player.algorithm.probablisticAI.ExpectationWeightEvaluator;
+import artificial_player.algorithm.probablisticAI.LinearPlyManager;
+import artificial_player.algorithm.probablisticAI.RouteSelectorImpl;
+import artificial_player.algorithm.probablisticAI.StateEnumeratorImpl;
+import artificial_player.algorithm.randomAI.ConstantPlyManager;
+import artificial_player.algorithm.randomAI.RandomEvaluator;
+import artificial_player.algorithm.randomAI.SimpleRouteSelector;
 import artificial_player.algorithm.virtual.HandEvaluator;
 import artificial_player.algorithm.virtual.PlyManager;
 import artificial_player.algorithm.virtual.RouteSelector;
@@ -21,7 +28,23 @@ public class AIControllerImpl implements AIController {
 
     private GameState currentState;
 
-    public AIControllerImpl(PlyManager plyManager, RouteSelector routeSelector,
+    public static AIController createProbablisticAI() {
+        return new AIControllerImpl(
+                new LinearPlyManager(),
+                new RouteSelectorImpl(),
+                new StateEnumeratorImpl(),
+                new ExpectationWeightEvaluator());
+    }
+
+    public static AIController createRandomAI() {
+        return new AIControllerImpl(
+                new ConstantPlyManager(),
+                new SimpleRouteSelector(),
+                new StateEnumeratorImpl(),
+                new RandomEvaluator());
+    }
+
+    private AIControllerImpl(PlyManager plyManager, RouteSelector routeSelector,
                             StateEnumerator stateEnumerator, HandEvaluator handEvaluator) {
 
         this.plyManager = plyManager;

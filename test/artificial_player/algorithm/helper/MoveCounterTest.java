@@ -11,8 +11,8 @@ import static junit.framework.Assert.assertEquals;
  * Time: 17:57
  */
 public class MoveCounterTest {
-    MoveCounter moveCounter;
-    int minPly = 4;
+    private MoveCounter moveCounter;
+    private final int minPly = 4;
 
     @Before
     public void setUp() throws Exception {

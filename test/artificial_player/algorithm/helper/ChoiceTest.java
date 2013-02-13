@@ -13,9 +13,9 @@ import static junit.framework.Assert.assertNotSame;
  * Time: 17:34
  */
 public class ChoiceTest {
-    Choice choice;
-    Choice.Action expectedAction;
-    ImmutableBone expectedBone;
+    private Choice choice;
+    private Choice.Action expectedAction;
+    private ImmutableBone expectedBone;
 
     @Before
     public void setUp() throws Exception {
