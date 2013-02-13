@@ -1,6 +1,7 @@
 package artificial_player;
 
 import artificial_player.algorithm.GameState;
+import artificial_player.algorithm.helper.BoneManager;
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.helper.ImmutableBone;
 
@@ -66,6 +67,11 @@ public class MockGameState implements GameState {
     }
 
     // =========== Below are unimplemented functions ===========
+
+    @Override
+    public BoneManager getBoneManager() {
+        throw new UnsupportedOperationException("Not supported in mock");
+    }
 
     @Override
     public GameState choose(Choice choice) {

@@ -6,7 +6,6 @@ import artificial_player.algorithm.virtual.StateEnumerator;
 
 import java.util.*;
 import static artificial_player.algorithm.helper.Choice.Action;
-import static junit.framework.Assert.assertEquals;
 
 /**
  * Implementation of GameState, which uses lazy initialisation of child states.
@@ -15,18 +14,12 @@ public class GameStateImpl implements GameState {
 
     private final StateEnumerator stateEnumerator;
     private final HandEvaluator handEvaluator;
-    private final int sizeOfOpponentHand;
-    private final int sizeOfBoneyard;
     private final double value;
-    private final List<ImmutableBone> myBones;
-    private final List<ImmutableBone> layout;
     private final boolean isMyTurn;
     private final int moveNumber;
     private final MoveCounter moveCounter;
     private final GameState parent;
     private final Choice choiceTaken;
-    private final int layoutLeft, layoutRight;
-    private final List<ImmutableBone> possibleOpponentBones;
     private final BoneManager boneManager;
 
     private List<GameState> childStates = Collections.emptyList();
@@ -45,24 +38,14 @@ public class GameStateImpl implements GameState {
     public GameStateImpl(StateEnumerator stateEnumerator, HandEvaluator handEvaluator,
                          int minPly, List<ImmutableBone> myBones, boolean isMyTurn) {
         this.isMyTurn = isMyTurn;
-        this.myBones = myBones;
         this.stateEnumerator = stateEnumerator;
         this.handEvaluator = handEvaluator;
 
-        possibleOpponentBones = new ArrayList<ImmutableBone>(Bones.getAllBones());
-        possibleOpponentBones.removeAll(myBones);
-
         moveCounter = new MoveCounter(minPly);
-        layout = Collections.emptyList();
-        layoutLeft = -1;
-        layoutRight = -1;
-        sizeOfOpponentHand = myBones.size();
-        sizeOfBoneyard = possibleOpponentBones.size() - sizeOfOpponentHand;
         parent = null;
         moveNumber = 0;
         choiceTaken = null;
         boneManager = new BoneManager(myBones);
-
 
         value = handEvaluator.evaluateInitialValue(this);
         extraPly = 0;
@@ -86,8 +69,6 @@ public class GameStateImpl implements GameState {
      * @param choiceTaken the choice taken in going from 'parent' to this.
      */
     private GameStateImpl(GameStateImpl parent, Choice choiceTaken) {
-        this.myBones = new ArrayList<ImmutableBone>(parent.myBones);
-        this.layout = new ArrayList<ImmutableBone>(parent.layout);
         this.choiceTaken = choiceTaken;
         this.isMyTurn = !parent.isMyTurn;
         this.moveNumber = parent.moveNumber + 1;
@@ -96,92 +77,11 @@ public class GameStateImpl implements GameState {
         this.extraPly = parent.extraPly;
         this.handEvaluator = parent.handEvaluator;
         this.stateEnumerator = parent.stateEnumerator;
-        this.possibleOpponentBones = new ArrayList<ImmutableBone>(parent.possibleOpponentBones);
 
         this.boneManager = parent.boneManager.createNext(choiceTaken, parent.isMyTurn());
 
         this.value = parent.getValue() + handEvaluator.addedValueFromChoice(choiceTaken, parent);
         extraPly = Math.max(parent.extraPly - 1, 0);
-
-        // Set sizeOfOpponentHand, sizeOfBoneyard, myBones, and layout
-
-        if (choiceTaken.getAction() == Action.PLACED_LEFT || choiceTaken.getAction() == Action.PLACED_RIGHT) {
-            sizeOfBoneyard = parent.getSizeOfBoneyard();
-
-            // Update layout end values.
-
-            boolean onRight = choiceTaken.getAction() == Action.PLACED_RIGHT;
-            ImmutableBone bone = choiceTaken.getBone();
-
-            if (layout.isEmpty()) {
-                layoutLeft = bone.left();
-                layoutRight = bone.right();
-            } else {
-                int oldValue = onRight ? parent.getLayoutRight() : parent.getLayoutLeft();
-                int newValue = (bone.left() == oldValue) ? bone.right() : bone.left();
-                if (onRight) {
-                    layoutLeft = parent.getLayoutLeft();
-                    layoutRight = newValue;
-                } else {
-                    layoutLeft = newValue;
-                    layoutRight = parent.getLayoutRight();
-                }
-            }
-
-            layout.add(bone);
-
-        } else if (choiceTaken.getAction() == Action.PICKED_UP) {
-            layoutLeft = parent.getLayoutLeft();
-            layoutRight = parent.getLayoutRight();
-            sizeOfBoneyard = parent.getSizeOfBoneyard() - 1;
-
-        } else if (choiceTaken.getAction() == Action.PASS) {
-            layoutLeft = parent.getLayoutLeft();
-            layoutRight = parent.getLayoutRight();
-            sizeOfBoneyard = parent.sizeOfBoneyard;
-
-        } else throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
-
-        if (parent.isMyTurn()) {
-            sizeOfOpponentHand = parent.getSizeOfOpponentHand();
-            if (choiceTaken.getAction() == Action.PLACED_LEFT || choiceTaken.getAction() == Action.PLACED_RIGHT)
-                myBones.remove(choiceTaken.getBone());
-            else if (choiceTaken.getAction() == Action.PICKED_UP) {
-                myBones.add(choiceTaken.getBone());
-                possibleOpponentBones.remove(choiceTaken.getBone());
-            } else if (choiceTaken.getAction() != Action.PASS)
-                throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
-        } else {
-            if (choiceTaken.getAction() == Action.PLACED_LEFT || choiceTaken.getAction() == Action.PLACED_RIGHT) {
-                sizeOfOpponentHand = parent.getSizeOfOpponentHand() - 1;
-                possibleOpponentBones.remove(choiceTaken.getBone());
-
-            } else if (choiceTaken.getAction() == Action.PICKED_UP) {
-                sizeOfOpponentHand = parent.getSizeOfOpponentHand() + 1;
-
-            } else if (choiceTaken.getAction() == Action.PASS) {
-                sizeOfOpponentHand = parent.getSizeOfOpponentHand();
-
-            } else
-                throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
-        }
-
-        if (sizeOfBoneyard < 0)
-            throw new RuntimeException("Size of boneyard < 0 (inside GameState initialiser) because of " +
-                    (parent.isMyTurn() ? "my" : "else") + " choice: " + choiceTaken);
-
-        if (sizeOfOpponentHand < 0)
-            throw new RuntimeException("Size of opponent hand < 0 (inside GameState initialiser) because of " +
-                    (parent.isMyTurn() ? "my" : "opponent's") + " choice: " + choiceTaken);
-
-        assertEquals(myBones, boneManager.getMyBones());
-        assertEquals(layout, boneManager.getLayout());
-        assertEquals(layoutLeft, boneManager.getLayoutLeft());
-        assertEquals(layoutRight, boneManager.getLayoutRight());
-
-        assertEquals(new HashSet(possibleOpponentBones), new HashSet(boneManager.getUnknownBones()));
-        assertEquals(sizeOfBoneyard, boneManager.getSizeOfBoneyard());
-        assertEquals(sizeOfOpponentHand, boneManager.getSizeOfOpponentHand());
     }
 
     /**
@@ -191,9 +91,9 @@ public class GameStateImpl implements GameState {
      */
     private List<Choice> getValidChoices() {
         if (isMyTurn)
-            return stateEnumerator.getMyValidChoices(this);
+            return stateEnumerator.getMyValidChoices(boneManager);
         else
-            return stateEnumerator.getOpponentValidChoices(this);
+            return stateEnumerator.getOpponentValidChoices(boneManager);
     }
 
     /**
@@ -218,11 +118,11 @@ public class GameStateImpl implements GameState {
                 childStates.clear();
 
             // If the opponent has placed all of their bones, it's game over
-            if (sizeOfOpponentHand == 0)
+            if (boneManager.getSizeOfOpponentHand() == 0)
                 childStates.clear();
 
             // If I have placed all of my bones, it's game over
-            if (myBones.isEmpty())
+            if (boneManager.getMyBones().isEmpty())
                 childStates.clear();
 
             if (childStates.isEmpty())
@@ -338,9 +238,14 @@ public class GameStateImpl implements GameState {
     }
 
     @Override
+    public BoneManager getBoneManager() {
+        return boneManager;
+    }
+
+    @Override
     public String toString() {
         return String.format("%s %s , now value = %.1f , i have %d, opponent has %d, boneyard has %d%n",
-                (isMyTurn ? "opponent" : "I"), choiceTaken, getValue(), myBones.size(),
-                sizeOfOpponentHand, sizeOfBoneyard);
+                (isMyTurn ? "opponent" : "I"), choiceTaken, getValue(), boneManager.getMyBones().size(),
+                boneManager.getSizeOfOpponentHand(), boneManager.getSizeOfBoneyard());
     }
 }

@@ -142,11 +142,6 @@ public class BoneManager {
                 e.setValue(0);
     }
 
-    private void addChanceToAllUnknownBones(Map<ImmutableBone, Integer> opponentChancesToHaveBone) {
-        for (Map.Entry<ImmutableBone, Integer> e : opponentChancesToHaveBone.entrySet())
-            e.setValue( e.getValue() + 1 );
-    }
-
     private BoneManager(Map<ImmutableBone, Integer> opponentChancesToHaveBone, List<ImmutableBone> myBones,
                         List<ImmutableBone> layout, int sizeOfBoneyard, int sizeOfOpponentHand, int layoutLeft, int layoutRight) {
         this.opponentChancesToHaveBone = opponentChancesToHaveBone;
@@ -190,6 +185,10 @@ public class BoneManager {
 
     public int getLayoutRight() {
         return layoutRight;
+    }
+
+    public boolean isLayoutEmpty() {
+        return layoutLeft == -1;
     }
 
 }

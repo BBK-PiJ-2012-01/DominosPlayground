@@ -1,6 +1,7 @@
 package artificial_player.algorithm.probabilisticAI;
 
 import artificial_player.algorithm.GameState;
+import artificial_player.algorithm.helper.BoneManager;
 import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.virtual.AbstractStateEnumerator;
@@ -16,17 +17,18 @@ import java.util.List;
 public class StateEnumeratorImpl extends AbstractStateEnumerator {
 
     @Override
-    public List<Choice> getMyValidChoices(GameState state) {
+    public List<Choice> getMyValidChoices(BoneManager boneManager) {
         List<Choice> validChoices;
 
-        if (state.getChoiceTaken() == null)
-            validChoices = getValidInitialChoices(state.getMyBones());
+        if (boneManager.isLayoutEmpty())
+            validChoices = getValidInitialChoices(boneManager.getMyBones());
         else
-            validChoices = getValidPlacingChoices(state.getMyBones(), state.getLayoutLeft(), state.getLayoutRight());
+            validChoices = getValidPlacingChoices(boneManager.getMyBones(),
+                    boneManager.getLayoutLeft(), boneManager.getLayoutRight());
 
-        if (validChoices.isEmpty() && state.getSizeOfBoneyard() > 0) {
+        if (validChoices.isEmpty() && boneManager.getSizeOfBoneyard() > 0) {
             // No possible move - must pick up from boneyard
-            validChoices.addAll(getValidPickupChoices( state.getPossibleOpponentBones() ));
+            validChoices.addAll(getValidPickupChoices(boneManager.getUnknownBones() ));
         }
 
 
@@ -38,22 +40,23 @@ public class StateEnumeratorImpl extends AbstractStateEnumerator {
     }
 
     @Override
-    public List<Choice> getOpponentValidChoices(GameState state) {
+    public List<Choice> getOpponentValidChoices(BoneManager boneManager) {
         List<Choice> validChoices;
-        List<ImmutableBone> possibleOpponentBones = state.getPossibleOpponentBones();
+        List<ImmutableBone> possibleOpponentBones = boneManager.getUnknownBones();
 
-        if (state.getChoiceTaken() == null) {
+        if (boneManager.isLayoutEmpty()) {
             // If this is the first move of the game, the opponent will definitely place.
             validChoices = getValidInitialChoices(possibleOpponentBones);
         } else {
 
-            if (state.getSizeOfOpponentHand() > 0)
+            if (boneManager.getSizeOfOpponentHand() > 0)
                 // Assuming the opponent can place a bone
-                validChoices = getValidPlacingChoices(possibleOpponentBones, state.getLayoutLeft(), state.getLayoutRight());
+                validChoices = getValidPlacingChoices(possibleOpponentBones,
+                        boneManager.getLayoutLeft(), boneManager.getLayoutRight());
             else
                 validChoices = new ArrayList<Choice>(1);
 
-            if (state.getSizeOfBoneyard() > 0) {
+            if (boneManager.getSizeOfBoneyard() > 0) {
                 // Assuming the opponent can't place a bone, but can pick up:
                 validChoices.add(new Choice(Choice.Action.PICKED_UP, null));
             } else {

@@ -1,5 +1,6 @@
 package artificial_player.algorithm;
 
+import artificial_player.algorithm.helper.BoneManager;
 import artificial_player.algorithm.helper.Choice;
 
 import artificial_player.algorithm.helper.ImmutableBone;
@@ -11,6 +12,8 @@ import java.util.List;
  * to a child node are 'Choice's.
  */
 public interface GameState {
+
+    BoneManager getBoneManager();
 
     public static enum Status {NOT_YET_CALCULATED, HAS_CHILD_STATES, GAME_OVER}
 
