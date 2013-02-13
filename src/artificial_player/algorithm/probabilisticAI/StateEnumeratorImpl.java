@@ -1,4 +1,4 @@
-package artificial_player.algorithm.probablisticAI;
+package artificial_player.algorithm.probabilisticAI;
 
 import artificial_player.algorithm.GameState;
 import artificial_player.algorithm.helper.ImmutableBone;

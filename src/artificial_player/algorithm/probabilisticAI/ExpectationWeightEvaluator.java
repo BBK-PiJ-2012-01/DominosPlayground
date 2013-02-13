@@ -1,4 +1,4 @@
-package artificial_player.algorithm.probablisticAI;
+package artificial_player.algorithm.probabilisticAI;
 
 import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.Choice;
@@ -14,7 +14,10 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
     private static final int VALUE_OF_OPPONENT_PICKUP = 5;
     private static final int COST_OF_LOSING = 300;
     private static final int VALUE_OF_WINNING = 300;
-    private static final double COST_FACTOR_OF_IMPASS = 10;
+    private static final double COST_FACTOR_OF_IMPASS = 1;
+    private static final double COST_OF_IMPASS = 50;
+    private static final double VALUE_OF_OPPONENT_PASS = 10;
+    private static final double COST_OF_MY_PASS = 10;
 
     @Override
     public double evaluateInitialValue(GameState initialState) {
@@ -41,7 +44,7 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
             if (state.isMyTurn()) {
                 addedValue += choice.getBone().weight();
             } else {
-                addedValue -= choice.getBone().weight() * probThatOpponentHasBone(state);
+                addedValue -= choice.getBone().weight();// * probThatOpponentHasBone(state);
             }
 
         } else if (choice.getAction() == Choice.Action.PICKED_UP) {
@@ -60,7 +63,10 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
 
         } else if (choice.getAction() == Choice.Action.PASS) {
 
-            addedValue += 0;
+            if (state.isMyTurn())
+                addedValue -= COST_OF_MY_PASS;
+            else
+                addedValue += VALUE_OF_OPPONENT_PASS;
 
         } else {
             throw new RuntimeException("Unhandled action");
@@ -75,8 +81,8 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
 
         if (choice.getAction() == Choice.Action.PASS && state.getChoiceTaken().getAction() == Choice.Action.PASS) {
             addedValue *= COST_FACTOR_OF_IMPASS;
+            addedValue -= COST_OF_IMPASS;
         }
-
 
         return addedValue;
     }

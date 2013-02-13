@@ -3,23 +3,15 @@ package artificial_player;
 import artificial_player.algorithm.AIController;
 import artificial_player.algorithm.AIControllerImpl;
 import artificial_player.algorithm.GameOverException;
-import artificial_player.algorithm.probablisticAI.ExpectationWeightEvaluator;
-import artificial_player.algorithm.probablisticAI.LinearPlyManager;
-import artificial_player.algorithm.probablisticAI.RouteSelectorImpl;
-import artificial_player.algorithm.probablisticAI.StateEnumeratorImpl;
 import artificial_player.algorithm.helper.Bones;
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.helper.ImmutableBone;
-import artificial_player.algorithm.randomAI.ConstantPlyManager;
-import artificial_player.algorithm.randomAI.RandomEvaluator;
-import artificial_player.algorithm.randomAI.SimpleRouteSelector;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * A bit slow: My bones: [[4,5], [0,2], [3,3], [2,3], [3,5], [6,6], [2,6]] , opp bones: [[0,1], [1,2], [0,5], [5,5], [3,6], [1,5], [4,4]]

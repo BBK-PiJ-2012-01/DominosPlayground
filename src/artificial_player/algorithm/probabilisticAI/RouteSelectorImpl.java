@@ -1,4 +1,4 @@
-package artificial_player.algorithm.probablisticAI;
+package artificial_player.algorithm.probabilisticAI;
 
 import artificial_player.algorithm.helper.Route;
 import artificial_player.algorithm.virtual.AbstractRouteSelector;
