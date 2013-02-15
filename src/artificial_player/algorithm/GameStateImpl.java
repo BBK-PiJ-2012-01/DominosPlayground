@@ -45,7 +45,8 @@ public class GameStateImpl implements GameState {
         parent = null;
         moveNumber = 0;
         choiceTaken = null;
-        boneState = new BoneStateIntegerImpl(myBones);
+//        boneState = new BoneStateIntegerImpl(myBones);
+        boneState = new BoneStateOffloadedImpl(myBones);
 
         value = handEvaluator.evaluateInitialValue(boneState);
         extraPly = 0;

@@ -73,7 +73,7 @@ public class AIControllerImpl implements AIController {
         int n = 0;
         Choice bestChoice = null;
         int iterationsBestChoiceHasBeenBestFor = 0;
-        int minIterationsBestChoiceMustBeBestFor = 150;
+        int minIterationsBestChoiceMustBeBestFor = 50;
 //        System.out.println("Number of child states = " + currentState.getChildStates().size());
         do {
             bestRoutes = routeSelector.getBestRoutes(currentState, true);

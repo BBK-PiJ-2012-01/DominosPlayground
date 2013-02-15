@@ -35,7 +35,8 @@ public class BoneStateTest {
         System.out.println("Setting up initial state");
 //        initialState = new BoneStateIntegerImpl(myBones);
 //        initialState = new BoneStateDoubleImpl(myBones);
-        preGameState = new BoneStateCombinedImpl(myBones);
+//        preGameState = new BoneStateCombinedImpl(myBones);
+        preGameState = new BoneStateOffloadedImpl(myBones);
 
         placedBone = myBones.remove(3);
         initialState = preGameState.createNext(new Choice(Choice.Action.PLACED_RIGHT, placedBone), true);

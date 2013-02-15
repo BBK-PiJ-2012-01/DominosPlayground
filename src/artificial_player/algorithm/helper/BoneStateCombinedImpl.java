@@ -63,10 +63,12 @@ public class BoneStateCombinedImpl implements BoneState {
 
             --thenAvailableBonesToPickup;
         }
+//
+//          List<ImmutableBone> boneListNotAbleToBePickedUp = opponentChancesToHaveBone.get(0);
+//          if (boneListNotAbleToBePickedUp != null)
+//              for (ImmutableBone bone : boneListNotAbleToBePickedUp)
+//                  newOpponentBoneProbs.put(bone, 0.0);
 
-//        List<ImmutableBone> boneListNotAbleToBePickedUp = opponentChancesToHaveBone.get(0);
-//        if (boneListNotAbleToBePickedUp != null)
-//            thenAvailableBonesToPickup += boneListNotAbleToBePickedUp.size();
 //
 //        if (thenAvailableBonesToPickup != sizeOfBoneyard)
 //            System.out.println("Real size of boneyard = " + sizeOfBoneyard + " , thenSizeOfBoneyard = " + thenAvailableBonesToPickup);
