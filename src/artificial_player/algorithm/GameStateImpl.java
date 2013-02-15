@@ -111,7 +111,7 @@ public class GameStateImpl implements GameState {
         if (desired_status == Status.HAS_CHILD_STATES) {
             List<Choice> validChoicesList = getValidChoices();
 
-            childStates = new ArrayList<GameState>(validChoicesList.size());
+            List<GameState> childStates = new ArrayList<GameState>(validChoicesList.size());
 
             for (Choice choice : validChoicesList)
                 childStates.add( createNextState(choice) );
@@ -133,6 +133,8 @@ public class GameStateImpl implements GameState {
                 status = Status.GAME_OVER;
             else
                 status = Status.HAS_CHILD_STATES;
+
+            this.childStates = Collections.unmodifiableList(childStates);
         }
     }
 
@@ -151,7 +153,8 @@ public class GameStateImpl implements GameState {
     @Override
     public List<GameState> getChildStates() {
         lazyChildrenInitialisation();
-        return Collections.unmodifiableList(childStates);
+//        return Collections.unmodifiableList(childStates);
+        return childStates;
     }
 
     @Override

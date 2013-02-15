@@ -32,7 +32,7 @@ public class UnknownBoneManager {
         this.sizeOfBoneyard = sizeOfBoneyard;
         this.sizeOfOpponentHand = sizeOfOpponentHand;
 
-        unknownBones = new LinkedList<ImmutableBone>();
+        unknownBones = new ArrayList<ImmutableBone>(sizeOfBoneyard + sizeOfOpponentHand);
         for (List<ImmutableBone> boneList : opponentChancesToHaveBone.values())
             unknownBones.addAll(boneList);
 
@@ -50,6 +50,9 @@ public class UnknownBoneManager {
         int thenAvailableBonesToPickup = 0;
 
         List<ImmutableBone> possibleBonesToTake = new LinkedList<ImmutableBone>();
+
+        //TODO: Map.put is using lots of memory and CPU.  Consider using array as temporary storage
+        // Also, Double.valueOf is taking lots of memory + CPU.  Using a double[] instead of Map will fix that.
 
         for (int i = largestNumberOfChances; i > 0; --i) {
             List<ImmutableBone> bonesNowAbleToBePickedUp = opponentChancesToHaveBone.get(i);

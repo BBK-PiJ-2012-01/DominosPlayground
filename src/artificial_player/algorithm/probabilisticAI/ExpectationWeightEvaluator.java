@@ -10,6 +10,14 @@ import artificial_player.algorithm.virtual.HandEvaluator;
  * my hand's weight.
  */
 public class ExpectationWeightEvaluator implements HandEvaluator {
+//    private static final int COST_OF_MY_PICKUP = 0;
+//    private static final int VALUE_OF_OPPONENT_PICKUP = 0;
+//    private static final int COST_OF_LOSING = 100;
+//    private static final int VALUE_OF_WINNING = 100;
+//    private static final double COST_FACTOR_OF_IMPASS = 1;
+//    private static final double COST_OF_IMPASS = 0;
+//    private static final double VALUE_OF_OPPONENT_PASS = 0;
+//    private static final double COST_OF_MY_PASS = 0;
     private static final int COST_OF_MY_PICKUP = 20;
     private static final int VALUE_OF_OPPONENT_PICKUP = 5;
     private static final int COST_OF_LOSING = 300;
@@ -50,20 +58,15 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
         } else if (choice.getAction() == Choice.Action.PICKED_UP) {
 
             double weightedAverageOfBoneyardCards = 0;
-            double sumOfProbs = 0;
-            for (ImmutableBone pickupableBone : boneState.getUnknownBones()) {
+            for (ImmutableBone pickupableBone : boneState.getUnknownBones())
                 weightedAverageOfBoneyardCards += pickupableBone.weight() * boneState.getProbThatBoneyardHasBone(pickupableBone);
-                sumOfProbs += boneState.getProbThatBoneyardHasBone(pickupableBone);
-            }
-            weightedAverageOfBoneyardCards /= boneState.getUnknownBones().size();
-//            if (Math.abs(boneState.getUnknownBones().size() - sumOfProbs) > 0.01)
-//                System.out.println("Size of unknown bones list = " + boneState.getUnknownBones().size() + " and sumOfProbs = " + sumOfProbs);
 
-            if (isMyTurn) {
+            weightedAverageOfBoneyardCards /= boneState.getUnknownBones().size();
+
+            if (isMyTurn)
                 addedValue -= weightedAverageOfBoneyardCards - COST_OF_MY_PICKUP;
-            } else {
+            else
                 addedValue += weightedAverageOfBoneyardCards + VALUE_OF_OPPONENT_PICKUP;
-            }
 
         } else if (choice.getAction() == Choice.Action.PASS) {
 
