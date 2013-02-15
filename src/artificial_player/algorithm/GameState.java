@@ -1,9 +1,8 @@
 package artificial_player.algorithm;
 
-import artificial_player.algorithm.helper.BoneManager;
+import artificial_player.algorithm.helper.BoneState;
 import artificial_player.algorithm.helper.Choice;
 
-import artificial_player.algorithm.helper.ImmutableBone;
 import java.util.List;
 
 /**
@@ -13,10 +12,9 @@ import java.util.List;
  */
 public interface GameState {
 
-    BoneManager getBoneManager();
+
 
     public static enum Status {NOT_YET_CALCULATED, HAS_CHILD_STATES, GAME_OVER}
-
     /**
      * Gets the current status.
      *
@@ -40,14 +38,6 @@ public interface GameState {
     GameState choose(Choice choice);
 
     /**
-     * Returns all bones which the opponent might have (ie. the bones that are not in my hand
-     * or in the layout).
-     *
-     * @return the bones the opponent might have.
-     */
-    List<ImmutableBone> getPossibleOpponentBones();
-
-    /**
      * Returns the choice taken to reach this state.
      *
      * @return the choice taken to reach this state.
@@ -60,13 +50,6 @@ public interface GameState {
      * @return true iff it is now my turn.
      */
     boolean isMyTurn();
-
-    /**
-     * Returns my hand.
-     *
-     * @return my hand.
-     */
-    List<ImmutableBone> getMyBones();
 
     /**
      * Gets the parent state (ie. the state which this.getChoiceTaken() was applied to).
@@ -90,28 +73,10 @@ public interface GameState {
     double getValue();
 
     /**
-     * Gets the size of the opponent's hand.
+     * Gets the BoneState object for this game state.
      *
-     * @return the size of the opponent's hand.
+     * @return the BoneState object for this game state.
      */
-    int getSizeOfOpponentHand();
-
-    /**
-     * Gets the size of the boneyard.
-     * @return the size of the boneyard.
-     */
-    int getSizeOfBoneyard();
-
-    /**
-     * Gets the right value of the rightmost bone in the layout.
-     * @return the right value of the rightmost bone in the layout.
-     */
-    int getLayoutRight();
-
-    /**
-     * Gets the left value of the leftmost bone in the layout.
-     * @return the left value of the leftmost bone in the layout.
-     */
-    int getLayoutLeft();
+    BoneState getBoneState();
 
 }

@@ -1,5 +1,6 @@
 package artificial_player.algorithm;
 
+import artificial_player.algorithm.helper.BoneState;
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.Route;
@@ -142,7 +143,7 @@ public class AIControllerImpl implements AIController {
     public int getHandWeight() {
         int score = 0;
 
-        for (ImmutableBone bone : currentState.getMyBones()) {
+        for (ImmutableBone bone : currentState.getBoneState().getMyBones()) {
             score += bone.weight();
         }
 
@@ -151,7 +152,7 @@ public class AIControllerImpl implements AIController {
 
     @Override
     public boolean hasEmptyHand() {
-        return currentState.getMyBones().isEmpty();
+        return currentState.getBoneState().getMyBones().isEmpty();
     }
 
     @Override
@@ -163,12 +164,14 @@ public class AIControllerImpl implements AIController {
             sbuilder.append("Opponent's move was ");
         sbuilder.append(currentState.getChoiceTaken());
 
+        BoneState boneState = currentState.getBoneState();
+
         sbuilder.append(String.format("%n\tlayout = [%d ... %d] , size of boneyard = %d , size of opponent's hand = %d",
-                currentState.getLayoutLeft(), currentState.getLayoutRight(),
-                currentState.getSizeOfBoneyard(), currentState.getSizeOfOpponentHand()));
+                boneState.getLayoutLeft(), boneState.getLayoutRight(),
+                boneState.getSizeOfBoneyard(), boneState.getSizeOfOpponentHand()));
 
         sbuilder.append("\n\tMy bones: ");
-        sbuilder.append(currentState.getMyBones());
+        sbuilder.append(boneState.getMyBones());
 
         return sbuilder.toString();
     }

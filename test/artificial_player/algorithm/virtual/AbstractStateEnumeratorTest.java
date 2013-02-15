@@ -1,7 +1,6 @@
 package artificial_player.algorithm.virtual;
 
-import artificial_player.algorithm.GameState;
-import artificial_player.algorithm.helper.BoneManager;
+import artificial_player.algorithm.helper.BoneState;
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.helper.ImmutableBone;
 import org.junit.Before;
@@ -25,12 +24,12 @@ public class AbstractStateEnumeratorTest {
     public void setUp() throws Exception {
         stateEnumerator = new AbstractStateEnumerator() {
             @Override
-            public List<Choice> getMyValidChoices(BoneManager boneManager) {
+            public List<Choice> getMyValidChoices(BoneState boneState) {
                 throw new UnsupportedOperationException("Not implemented");
             }
 
             @Override
-            public List<Choice> getOpponentValidChoices(BoneManager boneManager) {
+            public List<Choice> getOpponentValidChoices(BoneState boneState) {
                 throw new UnsupportedOperationException("Not implemented");
             }
         };

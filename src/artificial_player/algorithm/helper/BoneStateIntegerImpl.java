@@ -2,81 +2,48 @@ package artificial_player.algorithm.helper;
 
 import java.util.*;
 
-/**
- * [0.5], 0.5, 0.5, 0.75, 0.75, 1.0, 1.0 (total = 5.0)
- * oldTotalExcludingFirst = 4.5
- * newTotalExcludingFirst = 5.0
- *
- * factor = 5 / 4.5 = 10 / 9 = 1.11111
- *
- * What is the probability of A being in hand given that bone B is not?
- *
- * I have:
- *  probability of A being in hand
- *  probability of B being in hand
- *
- * Maybe:
- *  (1 - prob(B)) * (1 - prob(A)) + prob(A)
- *
- * Which gives:
- *  [0.0], 0.75, 0.75, 0.875, 0.875, 1.0, 1.0 (total = 5.25)
- *
- * Transform to probabilities of bones being in BONEYARD (because I'm certain when
- * the bone is in the hand, but when in the boneyard the probability can change):
- * [0.5], 0.5, 0.5, 0.25, 0.25, 0.0, 0.0 (total = 2.0)
- *
- * What is the probability of A being in boneyard given that bone B definitely is?
- * Well, sizeOfBoneyard has decreases by prob(A), so all probs are multiplied by;
- *  (sizOfBoneyard - newProb(A)) / (sizeOfBoneyard - oldProb(A))
- *              = (2.0 - 1.0) / (2.0 - 0.5) = 2/3
- *
- * Which gives
- * [1.0], 0.3333, 0.3333, 0.1666, 0.1666, 0.0, 0.0 (total = [1] + 1)
- *
- * Convert back to probs of being in hand:
- * [0.0], 0.6666, 0.6666, 0.8333, 0.8333, 1.0, 1.0 (total = 5)
- *
- */
-public class BoneManager {
+
+public class BoneStateIntegerImpl implements BoneState {
     private final Map<ImmutableBone, Integer> opponentChancesToHaveBone;
+    private final int sizeOfBoneyard, sizeOfOpponentHand, layoutLeft, layoutRight, totalChances;
+    private final List<ImmutableBone> myBones, unknownBonesCache;
 
-    public int getSizeOfBoneyard() {
-        return sizeOfBoneyard;
-    }
-
-    public int getSizeOfOpponentHand() {
-        return sizeOfOpponentHand;
-    }
-
-    private final int sizeOfBoneyard, sizeOfOpponentHand, layoutLeft, layoutRight;
-    private final List<ImmutableBone> myBones, layout;
-
-    public BoneManager(List<ImmutableBone> myBones) {
-        this.myBones = myBones;
+    public BoneStateIntegerImpl(List<ImmutableBone> myBones) {
+        this.myBones = Collections.unmodifiableList(myBones);
         this.sizeOfOpponentHand = myBones.size();
+
         opponentChancesToHaveBone = new HashMap<ImmutableBone, Integer>();
-        layout = Collections.emptyList();
         layoutLeft = -1;
         layoutRight = -1;
 
         List<ImmutableBone> possibleOpponentBones = new LinkedList<ImmutableBone>(Bones.getAllBones());
         possibleOpponentBones.removeAll(myBones);
+        unknownBonesCache = Collections.unmodifiableList(possibleOpponentBones);
 
         sizeOfBoneyard = possibleOpponentBones.size() - sizeOfOpponentHand;
 
         // The opponent takes a bone from the boneyard sizeOfOpponentHand times.
         for (ImmutableBone bone : possibleOpponentBones)
             opponentChancesToHaveBone.put(bone, sizeOfOpponentHand);
+
+        totalChances = calculateTotalChances();
     }
 
-    public BoneManager createNext(Choice choiceTaken, boolean isMyTurn) {
+    private int calculateTotalChances() {
+        int totalChances = 0;
+        for (Integer chancesForBone : opponentChancesToHaveBone.values())
+            totalChances += chancesForBone;
+        return totalChances;
+    }
+
+    @Override
+    public BoneState createNext(Choice choiceTaken, boolean isMyTurn) {
         int newSizeOfOpponentHand = sizeOfOpponentHand;
         int newSizeOfBoneyard = sizeOfBoneyard;
         int newLayoutLeft = layoutLeft;
         int newLayoutRight = layoutRight;
         Map<ImmutableBone, Integer> newOpponentChancesToHaveBone = new HashMap<ImmutableBone, Integer>(opponentChancesToHaveBone);
         List<ImmutableBone> newMyBones = new ArrayList<ImmutableBone>(myBones);
-        List<ImmutableBone> newLayout = new ArrayList<ImmutableBone>(layout);
 
         Choice.Action action = choiceTaken.getAction();
         ImmutableBone bone = choiceTaken.getBone();
@@ -85,7 +52,7 @@ public class BoneManager {
         if (action.isPlacement()) {
             boolean onRight = choiceTaken.getAction() == Choice.Action.PLACED_RIGHT;
 
-            if (layout.isEmpty()) {
+            if (isLayoutEmpty()) {
                 newLayoutLeft = bone.left();
                 newLayoutRight = bone.right();
             } else {
@@ -101,7 +68,6 @@ public class BoneManager {
         // Update other values
         if (isMyTurn) {     // If my turn...
             if (action.isPlacement()) {
-                newLayout.add(bone);
                 newMyBones.remove(bone);
             } else if (action == Choice.Action.PICKED_UP) {
                 newSizeOfBoneyard -= 1;
@@ -112,7 +78,6 @@ public class BoneManager {
 
         } else {            // If not my turn...
             if (action.isPlacement()) {
-                newLayout.add(bone);
                 newOpponentChancesToHaveBone.remove(bone);
                 newSizeOfOpponentHand -= 1;
             } else if (action == Choice.Action.PICKED_UP) {
@@ -122,7 +87,7 @@ public class BoneManager {
                 // If opponent picked up, they can't have any bones containing layoutLeft or layoutRight,
                 setBonesMatchingLayoutToBoneyard(newOpponentChancesToHaveBone);
                 // but they immediately pick up so must add a chance to every unknown bone.
-                for (Map.Entry<ImmutableBone, Integer> e : opponentChancesToHaveBone.entrySet())
+                for (Map.Entry<ImmutableBone, Integer> e : newOpponentChancesToHaveBone.entrySet())
                     e.setValue(e.getValue() + 1);
 
             } else if (action == Choice.Action.PASS) {
@@ -132,7 +97,7 @@ public class BoneManager {
                 throw new RuntimeException("Unhandled action: " + choiceTaken.getAction());
         }
 
-        return new BoneManager(newOpponentChancesToHaveBone, newMyBones, newLayout,
+        return new BoneStateIntegerImpl(newOpponentChancesToHaveBone, newMyBones,
                 newSizeOfBoneyard, newSizeOfOpponentHand, newLayoutLeft, newLayoutRight);
     }
 
@@ -142,11 +107,10 @@ public class BoneManager {
                 e.setValue(0);
     }
 
-    private BoneManager(Map<ImmutableBone, Integer> opponentChancesToHaveBone, List<ImmutableBone> myBones,
-                        List<ImmutableBone> layout, int sizeOfBoneyard, int sizeOfOpponentHand, int layoutLeft, int layoutRight) {
+    private BoneStateIntegerImpl(Map<ImmutableBone, Integer> opponentChancesToHaveBone, List<ImmutableBone> myBones,
+                                 int sizeOfBoneyard, int sizeOfOpponentHand, int layoutLeft, int layoutRight) {
         this.opponentChancesToHaveBone = opponentChancesToHaveBone;
-        this.myBones = myBones;
-        this.layout = layout;
+        this.myBones = Collections.unmodifiableList(myBones);
         this.sizeOfBoneyard = sizeOfBoneyard;
         this.sizeOfOpponentHand = sizeOfOpponentHand;
         this.layoutLeft = layoutLeft;
@@ -157,36 +121,60 @@ public class BoneManager {
 
         if (sizeOfOpponentHand < 0)
             throw new RuntimeException("Size of opponent hand < 0");
+
+        totalChances = calculateTotalChances();
+        unknownBonesCache = Collections.unmodifiableList(new ArrayList<ImmutableBone>(opponentChancesToHaveBone.keySet()));
     }
 
+    @Override
+    public int getSizeOfBoneyard() {
+        return sizeOfBoneyard;
+    }
+
+    @Override
+    public int getSizeOfOpponentHand() {
+        return sizeOfOpponentHand;
+    }
+
+    @Override
     public List<ImmutableBone> getMyBones() {
         return Collections.unmodifiableList(myBones);
     }
 
-    public List<ImmutableBone> getLayout() {
-        return Collections.unmodifiableList(layout);
-    }
-
+    @Override
     public List<ImmutableBone> getUnknownBones() {
-        return new ArrayList<ImmutableBone>(opponentChancesToHaveBone.keySet());
+        return unknownBonesCache;
     }
 
+    @Override
     public double getProbThatOpponentHasBone(ImmutableBone bone) {
-        return opponentChancesToHaveBone.get(bone) / opponentChancesToHaveBone.size();
+        if (bone == null)
+            throw new RuntimeException("Bone was null!");
+        if (!opponentChancesToHaveBone.containsKey(bone))
+            throw new RuntimeException("Bone " + bone +" was not in unknown bones list: " + opponentChancesToHaveBone +
+                    "\n was it in myBones? " + myBones.contains(bone));
+        System.out.format("Bone %s had %d chances to be in opponent hand, and map size is %d%n",
+                bone.toString(), opponentChancesToHaveBone.get(bone), opponentChancesToHaveBone.size());
+        System.out.format("\tsizeOfOpponentHand = %d , totalChances = %d%n", sizeOfOpponentHand, totalChances);
+        return (double) opponentChancesToHaveBone.get(bone) * sizeOfOpponentHand / totalChances ;
     }
 
+    @Override
     public double getProbThatBoneyardHasBone(ImmutableBone bone) {
         return 1 - getProbThatOpponentHasBone(bone);
     }
 
+    @Override
     public int getLayoutLeft() {
         return layoutLeft;
     }
 
+    @Override
     public int getLayoutRight() {
         return layoutRight;
     }
 
+    @Override
     public boolean isLayoutEmpty() {
         return layoutLeft == -1;
     }

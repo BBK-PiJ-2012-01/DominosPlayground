@@ -3,9 +3,7 @@ package artificial_player.algorithm.helper;
 import org.junit.Before;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotSame;
+import static junit.framework.Assert.*;
 
 /**
  * User: Sam Wright
@@ -93,5 +91,12 @@ public class ChoiceTest {
         assertEquals("PLACED_LEFT bone [3,4]", choice.toString());
     }
 
+    @Test
+    public void testActionIsPlacement() throws Exception {
+        assertFalse(Choice.Action.PASS.isPlacement());
+        assertFalse(Choice.Action.PICKED_UP.isPlacement());
+        assertTrue(Choice.Action.PLACED_LEFT.isPlacement());
+        assertTrue(Choice.Action.PLACED_RIGHT.isPlacement());
+    }
 
 }

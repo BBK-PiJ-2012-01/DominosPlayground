@@ -1,8 +1,8 @@
 package artificial_player.algorithm.probabilisticAI;
 
+import artificial_player.algorithm.helper.BoneState;
 import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.Choice;
-import artificial_player.algorithm.GameState;
 import artificial_player.algorithm.virtual.HandEvaluator;
 
 /**
@@ -20,50 +20,54 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
     private static final double COST_OF_MY_PASS = 10;
 
     @Override
-    public double evaluateInitialValue(GameState initialState) {
+    public double evaluateInitialValue(BoneState boneState) {
         int opponentHandWeight = 0;
 
-        for (ImmutableBone bone : initialState.getPossibleOpponentBones())
-            opponentHandWeight += bone.weight();
+        for (ImmutableBone bone : boneState.getUnknownBones())
+            opponentHandWeight += bone.weight() * boneState.getProbThatOpponentHasBone(bone);
 
         int my_hand_weight = 0;
 
-        for (ImmutableBone bone : initialState.getMyBones())
+        for (ImmutableBone bone : boneState.getMyBones())
             my_hand_weight += bone.weight();
 
-        return opponentHandWeight * probThatOpponentHasBone(initialState) - my_hand_weight;
+        return opponentHandWeight - my_hand_weight;
     }
 
     @Override
-    public double addedValueFromChoice(Choice choice, GameState state) {
+    public double addedValueFromChoice(BoneState boneState, boolean isMyTurn, boolean prevChoiceWasPass, Choice choice) {
         int addedValue = 1;
 
         if (choice.getAction() == Choice.Action.PLACED_RIGHT
                 || choice.getAction() == Choice.Action.PLACED_LEFT) {
 
-            if (state.isMyTurn()) {
+            if (isMyTurn) {
                 addedValue += choice.getBone().weight();
             } else {
-                addedValue -= choice.getBone().weight();// * probThatOpponentHasBone(state);
+                addedValue -= choice.getBone().weight() * boneState.getProbThatOpponentHasBone(choice.getBone());
             }
 
         } else if (choice.getAction() == Choice.Action.PICKED_UP) {
 
-            double average_of_boneyard_cards = 0;
-            for (ImmutableBone pickupable_bone : state.getPossibleOpponentBones()) {
-                average_of_boneyard_cards += pickupable_bone.weight();
+            double weightedAverageOfBoneyardCards = 0;
+            double sumOfProbs = 0;
+            for (ImmutableBone pickupableBone : boneState.getUnknownBones()) {
+                weightedAverageOfBoneyardCards += pickupableBone.weight() * boneState.getProbThatBoneyardHasBone(pickupableBone);
+                sumOfProbs += boneState.getProbThatBoneyardHasBone(pickupableBone);
             }
-            average_of_boneyard_cards /= state.getSizeOfBoneyard() + state.getSizeOfOpponentHand();
+            weightedAverageOfBoneyardCards /= boneState.getUnknownBones().size();
+//            if (Math.abs(boneState.getUnknownBones().size() - sumOfProbs) > 0.01)
+//                System.out.println("Size of unknown bones list = " + boneState.getUnknownBones().size() + " and sumOfProbs = " + sumOfProbs);
 
-            if (state.isMyTurn()) {
-                addedValue -= average_of_boneyard_cards - COST_OF_MY_PICKUP;
+            if (isMyTurn) {
+                addedValue -= weightedAverageOfBoneyardCards - COST_OF_MY_PICKUP;
             } else {
-                addedValue += average_of_boneyard_cards + VALUE_OF_OPPONENT_PICKUP;
+                addedValue += weightedAverageOfBoneyardCards + VALUE_OF_OPPONENT_PICKUP;
             }
 
         } else if (choice.getAction() == Choice.Action.PASS) {
 
-            if (state.isMyTurn())
+            if (isMyTurn)
                 addedValue -= COST_OF_MY_PASS;
             else
                 addedValue += VALUE_OF_OPPONENT_PASS;
@@ -73,27 +77,17 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
         }
 
         if (choice.getAction() == Choice.Action.PLACED_LEFT || choice.getAction() == Choice.Action.PLACED_RIGHT) {
-            if (state.isMyTurn() && state.getMyBones().size() == 1)
+            if (isMyTurn && boneState.getMyBones().size() == 1)
                 addedValue += VALUE_OF_WINNING;
-            else if (!state.isMyTurn() && state.getSizeOfOpponentHand() == 1)
+            else if (!isMyTurn && boneState.getSizeOfOpponentHand() == 1)
                 addedValue -= COST_OF_LOSING;
         }
 
-        if (choice.getAction() == Choice.Action.PASS && state.getChoiceTaken().getAction() == Choice.Action.PASS) {
+        if (choice.getAction() == Choice.Action.PASS && prevChoiceWasPass) {
             addedValue *= COST_FACTOR_OF_IMPASS;
             addedValue -= COST_OF_IMPASS;
         }
 
         return addedValue;
-    }
-
-    private double probThatOpponentHasBone(GameState state) {
-        // TODO: if opponent picks up with 1s on left and right, prob of having a 1 bone is low
-        int totalPossibleOpponentBones = state.getSizeOfBoneyard() + state.getSizeOfOpponentHand();
-
-        if (totalPossibleOpponentBones == 0)
-            return 0;
-        else
-            return ((double) state.getSizeOfOpponentHand()) / totalPossibleOpponentBones;
     }
 }

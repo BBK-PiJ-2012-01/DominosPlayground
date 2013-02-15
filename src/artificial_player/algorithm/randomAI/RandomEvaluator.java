@@ -1,6 +1,6 @@
 package artificial_player.algorithm.randomAI;
 
-import artificial_player.algorithm.GameState;
+import artificial_player.algorithm.helper.BoneState;
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.virtual.HandEvaluator;
 
@@ -11,12 +11,12 @@ import artificial_player.algorithm.virtual.HandEvaluator;
  */
 public class RandomEvaluator implements HandEvaluator {
     @Override
-    public double evaluateInitialValue(GameState initialState) {
+    public double evaluateInitialValue(BoneState boneState) {
         return Math.abs(Math.random() * 50) - 25;
     }
 
     @Override
-    public double addedValueFromChoice(Choice choice, GameState state) {
+    public double addedValueFromChoice(BoneState boneState, boolean isMyTurn, boolean prevChoiceWasPass, Choice choice) {
         return Math.abs(Math.random() * 10) - 5;
     }
 }

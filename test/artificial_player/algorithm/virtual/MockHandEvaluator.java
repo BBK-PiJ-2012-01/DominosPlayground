@@ -1,6 +1,6 @@
 package artificial_player.algorithm.virtual;
 
-import artificial_player.algorithm.GameState;
+import artificial_player.algorithm.helper.BoneState;
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.helper.ImmutableBone;
 
@@ -9,10 +9,10 @@ import artificial_player.algorithm.helper.ImmutableBone;
  */
 public class MockHandEvaluator implements HandEvaluator {
     @Override
-    public double evaluateInitialValue(GameState initialState) {
+    public double evaluateInitialValue(BoneState boneState) {
         double value = 0;
 
-        for (ImmutableBone bone : initialState.getMyBones()) {
+        for (ImmutableBone bone : boneState.getMyBones()) {
             value += bone.weight();
         }
 
@@ -20,8 +20,8 @@ public class MockHandEvaluator implements HandEvaluator {
     }
 
     @Override
-    public double addedValueFromChoice(Choice choice, GameState state) {
-        if (!state.isMyTurn())
+    public double addedValueFromChoice(BoneState boneState, boolean isMyTurn, boolean prevChoiceWasPass, Choice choice) {
+        if (!isMyTurn)
             return 0;
 
         if (choice.getAction() == Choice.Action.PICKED_UP)

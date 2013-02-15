@@ -1,9 +1,8 @@
 package artificial_player;
 
 import artificial_player.algorithm.GameState;
-import artificial_player.algorithm.helper.BoneManager;
+import artificial_player.algorithm.helper.BoneState;
 import artificial_player.algorithm.helper.Choice;
-import artificial_player.algorithm.helper.ImmutableBone;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -69,7 +68,7 @@ public class MockGameState implements GameState {
     // =========== Below are unimplemented functions ===========
 
     @Override
-    public BoneManager getBoneManager() {
+    public BoneState getBoneState() {
         throw new UnsupportedOperationException("Not supported in mock");
     }
 
@@ -79,18 +78,8 @@ public class MockGameState implements GameState {
     }
 
     @Override
-    public List<ImmutableBone> getPossibleOpponentBones() {
-        throw new UnsupportedOperationException("Not supported in mock");
-    }
-
-    @Override
     public Choice getChoiceTaken() {
         return choiceTaken;
-    }
-
-    @Override
-    public List<ImmutableBone> getMyBones() {
-        throw new UnsupportedOperationException("Not supported in mock");
     }
 
     @Override
@@ -106,25 +95,5 @@ public class MockGameState implements GameState {
     @Override
     public double getValue() {
         return value;
-    }
-
-    @Override
-    public int getSizeOfOpponentHand() {
-        throw new UnsupportedOperationException("Not supported in mock");
-    }
-
-    @Override
-    public int getSizeOfBoneyard() {
-        throw new UnsupportedOperationException("Not supported in mock");
-    }
-
-    @Override
-    public int getLayoutRight() {
-        throw new UnsupportedOperationException("Not supported in mock");
-    }
-
-    @Override
-    public int getLayoutLeft() {
-        throw new UnsupportedOperationException("Not supported in mock");
     }
 }

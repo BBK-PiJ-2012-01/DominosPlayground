@@ -20,7 +20,7 @@ public class GameStateImpl implements GameState {
     private final MoveCounter moveCounter;
     private final GameState parent;
     private final Choice choiceTaken;
-    private final BoneManager boneManager;
+    private final BoneState boneState;
 
     private List<GameState> childStates = Collections.emptyList();
     private Status status = Status.NOT_YET_CALCULATED;
@@ -45,9 +45,9 @@ public class GameStateImpl implements GameState {
         parent = null;
         moveNumber = 0;
         choiceTaken = null;
-        boneManager = new BoneManager(myBones);
+        boneState = new BoneStateIntegerImpl(myBones);
 
-        value = handEvaluator.evaluateInitialValue(this);
+        value = handEvaluator.evaluateInitialValue(boneState);
         extraPly = 0;
     }
 
@@ -78,9 +78,12 @@ public class GameStateImpl implements GameState {
         this.handEvaluator = parent.handEvaluator;
         this.stateEnumerator = parent.stateEnumerator;
 
-        this.boneManager = parent.boneManager.createNext(choiceTaken, parent.isMyTurn());
+        this.boneState = parent.boneState.createNext(choiceTaken, parent.isMyTurn());
 
-        this.value = parent.getValue() + handEvaluator.addedValueFromChoice(choiceTaken, parent);
+        Choice previousChoice = parent.getChoiceTaken();
+        boolean lastChoiceWasPass = previousChoice == null ? false : previousChoice.getAction() == Action.PASS;
+        this.value = parent.getValue() + handEvaluator.addedValueFromChoice(parent.getBoneState(), parent.isMyTurn(),
+                lastChoiceWasPass, choiceTaken);
         extraPly = Math.max(parent.extraPly - 1, 0);
     }
 
@@ -91,9 +94,9 @@ public class GameStateImpl implements GameState {
      */
     private List<Choice> getValidChoices() {
         if (isMyTurn)
-            return stateEnumerator.getMyValidChoices(boneManager);
+            return stateEnumerator.getMyValidChoices(boneState);
         else
-            return stateEnumerator.getOpponentValidChoices(boneManager);
+            return stateEnumerator.getOpponentValidChoices(boneState);
     }
 
     /**
@@ -118,11 +121,11 @@ public class GameStateImpl implements GameState {
                 childStates.clear();
 
             // If the opponent has placed all of their bones, it's game over
-            if (boneManager.getSizeOfOpponentHand() == 0)
+            if (boneState.getSizeOfOpponentHand() == 0)
                 childStates.clear();
 
             // If I have placed all of my bones, it's game over
-            if (boneManager.getMyBones().isEmpty())
+            if (boneState.getMyBones().isEmpty())
                 childStates.clear();
 
             if (childStates.isEmpty())
@@ -174,17 +177,12 @@ public class GameStateImpl implements GameState {
             throw new RuntimeException("Choice was not valid: " + choice +
                     "\nValid choices were: " + validChoices + " (should be " + getValidChoices() + ")" +
                     "\nStatus is " + status +
-                    "\n possibleOpponentBones = " + getPossibleOpponentBones() +
+                    "\n possibleOpponentBones = " + boneState.getUnknownBones() +
                     "\n childStates.size() = " + getChildStates().size()) ;
         }
 
         moveCounter.incrementMovesPlayed();
         return chosenState;
-    }
-
-    @Override
-    public List<ImmutableBone> getPossibleOpponentBones() {
-        return Collections.unmodifiableList(boneManager.getUnknownBones());
     }
 
     @Override
@@ -195,11 +193,6 @@ public class GameStateImpl implements GameState {
     @Override
     public boolean isMyTurn() {
         return isMyTurn;
-    }
-
-    @Override
-    public List<ImmutableBone> getMyBones() {
-        return Collections.unmodifiableList(boneManager.getMyBones());
     }
 
     @Override
@@ -218,34 +211,14 @@ public class GameStateImpl implements GameState {
     }
 
     @Override
-    public int getSizeOfOpponentHand() {
-        return boneManager.getSizeOfOpponentHand();
-    }
-
-    @Override
-    public int getSizeOfBoneyard() {
-        return boneManager.getSizeOfBoneyard();
-    }
-
-    @Override
-    public int getLayoutRight() {
-        return boneManager.getLayoutRight();
-    }
-
-    @Override
-    public int getLayoutLeft() {
-        return boneManager.getLayoutLeft();
-    }
-
-    @Override
-    public BoneManager getBoneManager() {
-        return boneManager;
+    public BoneState getBoneState() {
+        return boneState;
     }
 
     @Override
     public String toString() {
         return String.format("%s %s , now value = %.1f , i have %d, opponent has %d, boneyard has %d%n",
-                (isMyTurn ? "opponent" : "I"), choiceTaken, getValue(), boneManager.getMyBones().size(),
-                boneManager.getSizeOfOpponentHand(), boneManager.getSizeOfBoneyard());
+                (isMyTurn ? "opponent" : "I"), choiceTaken, getValue(), boneState.getMyBones().size(),
+                boneState.getSizeOfOpponentHand(), boneState.getSizeOfBoneyard());
     }
 }
