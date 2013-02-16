@@ -70,18 +70,24 @@ public class RouteSelectorBinary implements RouteSelector {
                 bestRoute = bestRouteFromChild;
             else if (state.isMyTurn() && bestRouteFromChild.getValue() > bestRoute.getValue())
                 bestRoute = bestRouteFromChild;
-            else if (!state.isMyTurn()) {
+            else if (!state.isMyTurn())
                 if (bestRouteFromChild.getValue() < bestRoute.getValue())
                     bestRoute = bestRouteFromChild;
+
+            if (!state.isMyTurn() && bestRouteFromChild.getValue() < 0) {
                 n += 1;
                 sumOfOpponentValues += bestRouteFromChild.getValue();
             }
         }
 
-        double extraValue = (n == 0 ? 0 : sumOfOpponentValues / n / 3);
-
         if (bestRoute == null)
             bestRoute = new Route(state);
+        else {
+            sumOfOpponentValues -= bestRoute.getValue();
+            n -= 1;
+        }
+
+        double extraValue = (n == 0 ? 0 : sumOfOpponentValues / n / 1);
 
         bestRoute.extendBackward();
         bestRoute.increaseValue(extraValue);

@@ -141,8 +141,9 @@ public class AIControllerTest {
 
     @Test
     public void testAgainstRandomLots() throws Exception {
+        my_ai = AIControllerImpl.createQuickerProbabilisticAI();
         AIController randomAI = AIControllerImpl.createRandomAI();
-        assertEquals(my_ai, testAIs(my_ai, randomAI, 100));
+        assertEquals(my_ai, testAIs(my_ai, randomAI, 10000));
     }
 
     @Test
