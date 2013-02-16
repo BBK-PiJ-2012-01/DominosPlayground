@@ -61,6 +61,7 @@ public class BoneStateTest {
 
     @Test
     public void testGetSizeOfBoneyard() throws Exception {
+        assertEquals(14, preGameState.getSizeOfBoneyard());
         assertEquals(14, initialState.getSizeOfBoneyard());
 
         assertEquals(14, iPassed.getSizeOfBoneyard());

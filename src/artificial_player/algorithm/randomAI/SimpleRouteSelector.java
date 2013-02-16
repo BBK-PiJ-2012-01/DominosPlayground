@@ -17,7 +17,7 @@ import java.util.List;
 public class SimpleRouteSelector implements RouteSelector {
 
     @Override
-    public List<Route> getBestRoutes(GameState state, boolean excludePickup) {
+    public List<Route> getBestRoutes(GameState state) {
         List<GameState> childStates = state.getChildStates();
         List<Route> bestRoutes = new ArrayList<Route>(childStates.size());
 
@@ -36,13 +36,10 @@ public class SimpleRouteSelector implements RouteSelector {
 //        System.out.format("level %d has %d children%n", state.depth(), childStates.size());
 
         for (GameState childState : childStates) {
-            // If excludePickup, then skip if this childState is a pick-up
-            if (excludePickup) {
-                Choice choiceTaken = childState.getChoiceTaken();
-                if (choiceTaken != null && choiceTaken.getAction() == Choice.Action.PICKED_UP) {
-                    continue;
-                }
-            }
+            // skip if this childState is a pick-up
+            Choice choiceTaken = childState.getChoiceTaken();
+            if (choiceTaken != null && choiceTaken.getAction() == Choice.Action.PICKED_UP)
+                continue;
 
             // Get the best route to each childState (from the final state)
             Route bestRoute = new Route(childState);

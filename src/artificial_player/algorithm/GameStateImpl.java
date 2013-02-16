@@ -111,23 +111,26 @@ public class GameStateImpl implements GameState {
         if (desired_status == Status.HAS_CHILD_STATES) {
             List<Choice> validChoicesList = getValidChoices();
 
-            List<GameState> childStates = new ArrayList<GameState>(validChoicesList.size());
-
-            for (Choice choice : validChoicesList)
-                childStates.add( createNextState(choice) );
+            List<GameState> childStates;
 
             // If this is the second pass in a row, it's game over
             if (choiceTaken != null && choiceTaken.getAction() == Action.PASS
                     && parent.getChoiceTaken() != null && parent.getChoiceTaken().getAction() == Action.PASS)
-                childStates.clear();
+                childStates = Collections.emptyList();
 
             // If the opponent has placed all of their bones, it's game over
-            if (boneState.getSizeOfOpponentHand() == 0)
-                childStates.clear();
+            else if (boneState.getSizeOfOpponentHand() == 0)
+                childStates = Collections.emptyList();
 
             // If I have placed all of my bones, it's game over
-            if (boneState.getMyBones().isEmpty())
-                childStates.clear();
+            else if (boneState.getMyBones().isEmpty())
+                childStates = Collections.emptyList();
+
+            else {
+                childStates = new ArrayList<GameState>(validChoicesList.size());
+                for (Choice choice : validChoicesList)
+                    childStates.add(createNextState(choice));
+            }
 
             if (childStates.isEmpty())
                 status = Status.GAME_OVER;

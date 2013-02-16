@@ -4,10 +4,7 @@ import artificial_player.algorithm.helper.BoneState;
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.Route;
-import artificial_player.algorithm.probabilisticAI.ExpectationWeightEvaluator;
-import artificial_player.algorithm.probabilisticAI.LinearPlyManager;
-import artificial_player.algorithm.probabilisticAI.RouteSelectorImpl;
-import artificial_player.algorithm.probabilisticAI.StateEnumeratorImpl;
+import artificial_player.algorithm.probabilisticAI.*;
 import artificial_player.algorithm.randomAI.ConstantPlyManager;
 import artificial_player.algorithm.randomAI.RandomEvaluator;
 import artificial_player.algorithm.randomAI.SimpleRouteSelector;
@@ -26,10 +23,15 @@ public class AIControllerImpl implements AIController {
     private final RouteSelector routeSelector;
     private final StateEnumerator stateEnumerator;
     private final HandEvaluator handEvaluator;
+    private int stableIterationRequirement = 50;
+
+    public void setStableIterationRequirement(int stableIterationRequirement) {
+        this.stableIterationRequirement = stableIterationRequirement;
+    }
 
     private GameState currentState;
 
-    public static AIController createProbablisticAI() {
+    public static AIControllerImpl createProbabilisticAI() {
         return new AIControllerImpl(
                 new LinearPlyManager(),
                 new RouteSelectorImpl(),
@@ -37,7 +39,23 @@ public class AIControllerImpl implements AIController {
                 new ExpectationWeightEvaluator());
     }
 
-    public static AIController createRandomAI() {
+    public static AIControllerImpl createQuickerProbabilisticAI() {
+        return new AIControllerImpl(
+                new LinearPlyManager(),
+                new RouteSelectorBinary(),
+                new StateEnumeratorImpl(),
+                new ExpectationWeightEvaluator());
+    }
+
+    public static AIController createAIWithValueAddedPerChoice(int value) {
+        return new AIControllerImpl(
+                new LinearPlyManager(),
+                new RouteSelectorBinary(),
+                new StateEnumeratorImpl(),
+                new ExpectationWeightEvaluator(value));
+    }
+
+    public static AIControllerImpl createRandomAI() {
         return new AIControllerImpl(
                 new ConstantPlyManager(),
                 new SimpleRouteSelector(),
@@ -56,6 +74,8 @@ public class AIControllerImpl implements AIController {
 
     @Override
     public void setInitialState(List<ImmutableBone> myBones, boolean isMyTurn) {
+        currentState = null;
+        System.gc();
         currentState = new GameStateImpl(stateEnumerator, handEvaluator,
                 plyManager.getInitialPly(), myBones, isMyTurn);
     }
@@ -73,10 +93,9 @@ public class AIControllerImpl implements AIController {
         int n = 0;
         Choice bestChoice = null;
         int iterationsBestChoiceHasBeenBestFor = 0;
-        int minIterationsBestChoiceMustBeBestFor = 50;
-//        System.out.println("Number of child states = " + currentState.getChildStates().size());
+
         do {
-            bestRoutes = routeSelector.getBestRoutes(currentState, true);
+            bestRoutes = routeSelector.getBestRoutes(currentState);
 
             if (bestRoutes.isEmpty())
                 return null;
@@ -102,7 +121,7 @@ public class AIControllerImpl implements AIController {
             if (bestChoice != newBestChoice) {
                 iterationsBestChoiceHasBeenBestFor = 0;
                 bestChoice = newBestChoice;
-            } else if (bestChoice != null && iterationsBestChoiceHasBeenBestFor == minIterationsBestChoiceMustBeBestFor) {
+            } else if (bestChoice != null && iterationsBestChoiceHasBeenBestFor == stableIterationRequirement) {
                 break;
             } else {
                 ++iterationsBestChoiceHasBeenBestFor;

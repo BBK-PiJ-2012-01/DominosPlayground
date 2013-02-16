@@ -20,7 +20,7 @@ public class AutomatedTableTest {
 
     @Test
     public void testAiInTournament() throws Exception {
-        AIController probabilisticAI = AIControllerImpl.createProbablisticAI();
+        AIController probabilisticAI = AIControllerImpl.createProbabilisticAI();
         AIController randomAI = AIControllerImpl.createRandomAI();
         AIController winner;
 
@@ -54,9 +54,35 @@ public class AutomatedTableTest {
 
     @Test
     public void testAiInLongGame() throws Exception {
-        AIController probabilisticAI = AIControllerImpl.createProbablisticAI();
+        AIController probabilisticAI = AIControllerImpl.createProbabilisticAI();
         AIController randomAI = AIControllerImpl.createRandomAI();
         AIController winner = playGame(probabilisticAI, randomAI, 1000);
+    }
+
+    @Test
+    public void testQuickVersionInLongGame() throws Exception {
+        AIController probabilisticAI = AIControllerImpl.createProbabilisticAI();
+        AIController quickProbablistic = AIControllerImpl.createQuickerProbabilisticAI();
+        AIController winner = playGame(quickProbablistic, probabilisticAI, 1000);
+    }
+
+    @Test
+    public void testMinStableIterations() throws Exception {
+        AIControllerImpl higherStabilityAI = AIControllerImpl.createQuickerProbabilisticAI();
+        AIControllerImpl lowerStabilityAI = AIControllerImpl.createQuickerProbabilisticAI();
+
+        higherStabilityAI.setStableIterationRequirement(100);
+        lowerStabilityAI.setStableIterationRequirement(50);
+
+        playGame(higherStabilityAI, lowerStabilityAI, 1000);
+    }
+
+    @Test
+    public void testValueAddedPerChoice() throws Exception {
+        AIController higherValueAddedAI = AIControllerImpl.createAIWithValueAddedPerChoice(3);
+        AIController lowerValueAddedAI = AIControllerImpl.createAIWithValueAddedPerChoice(1);
+
+        playGame(higherValueAddedAI, lowerValueAddedAI, 1000);
     }
 }
 

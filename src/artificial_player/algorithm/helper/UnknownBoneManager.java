@@ -9,7 +9,7 @@ import java.util.*;
  */
 public class UnknownBoneManager {
     private final Map<Integer, List<ImmutableBone>> opponentChancesToHaveBone;
-    private final Map<ImmutableBone, Double> opponentBoneProbs;
+    private final Map<ImmutableBone, Float> opponentBoneProbs;
     private final List<ImmutableBone> unknownBones;
     private final int sizeOfOpponentHand, sizeOfBoneyard;
 
@@ -39,20 +39,19 @@ public class UnknownBoneManager {
         opponentBoneProbs = calculateProbabilities();
     }
 
-    private Map<ImmutableBone, Double> calculateProbabilities() {
-        Map<ImmutableBone, Double> newOpponentBoneProbs = new HashMap<ImmutableBone, Double>();
+    private Map<ImmutableBone, Float> calculateProbabilities() {
+        Map<ImmutableBone, Float> newOpponentBoneProbs = new HashMap<ImmutableBone, Float>();
 
         // Start from 0 probability (ie. the initial state)
-        for (ImmutableBone bone : unknownBones)
-            newOpponentBoneProbs.put(bone, 0.0);
+//        for (ImmutableBone bone : unknownBones)
+//            newOpponentBoneProbs.put(bone, 0.0);
 
         int largestNumberOfChances = Collections.max(opponentChancesToHaveBone.keySet());
         int thenAvailableBonesToPickup = 0;
 
-        List<ImmutableBone> possibleBonesToTake = new LinkedList<ImmutableBone>();
-
-        //TODO: Map.put is using lots of memory and CPU.  Consider using array as temporary storage
-        // Also, Double.valueOf is taking lots of memory + CPU.  Using a double[] instead of Map will fix that.
+//        List<ImmutableBone> possibleBonesToTake = new LinkedList<ImmutableBone>();
+        List<ImmutableBone> possibleBonesToTake = new ArrayList<ImmutableBone>(sizeOfBoneyard + sizeOfOpponentHand);
+        float[] thenBoneProb = new float[sizeOfBoneyard + sizeOfOpponentHand];
 
         for (int i = largestNumberOfChances; i > 0; --i) {
             List<ImmutableBone> bonesNowAbleToBePickedUp = opponentChancesToHaveBone.get(i);
@@ -61,17 +60,36 @@ public class UnknownBoneManager {
                 thenAvailableBonesToPickup += bonesNowAbleToBePickedUp.size();
             }
 
-            for (ImmutableBone bone : possibleBonesToTake) {
-                double probOpponentHasBone = newOpponentBoneProbs.get(bone);
-                double probBoneyardHasBone = 1 - probOpponentHasBone;
+            for (int boneId = 0; boneId < possibleBonesToTake.size(); ++boneId) {
+                float probOpponentHasBone = thenBoneProb[boneId];
+                float probBoneyardHasBone = 1 - probOpponentHasBone;
+                float newProbOpponentHasBone = probOpponentHasBone + probBoneyardHasBone / thenAvailableBonesToPickup;
 
-                double newProbOpponentHasBone = probOpponentHasBone + probBoneyardHasBone / thenAvailableBonesToPickup;
-
-                newOpponentBoneProbs.put(bone, newProbOpponentHasBone);
+                thenBoneProb[boneId] = newProbOpponentHasBone;
             }
+
+//            for (ImmutableBone bone : possibleBonesToTake) {
+//                double probOpponentHasBone = newOpponentBoneProbs.get(bone);
+//                double probBoneyardHasBone = 1 - probOpponentHasBone;
+//
+//                double newProbOpponentHasBone = probOpponentHasBone + probBoneyardHasBone / thenAvailableBonesToPickup;
+//
+//                newOpponentBoneProbs.put(bone, newProbOpponentHasBone);
+//            }
 
             --thenAvailableBonesToPickup;
         }
+
+        // Bones that have had zero chances to be picked up will have zero probability of being in opponent's hand.
+        // I've only dealt with those with greater than zero chances so far, but I'll add these now.  They'll relate
+        // to elements in thenBoneProb elements that haven't been set, ie. will be zero.
+        List<ImmutableBone> bonesWithZeroProb = opponentChancesToHaveBone.get(0);
+        if (bonesWithZeroProb != null)
+            possibleBonesToTake.addAll(bonesWithZeroProb);
+
+        // Now persist these probabilities in a map:
+        for (int boneId = 0; boneId < possibleBonesToTake.size(); ++boneId)
+            newOpponentBoneProbs.put(possibleBonesToTake.get(boneId), thenBoneProb[boneId]);
 
         return newOpponentBoneProbs;
     }
@@ -160,7 +178,7 @@ public class UnknownBoneManager {
 
     }
 
-    public Map<ImmutableBone, Double> getOpponentBoneProbs() {
+    public Map<ImmutableBone, Float> getOpponentBoneProbs() {
         return opponentBoneProbs;
     }
 

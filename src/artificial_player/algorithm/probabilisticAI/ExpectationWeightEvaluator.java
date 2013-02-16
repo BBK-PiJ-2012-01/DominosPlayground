@@ -27,6 +27,16 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
     private static final double VALUE_OF_OPPONENT_PASS = 10;
     private static final double COST_OF_MY_PASS = 10;
 
+    private int constantValueAdded;
+
+    public ExpectationWeightEvaluator(int constantValueAdded) {
+        this.constantValueAdded = constantValueAdded;
+    }
+
+    public ExpectationWeightEvaluator() {
+        constantValueAdded = 1;
+    }
+
     @Override
     public double evaluateInitialValue(BoneState boneState) {
         int opponentHandWeight = 0;
@@ -44,7 +54,7 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
 
     @Override
     public double addedValueFromChoice(BoneState boneState, boolean isMyTurn, boolean prevChoiceWasPass, Choice choice) {
-        int addedValue = 1;
+        int addedValue = constantValueAdded;
 
         if (choice.getAction() == Choice.Action.PLACED_RIGHT
                 || choice.getAction() == Choice.Action.PLACED_LEFT) {
@@ -94,3 +104,4 @@ public class ExpectationWeightEvaluator implements HandEvaluator {
         return addedValue;
     }
 }
+

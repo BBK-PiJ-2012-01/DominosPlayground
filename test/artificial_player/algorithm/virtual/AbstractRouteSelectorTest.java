@@ -37,7 +37,7 @@ public class AbstractRouteSelectorTest {
         child2 = new MockGameState(parent, 20);
 
         // child1 represents picking up a bone
-        child1.setChoiceTaken(new Choice(Choice.Action.PICKED_UP, null));
+        child1.setChoiceTaken(new Choice(Choice.Action.PASS, null));
 
         grandChild1a = new MockGameState(child1, 9);
         grandChild1b = new MockGameState(child1, 11);
@@ -84,7 +84,7 @@ public class AbstractRouteSelectorTest {
     @Test
     public void testGetAllBestRoutesWhenMyTurn() throws Exception {
         setFirstChoiceAsMine();
-        List<Route> bestRoutes = routeSelector.getBestRoutes(parent, false);
+        List<Route> bestRoutes = routeSelector.getBestRoutes(parent);
 
         // Will get a best route for each child.
         assertEquals(2, bestRoutes.size());
@@ -100,7 +100,7 @@ public class AbstractRouteSelectorTest {
     @Test
     public void testGetAllBestRoutesWhenOpponentTurn() throws Exception {
         setFirstChoiceAsOpponents();
-        List<Route> bestRoutes = routeSelector.getBestRoutes(parent, false);
+        List<Route> bestRoutes = routeSelector.getBestRoutes(parent);
 
         // Will get a best route for each child.
         assertEquals(2, bestRoutes.size());

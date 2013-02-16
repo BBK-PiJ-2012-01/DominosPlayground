@@ -7,13 +7,11 @@ package artificial_player.algorithm.helper;
 public class ImmutableBone {
     private int left, right;
     private int weight;
-    private int hashCode;
 
     public ImmutableBone(int left, int right) {
         this.weight = left + right;
         this.right = right;
         this.left = left;
-        this.hashCode = left + right * 31;
     }
 
     public int left() {
@@ -54,7 +52,7 @@ public class ImmutableBone {
 
     @Override
     public int hashCode() {
-        return hashCode;
+        return weight;
     }
 
     @Override

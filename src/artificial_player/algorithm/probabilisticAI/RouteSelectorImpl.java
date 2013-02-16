@@ -31,14 +31,15 @@ public class RouteSelectorImpl extends AbstractRouteSelector {
 //                extraValue += chosen.getValue() / (1 + 0.5 * Math.abs(route.getValue() - chosen.getValue()));
                 if (route.getValue() < 0) {
                     n += 1;
-                    extraValue += route.getValue() / n;
+                    extraValue += route.getValue();// / n;
                 }
             }
-//            if (n > 0)
-//                extraValue /= n;
+            if (n > 0)
+                extraValue /= n;
         }
 
         return extraValue;
+//        return 0;
     }
 
 }
