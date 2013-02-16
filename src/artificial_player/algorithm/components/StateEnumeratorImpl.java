@@ -1,9 +1,8 @@
-package artificial_player.algorithm.probabilisticAI;
+package artificial_player.algorithm.components;
 
 import artificial_player.algorithm.helper.BoneState;
 import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.Choice;
-import artificial_player.algorithm.virtual.AbstractStateEnumerator;
 
 import java.util.ArrayList;
 import java.util.List;

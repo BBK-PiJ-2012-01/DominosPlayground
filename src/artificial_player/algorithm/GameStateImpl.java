@@ -1,8 +1,8 @@
 package artificial_player.algorithm;
 
 import artificial_player.algorithm.helper.*;
-import artificial_player.algorithm.virtual.HandEvaluator;
-import artificial_player.algorithm.virtual.StateEnumerator;
+import artificial_player.algorithm.components.HandEvaluator;
+import artificial_player.algorithm.components.StateEnumerator;
 
 import java.util.*;
 import static artificial_player.algorithm.helper.Choice.Action;

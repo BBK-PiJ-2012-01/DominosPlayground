@@ -1,4 +1,4 @@
-package artificial_player.algorithm.virtual;
+package artificial_player.algorithm.components;
 
 import artificial_player.algorithm.GameState;
 import artificial_player.algorithm.GameStateImpl;
@@ -65,7 +65,7 @@ public abstract class AbstractRouteSelector implements RouteSelector {
      *
      * @param state the state the routes start from.
      * @param excludePickup if true, ignores routes starting with a pickup.
-     * @return
+     * @return the route from the given state to the best final state.
      */
     public List<Route> getBestRoutesInternal(GameState state, boolean excludePickup) {
         // If the state "desires" to be final (a LEAF or NOT_YET_CALCULATED) or "desires"
@@ -81,7 +81,7 @@ public abstract class AbstractRouteSelector implements RouteSelector {
 
         // So now the state MUST have child states.
 
-        // TODO: if there's only one childState, just pick it... but that won't work nicely if called by getBestRoute...
+
 //        System.out.format("level %d has %d children%n", state.depth(), childStates.size());
 
         for (GameState childState : childStates) {

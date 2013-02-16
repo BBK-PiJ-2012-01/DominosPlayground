@@ -1,17 +1,10 @@
 package artificial_player.algorithm;
 
+import artificial_player.algorithm.components.*;
 import artificial_player.algorithm.helper.BoneState;
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.Route;
-import artificial_player.algorithm.probabilisticAI.*;
-import artificial_player.algorithm.randomAI.ConstantPlyManager;
-import artificial_player.algorithm.randomAI.RandomEvaluator;
-import artificial_player.algorithm.randomAI.SimpleRouteSelector;
-import artificial_player.algorithm.virtual.HandEvaluator;
-import artificial_player.algorithm.virtual.PlyManager;
-import artificial_player.algorithm.virtual.RouteSelector;
-import artificial_player.algorithm.virtual.StateEnumerator;
 
 import java.util.List;
 
@@ -55,12 +48,8 @@ public class AIControllerImpl implements AIController {
                 new ExpectationWeightEvaluator(value));
     }
 
-    public static AIControllerImpl createRandomAI() {
-        return new AIControllerImpl(
-                new ConstantPlyManager(),
-                new SimpleRouteSelector(),
-                new StateEnumeratorImpl(),
-                new RandomEvaluator());
+    public static AIController createRandomAI() {
+        return new RandomAIController();
     }
 
     private AIControllerImpl(PlyManager plyManager, RouteSelector routeSelector,

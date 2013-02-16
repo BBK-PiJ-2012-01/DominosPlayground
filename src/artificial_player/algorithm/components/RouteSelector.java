@@ -1,4 +1,4 @@
-package artificial_player.algorithm.virtual;
+package artificial_player.algorithm.components;
 
 import artificial_player.algorithm.GameState;
 import artificial_player.algorithm.helper.Route;

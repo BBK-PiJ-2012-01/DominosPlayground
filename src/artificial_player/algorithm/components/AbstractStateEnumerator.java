@@ -1,4 +1,4 @@
-package artificial_player.algorithm.virtual;
+package artificial_player.algorithm.components;
 
 import artificial_player.algorithm.helper.ImmutableBone;
 import artificial_player.algorithm.helper.Choice;

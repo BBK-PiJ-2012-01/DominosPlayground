@@ -2,8 +2,8 @@ package artificial_player.algorithm;
 
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.helper.ImmutableBone;
-import artificial_player.algorithm.probabilisticAI.StateEnumeratorImpl;
-import artificial_player.algorithm.virtual.MockHandEvaluator;
+import artificial_player.algorithm.components.StateEnumeratorImpl;
+import artificial_player.algorithm.components.MockHandEvaluator;
 import org.junit.Before;
 import org.junit.Test;
 

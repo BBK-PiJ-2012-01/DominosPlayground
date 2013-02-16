@@ -2,6 +2,7 @@ package artificial_player;
 
 import artificial_player.algorithm.AIController;
 import artificial_player.algorithm.AIControllerImpl;
+import artificial_player.algorithm.RandomAIController;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,7 +21,8 @@ public class AutomatedTableTest {
 
     @Test
     public void testAiInTournament() throws Exception {
-        AIController probabilisticAI = AIControllerImpl.createProbabilisticAI();
+//        AIController probabilisticAI = AIControllerImpl.createProbabilisticAI();
+        AIController probabilisticAI = AIControllerImpl.createQuickerProbabilisticAI();
         AIController randomAI = AIControllerImpl.createRandomAI();
         AIController winner;
 
@@ -37,7 +39,7 @@ public class AutomatedTableTest {
             System.out.format("Probabilistic won %d vs Random won %d%n", probWins, randomWins);
         }
 
-        System.out.println("\n\n ========== Tournament over! ==========");
+        System.out.println("\n ========== Tournament over! ==========");
         System.out.format("Probabilistic won %d vs Random won %d%n", probWins, randomWins);
     }
 
@@ -55,15 +57,18 @@ public class AutomatedTableTest {
     @Test
     public void testAiInLongGame() throws Exception {
         AIController probabilisticAI = AIControllerImpl.createProbabilisticAI();
-        AIController randomAI = AIControllerImpl.createRandomAI();
+//        AIController randomAI = AIControllerImpl.createRandomAI();
+        AIController randomAI = new RandomAIController();
+
         AIController winner = playGame(probabilisticAI, randomAI, 1000);
     }
 
     @Test
     public void testQuickVersionInLongGame() throws Exception {
-        AIController probabilisticAI = AIControllerImpl.createProbabilisticAI();
+//        AIController probabilisticAI = AIControllerImpl.createProbabilisticAI();
+        AIController benchmark = AIControllerImpl.createRandomAI();
         AIController quickProbablistic = AIControllerImpl.createQuickerProbabilisticAI();
-        AIController winner = playGame(quickProbablistic, probabilisticAI, 1000);
+        AIController winner = playGame(quickProbablistic, benchmark, 1000);
     }
 
     @Test

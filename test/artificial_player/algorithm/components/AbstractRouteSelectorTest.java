@@ -1,4 +1,4 @@
-package artificial_player.algorithm.virtual;
+package artificial_player.algorithm.components;
 
 import artificial_player.MockGameState;
 import artificial_player.algorithm.GameState;

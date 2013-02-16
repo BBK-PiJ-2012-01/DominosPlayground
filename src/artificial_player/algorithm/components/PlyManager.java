@@ -1,4 +1,4 @@
-package artificial_player.algorithm.virtual;
+package artificial_player.algorithm.components;
 
 /**
  * The ply is the limit applied to the number of levels allowed in the decision tree.

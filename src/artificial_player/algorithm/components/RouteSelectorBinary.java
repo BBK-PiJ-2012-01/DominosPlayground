@@ -1,9 +1,8 @@
-package artificial_player.algorithm.probabilisticAI;
+package artificial_player.algorithm.components;
 
 import artificial_player.algorithm.GameState;
 import artificial_player.algorithm.helper.Choice;
 import artificial_player.algorithm.helper.Route;
-import artificial_player.algorithm.virtual.RouteSelector;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -61,6 +60,8 @@ public class RouteSelectorBinary implements RouteSelector {
 
     public Route getBestRoute(GameState state) {
         Route bestRoute = null;
+        int n = 0;
+        int sumOfOpponentValues = 0;
 
         for (GameState childState : state.getChildStates()) {
             Route bestRouteFromChild = getBestRoute(childState);
@@ -69,14 +70,21 @@ public class RouteSelectorBinary implements RouteSelector {
                 bestRoute = bestRouteFromChild;
             else if (state.isMyTurn() && bestRouteFromChild.getValue() > bestRoute.getValue())
                 bestRoute = bestRouteFromChild;
-            else if (!state.isMyTurn() && bestRouteFromChild.getValue() < bestRoute.getValue())
-                bestRoute = bestRouteFromChild;
+            else if (!state.isMyTurn()) {
+                if (bestRouteFromChild.getValue() < bestRoute.getValue())
+                    bestRoute = bestRouteFromChild;
+                n += 1;
+                sumOfOpponentValues += bestRouteFromChild.getValue();
+            }
         }
+
+        double extraValue = (n == 0 ? 0 : sumOfOpponentValues / n / 3);
 
         if (bestRoute == null)
             bestRoute = new Route(state);
 
         bestRoute.extendBackward();
+        bestRoute.increaseValue(extraValue);
         return bestRoute;
     }
 }

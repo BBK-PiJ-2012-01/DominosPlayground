@@ -1,7 +1,6 @@
-package artificial_player.algorithm.probabilisticAI;
+package artificial_player.algorithm.components;
 
 import artificial_player.algorithm.helper.Route;
-import artificial_player.algorithm.virtual.AbstractRouteSelector;
 
 import java.util.*;
 
