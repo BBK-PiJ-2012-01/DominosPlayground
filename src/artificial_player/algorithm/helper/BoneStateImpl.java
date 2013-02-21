@@ -3,12 +3,12 @@ package artificial_player.algorithm.helper;
 import java.util.*;
 
 
-public class BoneStateOffloadedImpl implements BoneState {
+public class BoneStateImpl implements BoneState {
     private final int layoutLeft, layoutRight;
     private final List<ImmutableBone> myBones;
     private final UnknownBoneManager unknownBoneManager;
 
-    public BoneStateOffloadedImpl(List<ImmutableBone> myBones) {
+    public BoneStateImpl(List<ImmutableBone> myBones) {
         this.myBones = new ArrayList<ImmutableBone>(myBones);
 
         layoutLeft = -1;
@@ -19,7 +19,7 @@ public class BoneStateOffloadedImpl implements BoneState {
         unknownBoneManager = new UnknownBoneManager(unknownBones, myBones.size());
     }
 
-    public BoneStateOffloadedImpl(List<ImmutableBone> myBones, UnknownBoneManager unknownBoneManager, int layoutLeft, int layoutRight) {
+    public BoneStateImpl(List<ImmutableBone> myBones, UnknownBoneManager unknownBoneManager, int layoutLeft, int layoutRight) {
         this.myBones = myBones;
         this.unknownBoneManager = unknownBoneManager;
         this.layoutLeft = layoutLeft;
@@ -62,7 +62,7 @@ public class BoneStateOffloadedImpl implements BoneState {
                 newMyBones.add(bone);
         }
 
-        return new BoneStateOffloadedImpl(newMyBones, nextUnknownBoneManager, newLayoutLeft, newLayoutRight);
+        return new BoneStateImpl(newMyBones, nextUnknownBoneManager, newLayoutLeft, newLayoutRight);
     }
 
     @Override
@@ -113,7 +113,7 @@ public class BoneStateOffloadedImpl implements BoneState {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("BoneStateOffloadedImpl");
+        sb.append("BoneStateImpl");
         sb.append("{layoutLeft=").append(layoutLeft);
         sb.append(", layoutRight=").append(layoutRight);
         sb.append(", myBones=").append(myBones);
