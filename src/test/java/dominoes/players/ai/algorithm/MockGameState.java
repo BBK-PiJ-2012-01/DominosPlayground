@@ -64,6 +64,21 @@ public class MockGameState implements GameState {
         return "Mock state with value = " + getValue();
     }
 
+    @Override
+    public Choice getChoiceTaken() {
+        return choiceTaken;
+    }
+
+    @Override
+    public GameState getParent() {
+        return parent;
+    }
+
+    @Override
+    public double getValue() {
+        return value;
+    }
+
     // =========== Below are unimplemented functions ===========
 
     @Override
@@ -77,22 +92,7 @@ public class MockGameState implements GameState {
     }
 
     @Override
-    public Choice getChoiceTaken() {
-        return choiceTaken;
-    }
-
-    @Override
-    public GameState getParent() {
-        return parent;
-    }
-
-    @Override
     public void increasePly(int plyIncrease) {
         throw new UnsupportedOperationException("Not supported in mock");
-    }
-
-    @Override
-    public double getValue() {
-        return value;
     }
 }

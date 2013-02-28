@@ -3,11 +3,19 @@ package dominoes.players.ai.algorithm.components;
 import dominoes.players.ai.algorithm.helper.BoneState;
 import dominoes.players.ai.algorithm.helper.Choice;
 import dominoes.players.ai.algorithm.helper.ImmutableBone;
+import org.mockito.Mock;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Evaluates the hand purely on the AI's hand
  */
 public class MockHandEvaluator implements HandEvaluator {
+    @Mock
+    private HandEvaluator mock;
+
     @Override
     public double evaluateInitialValue(BoneState boneState) {
         double value = 0;
@@ -27,7 +35,7 @@ public class MockHandEvaluator implements HandEvaluator {
         if (choice.getAction() == Choice.Action.PICKED_UP)
             return - choice.getBone().weight();
 
-        else if (choice.getAction() == Choice.Action.PLACED_LEFT || choice.getAction() == Choice.Action.PLACED_RIGHT)
+        else if (choice.getAction().isPlacement())
             return + choice.getBone().weight();
 
         else
