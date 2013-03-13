@@ -16,7 +16,7 @@ public class BoneStateImpl implements BoneState {
 
         List<ImmutableBone> unknownBones = new LinkedList<ImmutableBone>(Bones.getAllBones());
         unknownBones.removeAll(myBones);
-        unknownBoneManager = new UnknownBoneManager(unknownBones, myBones.size());
+        unknownBoneManager = new UnknownBoneManagerImpl(unknownBones, myBones.size());
     }
 
     public BoneStateImpl(List<ImmutableBone> myBones, UnknownBoneManager unknownBoneManager, int layoutLeft, int layoutRight) {

@@ -1,7 +1,10 @@
 package dominoes.players.ai.algorithm.helper;
 
+import dominoes.Bone;
+
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -28,5 +31,22 @@ public class Bones {
      */
     public static Set<ImmutableBone> getAllBones() {
         return allBones;
+    }
+
+    /**
+     * Given a list of ImmutableBones, this will return an array of equivalent
+     * Bones.
+     *
+     * @param list a list of ImmutableBones.
+     * @return an array of equivalent Bones.
+     */
+    public static Bone[] convertToBoneArray(List<ImmutableBone> list) {
+        Bone[] array = new Bone[list.size()];
+        int i = 0;
+
+        for (ImmutableBone bone : list)
+            array[i++] = bone.cloneAsBone();
+
+        return array;
     }
 }

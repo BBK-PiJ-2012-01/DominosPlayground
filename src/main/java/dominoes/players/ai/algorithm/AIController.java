@@ -45,9 +45,9 @@ public interface AIController {
     int getHandWeight();
 
     /**
-     * Returns true iff the AI's hand is empty.
+     * Returns the ai's current hand.
      *
-     * @return true iff the AI's hand is empty.
+     * @return the ai's current hand.
      */
-    boolean hasEmptyHand();
+    List<ImmutableBone> getMyBones();
 }

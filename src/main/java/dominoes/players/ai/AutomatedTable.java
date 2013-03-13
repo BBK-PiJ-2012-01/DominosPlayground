@@ -1,15 +1,14 @@
 package dominoes.players.ai;
 
+import dominoes.players.ai.algorithm.AIBuilder;
 import dominoes.players.ai.algorithm.AIController;
-import dominoes.players.ai.algorithm.AIControllerImpl;
 import dominoes.players.ai.algorithm.GameOverException;
 import dominoes.players.ai.algorithm.helper.Bones;
 import dominoes.players.ai.algorithm.helper.Choice;
+import dominoes.players.ai.algorithm.helper.ConsoleHelper;
 import dominoes.players.ai.algorithm.helper.ImmutableBone;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -156,9 +155,9 @@ public class AutomatedTable {
 
     private AIController getWinner(AIController player1, AIController player2) {
         final AIController winner;
-        if (player1.hasEmptyHand() && !player2.hasEmptyHand())
+        if (player1.getMyBones().isEmpty() && !player2.getMyBones().isEmpty())
             winner = player1;
-        else if (!player1.hasEmptyHand() && player2.hasEmptyHand())
+        else if (!player1.getMyBones().isEmpty() && player2.getMyBones().isEmpty())
             winner = player2;
         else {
             if (player1.getHandWeight() < player2.getHandWeight())
@@ -176,42 +175,36 @@ public class AutomatedTable {
         if (args.length > 0)
             System.out.println("Ignoring arguments...");
 
-        System.out.println("Player 1 is probabilistic AI, player 2 is a dumb (randomly-choosing) AI");
-        AIController probabilisticAI = AIControllerImpl.createQuickerProbabilisticAI();
-        AIController randomAI = AIControllerImpl.createRandomAI();
         AutomatedTable table = new AutomatedTable();
         table.setVerbose(true);
 
-        int gameType = askUserForInteger("Play a tournament [1] or a single game [2]: ");
+        System.out.println("Available AIs are:");
+        for (int i = 1; i <= AIBuilder.getValidAINames().size(); ++i)
+            System.out.format("\t[%d] %s%n", i, AIBuilder.getValidAINames().get(i - 1));
+
+        AIController player1AI = createAIFromIndex(ConsoleHelper.askUserForInteger("Choose AI for player 1: "));
+        AIController player2AI = createAIFromIndex(ConsoleHelper.askUserForInteger("Choose AI for player 2: "));
+
+        int gameType = ConsoleHelper.askUserForInteger("Play a tournament [1] or a single game [2]: ");
 
         if (gameType == 1) {
-            int gamesToPlay = askUserForInteger("Enter number of games to play: ");
-            int pointsToWin = askUserForInteger("Enter number of points required to win a game: ");
-            table.competeAIsInTournament(probabilisticAI, randomAI, pointsToWin, gamesToPlay);
+            int gamesToPlay = ConsoleHelper.askUserForInteger("Enter number of games to play: ");
+            int pointsToWin = ConsoleHelper.askUserForInteger("Enter number of points required to win a game: ");
+            table.competeAIsInTournament(player1AI, player2AI, pointsToWin, gamesToPlay);
 
         } else if (gameType == 2) {
-            int pointsToWin = askUserForInteger("Enter number of points required to win: ");
-            table.competeAIs(probabilisticAI, randomAI, pointsToWin);
+            int pointsToWin = ConsoleHelper.askUserForInteger("Enter number of points required to win: ");
+            table.competeAIs(player1AI, player2AI, pointsToWin);
 
         } else {
             System.out.println("Not a valid choice");
         }
 
-
     }
 
-    private static int askUserForInteger(String question) {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-        while (true) {
-            System.out.print(question);
-
-            try {
-                String input = br.readLine();
-                return Integer.parseInt(input);
-            } catch (IOException e) {
-                System.out.print("Bad input - ");
-            }
-        }
+    private static AIController createAIFromIndex(int index) {
+        String aiString = AIBuilder.getValidAINames().get(index - 1);
+        return AIBuilder.createAI(aiString);
     }
+
 }

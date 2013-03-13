@@ -1,12 +1,18 @@
 package dominoes.players.ai.algorithm.helper;
 
 
+import dominoes.Bone;
+
 /**
  * An immutable bone (like dominoes.Bone, but not flippable).
  */
 public class ImmutableBone {
     private int left, right;
     private int weight;
+
+    public ImmutableBone(Bone bone) {
+        this(bone.left(), bone.right());
+    }
 
     public ImmutableBone(int left, int right) {
         this.weight = left + right;
@@ -35,6 +41,10 @@ public class ImmutableBone {
      */
     public boolean matches(int number) {
         return left() == number || right() == number;
+    }
+
+    public Bone cloneAsBone() {
+        return new Bone(left, right);
     }
 
     @Override

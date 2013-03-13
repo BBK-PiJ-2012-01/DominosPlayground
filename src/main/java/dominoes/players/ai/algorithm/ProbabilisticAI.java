@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Implementation of AIController, using an iterative process to get the best routes through the decision tree.
  */
-public class AIControllerImpl implements AIController {
+public class ProbabilisticAI implements AIController {
     private final PlyManager plyManager;
     private final RouteSelector routeSelector;
     private final StateEnumerator stateEnumerator;
@@ -24,36 +24,8 @@ public class AIControllerImpl implements AIController {
 
     private GameState currentState;
 
-    public static AIControllerImpl createProbabilisticAI() {
-        return new AIControllerImpl(
-                new LinearPlyManager(),
-                new RouteSelectorImpl(),
-                new StateEnumeratorImpl(),
-                new ExpectationWeightEvaluator());
-    }
-
-    public static AIControllerImpl createQuickerProbabilisticAI() {
-        return new AIControllerImpl(
-                new LinearPlyManager(),
-                new RouteSelectorBinary(),
-                new StateEnumeratorImpl(),
-                new ExpectationWeightEvaluator());
-    }
-
-    public static AIController createAIWithValueAddedPerChoice(int value) {
-        return new AIControllerImpl(
-                new LinearPlyManager(),
-                new RouteSelectorBinary(),
-                new StateEnumeratorImpl(),
-                new ExpectationWeightEvaluator(value));
-    }
-
-    public static AIController createRandomAI() {
-        return new RandomAIController();
-    }
-
-    private AIControllerImpl(PlyManager plyManager, RouteSelector routeSelector,
-                            StateEnumerator stateEnumerator, HandEvaluator handEvaluator) {
+    public ProbabilisticAI(PlyManager plyManager, RouteSelector routeSelector,
+                           StateEnumerator stateEnumerator, HandEvaluator handEvaluator) {
 
         this.plyManager = plyManager;
         this.routeSelector = routeSelector;
@@ -159,8 +131,8 @@ public class AIControllerImpl implements AIController {
     }
 
     @Override
-    public boolean hasEmptyHand() {
-        return currentState.getBoneState().getMyBones().isEmpty();
+    public List<ImmutableBone> getMyBones() {
+        return currentState.getBoneState().getMyBones();
     }
 
     @Override

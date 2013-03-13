@@ -24,8 +24,8 @@ public class AIControllerTest {
 
     @Before
     public void setUp() throws Exception {
-        my_ai = AIControllerImpl.createProbabilisticAI();
-        opponent_ai = AIControllerImpl.createProbabilisticAI();
+        my_ai = AIBuilder.createAI("SlowProbabilisticAI");
+        opponent_ai = AIBuilder.createAI("SlowProbabilisticAI");
 
         setUpBones();
 

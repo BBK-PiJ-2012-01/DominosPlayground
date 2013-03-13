@@ -17,9 +17,9 @@ public class AutomatedTableTest {
 
 //    @Test
 //    public void testAiInTournament() throws Exception {
-////        AIController probabilisticAI = AIControllerImpl.createProbabilisticAI();
-//        AIController probabilisticAI = AIControllerImpl.createQuickerProbabilisticAI();
-//        AIController randomAI = AIControllerImpl.createRandomAI();
+////        AIController probabilisticAI = ProbabilisticAI.createSlowProbabilisticAI();
+//        AIController probabilisticAI = ProbabilisticAI.createProbabilisticAI();
+//        AIController randomAI = ProbabilisticAI.createRandomAI();
 //        AIController winner;
 //
 //        int probWins = 0, randomWins = 0;
@@ -52,8 +52,8 @@ public class AutomatedTableTest {
 //
 //    @Test
 //    public void testAiInLongGame() throws Exception {
-//        AIController probabilisticAI = AIControllerImpl.createProbabilisticAI();
-////        AIController randomAI = AIControllerImpl.createRandomAI();
+//        AIController probabilisticAI = ProbabilisticAI.createSlowProbabilisticAI();
+////        AIController randomAI = ProbabilisticAI.createRandomAI();
 //        AIController randomAI = new RandomAIController();
 //
 //        AIController winner = playGame(probabilisticAI, randomAI, 1000);
@@ -61,16 +61,16 @@ public class AutomatedTableTest {
 //
 //    @Test
 //    public void testQuickVersionInLongGame() throws Exception {
-////        AIController probabilisticAI = AIControllerImpl.createProbabilisticAI();
-//        AIController benchmark = AIControllerImpl.createRandomAI();
-//        AIController quickProbablistic = AIControllerImpl.createQuickerProbabilisticAI();
+////        AIController probabilisticAI = ProbabilisticAI.createSlowProbabilisticAI();
+//        AIController benchmark = ProbabilisticAI.createRandomAI();
+//        AIController quickProbablistic = ProbabilisticAI.createProbabilisticAI();
 //        AIController winner = playGame(quickProbablistic, benchmark, 1000);
 //    }
 //
 //    @Test
 //    public void testMinStableIterations() throws Exception {
-//        AIControllerImpl higherStabilityAI = AIControllerImpl.createQuickerProbabilisticAI();
-//        AIControllerImpl lowerStabilityAI = AIControllerImpl.createQuickerProbabilisticAI();
+//        ProbabilisticAI higherStabilityAI = ProbabilisticAI.createProbabilisticAI();
+//        ProbabilisticAI lowerStabilityAI = ProbabilisticAI.createProbabilisticAI();
 //
 //        higherStabilityAI.setStableIterationRequirement(100);
 //        lowerStabilityAI.setStableIterationRequirement(50);
@@ -80,8 +80,8 @@ public class AutomatedTableTest {
 //
 //    @Test
 //    public void testValueAddedPerChoice() throws Exception {
-//        AIController higherValueAddedAI = AIControllerImpl.createAIWithValueAddedPerChoice(3);
-//        AIController lowerValueAddedAI = AIControllerImpl.createAIWithValueAddedPerChoice(1);
+//        AIController higherValueAddedAI = ProbabilisticAI.createAIWithValueAddedPerChoice(3);
+//        AIController lowerValueAddedAI = ProbabilisticAI.createAIWithValueAddedPerChoice(1);
 //
 //        playGame(higherValueAddedAI, lowerValueAddedAI, 1000);
 //    }
