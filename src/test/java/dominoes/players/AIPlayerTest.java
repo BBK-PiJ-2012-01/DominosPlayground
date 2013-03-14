@@ -24,6 +24,8 @@ public class AIPlayerTest {
         table = new Table();
         ai1 = new AIPlayer();
         ai2 = new AIPlayer();
+        ai1.setName("First Player");
+        ai2.setName("Second Player");
         boneYard = new BoneYard(6);
         table.play(new Play(boneYard.draw(), 2));
     }

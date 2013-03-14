@@ -36,13 +36,13 @@ public class AIPlayer implements dominoes.players.DominoPlayer{
     @Override
     public Play makePlay(Table table) throws CantPlayException {
         Bone[] table_layout = table.layout();
+        System.out.println(name + " makePlay()");
         System.out.println("\t (table Layout is: " + layoutToString(table_layout));
-        System.out.println("\t (my initial hand has size " + initialHand.size());
+//        System.out.println("\t (my initial hand has size " + initialHand.size());
 
 
         if (firstMove) {
             // First call to 'makePlay' of this game
-
             assert table_layout.length >= INITIAL_LAYOUT_SIZE;
 
             List<ImmutableBone> layoutBonesToProcess = Bones.convertToImmutableBoneList(table_layout);
@@ -53,7 +53,7 @@ public class AIPlayer implements dominoes.players.DominoPlayer{
             int numberOfBonesOpponentPickedUp = Bones.getAllBones().size() - boneYard.size() - 2 * HAND_SIZE - INITIAL_LAYOUT_SIZE - numberOfBonesIPickedUp;
             int numberOfOpponentMoves = numberOfBonesOpponentPickedUp + table_layout.length - INITIAL_LAYOUT_SIZE;
             boolean myGoFirst = numberOfMovesIMade == numberOfOpponentMoves;
-            System.out.println("Me first? " + myGoFirst);
+//            System.out.println("\tMe first? " + myGoFirst);
 
             for (int i = 0; i < INITIAL_LAYOUT_SIZE; ++i)
                 ai.setInitialState(initialHand.subList(0, HAND_SIZE), myGoFirst, layoutBonesToProcess.remove(0));
@@ -72,6 +72,8 @@ public class AIPlayer implements dominoes.players.DominoPlayer{
 
             assert table == currentTable;
         }
+
+        System.out.println("\t (my hand is " + ai.getMyBones());
 
         // Now make my best choice:
         Choice myChoice = ai.getBestChoice();
@@ -115,8 +117,8 @@ public class AIPlayer implements dominoes.players.DominoPlayer{
         }
 
         System.out.println("\t my choice was: " + myChoice);
-        System.out.println("\t (my play was: " + myPlay.end() + " with bone [" + myPlay.bone().left() + "," + myPlay.bone().right() + "]");
-        System.out.println("\t (my prevLayout is: " + layoutToString(prevLayout));
+//        System.out.println("\t (my play was: " + myPlay.end() + " with bone [" + myPlay.bone().left() + "," + myPlay.bone().right() + "]");
+//        System.out.println("\t (my prevLayout is: " + layoutToString(prevLayout));
 
         firstMove = false;
         return myPlay;
@@ -155,7 +157,7 @@ public class AIPlayer implements dominoes.players.DominoPlayer{
             opponentsChoice = new Choice(Choice.Action.PICKED_UP, null);
         }
 
-        System.out.println("\t opponent choice was: " + opponentsChoice);
+//        System.out.println("\t opponent choice was: " + opponentsChoice);
 
         return opponentsChoice;
     }
@@ -169,7 +171,7 @@ public class AIPlayer implements dominoes.players.DominoPlayer{
     public void draw(BoneYard boneYard) {
         ImmutableBone pickedUpBone = new ImmutableBone(boneYard.draw());
         this.boneYard = boneYard;
-
+        System.out.println(name + " draw()");
         if (firstMove) {
             // Just add to initialHand (they'll be given to the AI when 'makePlay' is first called.
             initialHand.add(pickedUpBone);

@@ -51,6 +51,8 @@ public class DominoesIT {
     public void test() throws Exception {
         player1 = new AIPlayer();
         player2 = new AIPlayer();
+        player1.setName("First Player");
+        player2.setName("Second Player");
         Dominoes game = new Dominoes(ui, player1, player2, 100, 6);
         game.play();
     }
