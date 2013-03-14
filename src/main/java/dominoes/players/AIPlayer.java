@@ -17,6 +17,7 @@ import java.util.List;
  * Time: 17:50
  */
 public class AIPlayer implements dominoes.players.DominoPlayer{
+    private final static int HAND_SIZE = 7, INITIAL_LAYOUT_SIZE = 1;
     private final AIController ai = AIBuilder.createAI("ProbabilisticAI");
     private final List<ImmutableBone> initialHand = new ArrayList<ImmutableBone>();
 
@@ -25,6 +26,7 @@ public class AIPlayer implements dominoes.players.DominoPlayer{
     private String name = "AI Bob";
     private Bone[] prevLayout;
     private Table currentTable;
+    private BoneYard boneYard;
 
 
     public AIPlayer() {
@@ -34,18 +36,31 @@ public class AIPlayer implements dominoes.players.DominoPlayer{
     @Override
     public Play makePlay(Table table) throws CantPlayException {
         Bone[] table_layout = table.layout();
+        System.out.println("\t (table Layout is: " + layoutToString(table_layout));
+        System.out.println("\t (my initial hand has size " + initialHand.size());
+
 
         if (firstMove) {
             // First call to 'makePlay' of this game
 
-            if (table_layout.length == 0) {
-                // The first move of the game is mine
-                ai.setInitialState(initialHand, true);
-            } else {
-                ai.setInitialState(initialHand, false);
-                ImmutableBone opponentBone = new ImmutableBone(table.left(), table.right());
-                Choice opponentsChoice = new Choice(Choice.Action.PLACED_RIGHT, opponentBone);
-                ai.choose(opponentsChoice);
+            assert table_layout.length >= INITIAL_LAYOUT_SIZE;
+
+            List<ImmutableBone> layoutBonesToProcess = Bones.convertToImmutableBoneList(table_layout);
+
+            // Was it my go first?
+            int numberOfBonesIPickedUp = initialHand.size() - HAND_SIZE;
+            int numberOfMovesIMade = numberOfBonesIPickedUp;
+            int numberOfBonesOpponentPickedUp = Bones.getAllBones().size() - boneYard.size() - 2 * HAND_SIZE - INITIAL_LAYOUT_SIZE - numberOfBonesIPickedUp;
+            int numberOfOpponentMoves = numberOfBonesOpponentPickedUp + table_layout.length - INITIAL_LAYOUT_SIZE;
+            boolean myGoFirst = numberOfMovesIMade == numberOfOpponentMoves;
+            System.out.println("Me first? " + myGoFirst);
+
+            for (int i = 0; i < INITIAL_LAYOUT_SIZE; ++i)
+                ai.setInitialState(initialHand.subList(0, HAND_SIZE), myGoFirst, layoutBonesToProcess.remove(0));
+
+            if (!layoutBonesToProcess.isEmpty()) {
+                List<ImmutableBone> bonesIPickedUp = new ArrayList<ImmutableBone>(initialHand.subList(7, initialHand.size()));
+                ai.skipFirstChoices(layoutBonesToProcess, bonesIPickedUp);
             }
 
             currentTable = table;
@@ -60,37 +75,68 @@ public class AIPlayer implements dominoes.players.DominoPlayer{
 
         // Now make my best choice:
         Choice myChoice = ai.getBestChoice();
+        if (myChoice.getAction() == Choice.Action.PICKED_UP)
+            myChoice = new Choice(Choice.Action.PICKED_UP, new ImmutableBone(boneYard.draw()));
+
         ai.choose(myChoice);
-        int matchingValue = 0;
+
         Play myPlay;
 
         // And update my internal memory of the table
         if (myChoice.getAction().isPlacement()) {
             prevLayout = new Bone[table_layout.length + 1];
             Bone bone = myChoice.getBone().cloneAsBone();
+            int matchingValue = -1;
+            boolean layoutIsEmpty = table_layout.length == 0;
 
-            if (firstMove) {
-                prevLayout[0] = bone;
-                myPlay = myChoice.convertToPlay(true);
-            } else if (myChoice.getAction() == Choice.Action.PLACED_RIGHT) {
+            if (myChoice.getAction() == Choice.Action.PLACED_RIGHT) {
                 prevLayout[table_layout.length] = bone;
                 System.arraycopy(table_layout, 0, prevLayout, 0, table_layout.length);
-                myPlay = myChoice.convertToPlay(false, table.right());
+                if (!layoutIsEmpty)
+                    matchingValue = table.right();
             } else {
                 prevLayout[0] = bone;
                 System.arraycopy(table_layout, 0, prevLayout, 1, table_layout.length);
-                myPlay = myChoice.convertToPlay(false, table.left());
+                if (!layoutIsEmpty)
+                    matchingValue = table.left();
             }
 
-            myPlay = myChoice.convertToPlay(firstMove, matchingValue);
+            if (layoutIsEmpty)
+                myPlay = myChoice.convertToPlay(true);
+            else {
+                myPlay = myChoice.convertToPlay(false, matchingValue);
+                if (myPlay.bone().left() != bone.left())
+                    bone.flip();
+            }
+
         } else {
             prevLayout = table_layout;
             myPlay = myChoice.convertToPlay(firstMove);
         }
 
+        System.out.println("\t my choice was: " + myChoice);
+        System.out.println("\t (my play was: " + myPlay.end() + " with bone [" + myPlay.bone().left() + "," + myPlay.bone().right() + "]");
+        System.out.println("\t (my prevLayout is: " + layoutToString(prevLayout));
 
         firstMove = false;
         return myPlay;
+    }
+
+    private String layoutToString(Bone[] layout) {
+        StringBuilder sbuilder = new StringBuilder();
+        sbuilder.append("{ ");
+
+        for (Bone bone : layout) {
+            if (bone != null)
+                sbuilder.append("[").append(bone.left()).append(",").append(bone.right()).append("] ");
+            else {
+                System.out.println("\t\t======= found null =========");
+                sbuilder.append("[null] ");
+            }
+        }
+
+        sbuilder.append("}");
+        return sbuilder.toString();
     }
 
     private Choice getOpponentsLastChoice(Bone[] layout) {
@@ -109,6 +155,8 @@ public class AIPlayer implements dominoes.players.DominoPlayer{
             opponentsChoice = new Choice(Choice.Action.PICKED_UP, null);
         }
 
+        System.out.println("\t opponent choice was: " + opponentsChoice);
+
         return opponentsChoice;
     }
 
@@ -120,13 +168,20 @@ public class AIPlayer implements dominoes.players.DominoPlayer{
     @Override
     public void draw(BoneYard boneYard) {
         ImmutableBone pickedUpBone = new ImmutableBone(boneYard.draw());
+        this.boneYard = boneYard;
 
         if (firstMove) {
             // Just add to initialHand (they'll be given to the AI when 'makePlay' is first called.
             initialHand.add(pickedUpBone);
+            if (initialHand.size() > 7)
+                System.out.println("Picked up on first move");
         } else {
             // First, process the opponent's move:
             ai.choose(getOpponentsLastChoice(currentTable.layout()));
+
+            // And update my internal memory of the table
+            prevLayout = currentTable.layout();
+
             // Then pick up
             Choice choice = new Choice(Choice.Action.PICKED_UP, pickedUpBone);
             ai.choose(choice);

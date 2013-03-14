@@ -2,6 +2,7 @@ package dominoes.players.ai.algorithm;
 
 import dominoes.players.ai.algorithm.helper.BoneState;
 import dominoes.players.ai.algorithm.helper.Choice;
+import dominoes.players.ai.algorithm.helper.ImmutableBone;
 
 import java.util.List;
 
@@ -12,9 +13,8 @@ import java.util.List;
  */
 public interface GameState {
 
-
-
     public static enum Status {NOT_YET_CALCULATED, HAS_CHILD_STATES, GAME_OVER}
+
     /**
      * Gets the current status.
      *
@@ -36,6 +36,17 @@ public interface GameState {
      * @return the resulting GameState.
      */
     GameState choose(Choice choice);
+
+    /**
+     * Skips the initial choices (opponent placing bones, and me picking up).
+     *
+     * This exists to integrate properly with the dominoes package.
+     *
+     * @param bonesOpponentPlaced the bones the opponent has placed.
+     * @param bonesIPickedUp the bones I have picked up.
+     * @return the GameState after making all relevant choices.
+     */
+    GameState skipFirstChoices(List<ImmutableBone> bonesOpponentPlaced, List<ImmutableBone> bonesIPickedUp);
 
     /**
      * Returns the choice taken to reach this state.

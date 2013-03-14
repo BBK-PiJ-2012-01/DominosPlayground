@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * User: Sam Wright
@@ -24,6 +25,7 @@ public class AIPlayerTest {
         ai1 = new AIPlayer();
         ai2 = new AIPlayer();
         boneYard = new BoneYard(6);
+        table.play(new Play(boneYard.draw(), 2));
     }
 
     private boolean aiHasMatchingBone(AIPlayer ai, int endValue) {
@@ -48,7 +50,7 @@ public class AIPlayerTest {
 
     private void printLayout() {
         StringBuilder sbuilder = new StringBuilder();
-        sbuilder.append(table.left()).append(" : {");
+        sbuilder.append(table.left()).append(" : { ");
 
         for (Bone bone : table.layout())
             sbuilder.append("[").append(bone.left()).append(",").append(bone.right()).append("] ");
@@ -64,10 +66,11 @@ public class AIPlayerTest {
             ai2.draw(boneYard);
         }
 
-        play(ai1);
-        play(ai2);
-        play(ai1);
-        play(ai2);
+        for (int i = 0; i < 5; ++i) {
+            play(ai1);
+            play(ai2);
+        }
+
     }
 
     @Test

@@ -15,8 +15,9 @@ public interface AIController {
      *
      * @param myBones the bones I have been dealt.
      * @param isMyTurn true iff the first move is mine.
+     * @param initialLayout the initial layout.
      */
-    void setInitialState(List<ImmutableBone> myBones, boolean isMyTurn);
+    void setInitialState(List<ImmutableBone> myBones, boolean isMyTurn, ImmutableBone... initialLayout);
 
     /**
      * Make a choice, or record the opponent making a choice.  This updates the internal current state.
@@ -24,6 +25,16 @@ public interface AIController {
      * @param choice the choice to make.
      */
     void choose(Choice choice);
+
+    /**
+     * Skips the initial choices (opponent placing bones, and me picking up).
+     * <p/>
+     * This exists to integrate properly with the dominoes package.
+     *
+     * @param bonesOpponentPlaced the bones the opponent has placed.
+     * @param bonesIPickedUp      the bones I have picked up.
+     */
+    void skipFirstChoices(List<ImmutableBone> bonesOpponentPlaced, List<ImmutableBone> bonesIPickedUp);
 
     /**
      * Gets the best choice to make.  If it is my turn, this will be what's best for me.

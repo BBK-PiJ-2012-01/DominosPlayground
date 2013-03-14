@@ -2,10 +2,7 @@ package dominoes.players.ai.algorithm.helper;
 
 import dominoes.Bone;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Helper class for Bones
@@ -48,5 +45,12 @@ public class Bones {
             array[i++] = bone.cloneAsBone();
 
         return array;
+    }
+
+    public static List<ImmutableBone> convertToImmutableBoneList(Bone[] array) {
+        List<ImmutableBone> list = new ArrayList<ImmutableBone>();
+        for (Bone bone : array)
+            list.add(new ImmutableBone(bone));
+        return list;
     }
 }

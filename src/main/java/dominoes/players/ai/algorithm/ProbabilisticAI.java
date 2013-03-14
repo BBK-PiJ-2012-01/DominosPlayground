@@ -34,11 +34,11 @@ public class ProbabilisticAI implements AIController {
     }
 
     @Override
-    public void setInitialState(List<ImmutableBone> myBones, boolean isMyTurn) {
+    public void setInitialState(List<ImmutableBone> myBones, boolean isMyTurn, ImmutableBone... initialLayout) {
         currentState = null;
         System.gc();
         currentState = new GameStateImpl(stateEnumerator, handEvaluator,
-                plyManager.getInitialPly(), myBones, isMyTurn);
+                plyManager.getInitialPly(), myBones, isMyTurn, initialLayout);
     }
 
     /**
@@ -102,6 +102,11 @@ public class ProbabilisticAI implements AIController {
     @Override
     public void choose(Choice choice) {
         currentState = currentState.choose(choice);
+    }
+
+    @Override
+    public void skipFirstChoices(List<ImmutableBone> bonesOpponentPlaced, List<ImmutableBone> bonesIPickedUp) {
+        currentState = currentState.skipFirstChoices(bonesOpponentPlaced, bonesIPickedUp);
     }
 
     @Override

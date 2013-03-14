@@ -1,7 +1,9 @@
 package dominoes.players.ai;
 
+import dominoes.BoneYard;
 import dominoes.DominoUI;
 import dominoes.Dominoes;
+import dominoes.Table;
 import dominoes.players.AIPlayer;
 import dominoes.players.DominoPlayer;
 import org.junit.BeforeClass;
@@ -21,8 +23,26 @@ import static org.mockito.Mockito.when;
  * Time: 23:38
  */
 public class DominoesIT {
-    @Mock
-    private static DominoUI ui;
+    public static class DummyUI implements DominoUI {
+
+        @Override
+        public void display(DominoPlayer[] dominoPlayers, Table table, BoneYard boneYard) {
+            // Dummy implementation
+        }
+
+        @Override
+        public void displayRoundWinner(DominoPlayer dominoPlayer) {
+            // Dummy implementation
+        }
+
+        @Override
+        public void displayInvalidPlay(DominoPlayer dominoPlayer) {
+            // Dummy implementation
+        }
+    }
+
+//    @Mock
+    private static DominoUI ui = new DummyUI();
     private DominoPlayer player1, player2;
 
 

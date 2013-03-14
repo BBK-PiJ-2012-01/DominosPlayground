@@ -8,14 +8,20 @@ public class BoneStateImpl implements BoneState {
     private final List<ImmutableBone> myBones;
     private final UnknownBoneManager unknownBoneManager;
 
-    public BoneStateImpl(List<ImmutableBone> myBones) {
+    public BoneStateImpl(List<ImmutableBone> myBones, ImmutableBone... initialLayout) {
         this.myBones = new ArrayList<ImmutableBone>(myBones);
 
-        layoutLeft = -1;
-        layoutRight = -1;
+        if (initialLayout.length == 0) {
+            layoutLeft = -1;
+            layoutRight = -1;
+        } else {
+            layoutLeft = initialLayout[0].left();
+            layoutRight = initialLayout[initialLayout.length-1].right();
+        }
 
         List<ImmutableBone> unknownBones = new LinkedList<ImmutableBone>(Bones.getAllBones());
         unknownBones.removeAll(myBones);
+        unknownBones.removeAll(Arrays.asList(initialLayout));
         unknownBoneManager = new UnknownBoneManagerImpl(unknownBones, myBones.size());
     }
 

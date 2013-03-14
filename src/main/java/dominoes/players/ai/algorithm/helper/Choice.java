@@ -88,12 +88,20 @@ public class Choice {
             end = PLAY_START;
         else if (action == Action.PLACED_LEFT) {
             end = Play.LEFT;
-            if (mutableBone.right() != matchingValue)
-                mutableBone.flip();
+            if (matchingValue != -1) {
+                if (mutableBone.left() == matchingValue)
+                    mutableBone.flip();
+                if (mutableBone.right() != matchingValue)
+                    throw new RuntimeException(matchingValue + " didn't match " + this);
+            }
         } else if (action == Action.PLACED_RIGHT) {
             end = Play.RIGHT;
-            if (mutableBone.left() != matchingValue)
-                mutableBone.flip();
+            if (matchingValue != -1) {
+                if (mutableBone.right() == matchingValue)
+                    mutableBone.flip();
+                if (mutableBone.left() != matchingValue)
+                    throw new RuntimeException(matchingValue + " didn't match " + this);
+            }
         } else
             throw new CantPlayException();
 

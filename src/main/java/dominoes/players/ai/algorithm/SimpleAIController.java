@@ -20,9 +20,9 @@ public abstract class SimpleAIController implements AIController {
 
 
     @Override
-    public void setInitialState(List<ImmutableBone> myBones, boolean isMyTurn) {
+    public void setInitialState(List<ImmutableBone> myBones, boolean isMyTurn, ImmutableBone... initialLayout) {
         currentState = new GameStateImpl(new StateEnumeratorImpl(), new ExpectationWeightEvaluator(),
-                MAX_PLY, myBones, isMyTurn);
+                MAX_PLY, myBones, isMyTurn, initialLayout);
         // TODO: Implement SimpleBoneStateImpl so I don't have to use GameState (which has more functionality than is required here)
     }
 
@@ -31,7 +31,10 @@ public abstract class SimpleAIController implements AIController {
         currentState = currentState.choose(choice);
     }
 
-
+    @Override
+    public void skipFirstChoices(List<ImmutableBone> bonesOpponentPlaced, List<ImmutableBone> bonesIPickedUp) {
+        currentState = currentState.skipFirstChoices(bonesOpponentPlaced, bonesIPickedUp);
+    }
 
     @Override
     public int getHandWeight() {

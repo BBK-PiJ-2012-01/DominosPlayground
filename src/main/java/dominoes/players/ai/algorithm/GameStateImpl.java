@@ -34,9 +34,10 @@ public class GameStateImpl implements GameState {
      * @param minPly the initial extraPly to give to this and all child states.
      * @param myBones the bones I have been dealt.
      * @param isMyTurn true iff the first turn is mine.
+     * @param initialLayout the bones which start in the layout.
      */
     public GameStateImpl(StateEnumerator stateEnumerator, HandEvaluator handEvaluator,
-                         int minPly, List<ImmutableBone> myBones, boolean isMyTurn) {
+                         int minPly, List<ImmutableBone> myBones, boolean isMyTurn, ImmutableBone... initialLayout) {
         this.isMyTurn = isMyTurn;
         this.stateEnumerator = stateEnumerator;
         this.handEvaluator = handEvaluator;
@@ -45,12 +46,11 @@ public class GameStateImpl implements GameState {
         parent = null;
         moveNumber = 0;
         choiceTaken = null;
-        boneState = new BoneStateImpl(myBones);
+        boneState = new BoneStateImpl(myBones, initialLayout);
 
         value = handEvaluator.evaluateInitialValue(boneState);
         extraPly = 0;
     }
-
 
     /**
      * A helper function to clarify calls to the GameState(GameState previous, Choice choiceTaken) constructor.
@@ -58,7 +58,7 @@ public class GameStateImpl implements GameState {
      * @param choice the choice taken.
      * @return the resulting GameState after applying the given choice to this state.
      */
-    private GameState createNextState(Choice choice) {
+    private GameStateImpl createNextState(Choice choice) {
         return new GameStateImpl(this, choice);
     }
 
@@ -155,7 +155,6 @@ public class GameStateImpl implements GameState {
     @Override
     public List<GameState> getChildStates() {
         lazyChildrenInitialisation();
-//        return Collections.unmodifiableList(childStates);
         return childStates;
     }
 
@@ -180,15 +179,48 @@ public class GameStateImpl implements GameState {
             for (GameState childState : getChildStates()) {
                 validChoices.add(childState.getChoiceTaken());
             }
+            Route r = new Route(this);
             throw new RuntimeException("Choice was not valid: " + choice +
-                    "\nValid choices were: " + validChoices + " (should be " + getValidChoices() + ")" +
+                    "\nValid choices were: " + validChoices +
+                    "\nMy bones were: " + boneState.getMyBones() +
                     "\nStatus is " + status +
                     "\n possibleOpponentBones = " + boneState.getUnknownBones() +
-                    "\n childStates.size() = " + getChildStates().size()) ;
+                    "\n childStates.size() = " + getChildStates().size() +
+                    "\n choice stack: " + r) ;
         }
 
         moveCounter.incrementMovesPlayed();
         return chosenState;
+    }
+
+    @Override
+    public GameState skipFirstChoices(List<ImmutableBone> bonesOpponentPlaced, List<ImmutableBone> bonesIPickedUp) {
+        assert moveNumber == 0;
+
+        // Place the opponent's initial bone
+        GameStateImpl afterChoicesState = this;
+
+        int movesToSkip = bonesIPickedUp.size() * 2 + (isMyTurn() ? 0 : 1);
+
+        // for each bone I've picked up, the opponent has either placed or picked up.
+        for (int i = 0; i < movesToSkip; ++i) {
+            if (afterChoicesState.isMyTurn()) {
+                // My pickup:
+                afterChoicesState = afterChoicesState.createNextState(new Choice(Action.PICKED_UP, bonesIPickedUp.get(i)));
+            } else {
+                // Opponent's move:
+                if (bonesOpponentPlaced.isEmpty())
+                    // Opponent has placed all his bones, so he picked up:
+                    afterChoicesState = afterChoicesState.createNextState(new Choice(Action.PICKED_UP, null));
+                else
+                    // Opponent still has bones to place
+                    afterChoicesState = afterChoicesState.createNextState(new Choice(Action.PLACED_RIGHT, bonesOpponentPlaced.remove(0)));
+            }
+        }
+
+        assert afterChoicesState.isMyTurn();
+
+        return afterChoicesState;
     }
 
     @Override
