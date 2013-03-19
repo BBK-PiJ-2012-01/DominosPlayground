@@ -61,4 +61,9 @@ public abstract class SimpleAIController implements AIController {
 
         return childStates;
     }
+
+    @Override
+    public boolean isBoneyardEmpty() {
+        return currentState.getBoneState().getSizeOfBoneyard() == 0;
+    }
 }

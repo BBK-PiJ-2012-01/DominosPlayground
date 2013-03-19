@@ -6,6 +6,7 @@ import dominoes.Dominoes;
 import dominoes.Table;
 import dominoes.players.AIPlayer;
 import dominoes.players.DominoPlayer;
+import dominoes.players.dominoes.players.TestAIPlayer;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -45,12 +46,15 @@ public class DominoesIT {
     private static DominoUI ui = new DummyUI();
     private DominoPlayer player1, player2;
 
-
+    private DominoPlayer createAIPlayer() {
+//        return new AIPlayer();
+        return new TestAIPlayer();
+    }
 
     @Test
     public void test() throws Exception {
-        player1 = new AIPlayer();
-        player2 = new AIPlayer();
+        player1 = createAIPlayer();
+        player2 = createAIPlayer();
         player1.setName("First Player");
         player2.setName("Second Player");
         Dominoes game = new Dominoes(ui, player1, player2, 100, 6);

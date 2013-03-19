@@ -61,4 +61,6 @@ public interface AIController {
      * @return the ai's current hand.
      */
     List<ImmutableBone> getMyBones();
+
+    boolean isBoneyardEmpty();
 }

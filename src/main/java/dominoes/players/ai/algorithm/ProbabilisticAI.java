@@ -141,6 +141,11 @@ public class ProbabilisticAI implements AIController {
     }
 
     @Override
+    public boolean isBoneyardEmpty() {
+        return currentState.getBoneState().getSizeOfBoneyard() == 0;
+    }
+
+    @Override
     public String toString() {
         StringBuilder sbuilder = new StringBuilder();
         if (!currentState.isMyTurn())
