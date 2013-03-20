@@ -3,11 +3,12 @@ package dominoes.players.ai.algorithm.helper;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 /**
  * User: Sam Wright
@@ -271,44 +272,59 @@ public class BoneStateTest {
         // BoneState opponentPickedUp = iPlaced.createNext(new Choice(Choice.Action.PICKED_UP, null), false);
         System.out.println(opponentPickedUp);
 
-        // All unknown bones that matched what I place will have only 1 chance of getting into the opponent hand
-        // (ie. when the opponent picks up after failing to find a valid bone to place) and after picking up there
-        // will be 8 in the opponent's hand
-        int bonesThatMatchedPlacedBone = 0;
+        List<ImmutableBone> unknownBonesMatchingLayout = new LinkedList<ImmutableBone>();
+        List<ImmutableBone> unknownBonesNotMatchingLayout = new LinkedList<ImmutableBone>();
+        for (ImmutableBone bone : initialState.getUnknownBones()) {
+            if (bone.matches(placedBone.left()) || bone.matches(placedBone.right()))
+                unknownBonesMatchingLayout.add(bone);
+            else
+                unknownBonesNotMatchingLayout.add(bone);
+        }
 
-        // First need to count the number of bones that didn't match the placed bone (ie. are definitely in the boneyard)
-        for (ImmutableBone bone : opponentPickedUp.getUnknownBones())
-            if (bone.matches(placedBone.right()) || bone.matches(placedBone.left()))
-                bonesThatMatchedPlacedBone += 1;
-
-        ImmutableBone anUnknownBoneNotMatchingPlacedBone = null;
-
-        // Seven bones already taken, so 14 in boneyard.  Then the probability
-        // of a new bone in the boneyard being picked up is 1/14.
-        double probOfBoneBeingPickedUpOnFirstGo = 1.0 / 14;
+        double probOfBoneNotMatchingLayoutBeingPickedUpOnFirstGo = 8.0 / unknownBonesNotMatchingLayout.size();
+        double probOfBoneMatchingLayoutBeingPickedUpOnFirstGo = 0.0;
 
         for (ImmutableBone bone : opponentPickedUp.getUnknownBones()) {
             if (bone.matches(placedBone.right()) || bone.matches(placedBone.left())) {
-                assertEquals(probOfBoneBeingPickedUpOnFirstGo, opponentPickedUp.getProbThatOpponentHasBone(bone), 0.001);
-            } else if (anUnknownBoneNotMatchingPlacedBone == null)
-                anUnknownBoneNotMatchingPlacedBone = bone;
+                assertEquals(probOfBoneMatchingLayoutBeingPickedUpOnFirstGo, opponentPickedUp.getProbThatOpponentHasBone(bone), 0.001);
+            } else {
+                assertEquals(probOfBoneNotMatchingLayoutBeingPickedUpOnFirstGo, opponentPickedUp.getProbThatOpponentHasBone(bone), 0.001);
+            }
         }
 
-        // Now (21 - bonesThatDidntMatchPlacedBone) bones had 8 chances each of getting into the opponent's hand.
-        // It was either in the hand before pickup (out of a total of (21 - bonesThatDidntMatchPlacedBone) with
-        // probability 7/(21 - bonesThatDidntMatchPlacedBone)) OR it was not in the hand before pickup
-        // (with probability 1-7/(21 - bonesThatDidntMatchPlacedBone)) AND was subsequently picked up (with probability 1/14)
-        double probAfterPickup = 7.0 / (21 - bonesThatMatchedPlacedBone)
-                + (1.0 - 7.0 / (21 - bonesThatMatchedPlacedBone)) * 1.0 / 14;
+    }
 
-        assertEquals(probAfterPickup, opponentPickedUp.getProbThatOpponentHasBone(anUnknownBoneNotMatchingPlacedBone), 0.001);
+    @Test
+    public void testProbabilityAfterOpponentPickedUpThenPlaced() throws Exception {
+        Choice choice = null;
 
-        // After the opponent picks up
-//
-//        assertEquals(initialProb, opponentPickedUp.getUnknownBones());
-//
-//        unknownBones.remove(0);
-//        assertContentsEquals(unknownBones, opponentPlaced.getUnknownBones());
+        for (ImmutableBone bone : opponentPickedUp.getUnknownBones()) {
+            if (bone.matches(placedBone.right()))
+                choice = new Choice(Choice.Action.PLACED_RIGHT, bone);
+            else if (bone.matches(placedBone.left()))
+                choice = new Choice(Choice.Action.PLACED_LEFT, bone);
+        }
+
+        // Now choice is a possible placement choice.
+        BoneState opponentPlacedAfterPickingUp = opponentPickedUp.createNext(choice, false);
+
+        int bonesNotMatchingLayout = 0;
+        for (ImmutableBone bone : opponentPickedUp.getUnknownBones())
+            if (!bone.matches(placedBone.left()) && !bone.matches(placedBone.right()))
+                bonesNotMatchingLayout += 1;
+
+        double probOpponentHasBone = 7.0 / bonesNotMatchingLayout;
+
+        System.out.println(opponentPickedUp);
+        System.out.println(opponentPlacedAfterPickingUp);
+
+        for (ImmutableBone bone : opponentPlacedAfterPickingUp.getUnknownBones()) {
+            if (bone.matches(placedBone.left()) || bone.matches(placedBone.right())) {
+                assertEquals(0.0, opponentPlacedAfterPickingUp.getProbThatOpponentHasBone(bone), 0.001);
+            } else {
+                assertEquals(probOpponentHasBone, opponentPlacedAfterPickingUp.getProbThatOpponentHasBone(bone), 0.001);
+            }
+        }
     }
 
     @Test

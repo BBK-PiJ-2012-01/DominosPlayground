@@ -1,6 +1,9 @@
 package dominoes.players.ai.algorithm;
 
-import dominoes.players.ai.algorithm.components.*;
+import dominoes.players.ai.algorithm.components.HandEvaluator;
+import dominoes.players.ai.algorithm.components.PlyManager;
+import dominoes.players.ai.algorithm.components.RouteSelector;
+import dominoes.players.ai.algorithm.components.StateEnumerator;
 import dominoes.players.ai.algorithm.helper.BoneState;
 import dominoes.players.ai.algorithm.helper.Choice;
 import dominoes.players.ai.algorithm.helper.ImmutableBone;
@@ -101,12 +104,17 @@ public class ProbabilisticAI implements AIController {
 
     @Override
     public void choose(Choice choice) {
-        currentState = currentState.choose(choice);
-    }
+        GameState nextState = currentState.choose(choice);
 
-    @Override
-    public void skipFirstChoices(List<ImmutableBone> bonesOpponentPlaced, List<ImmutableBone> bonesIPickedUp) {
-        currentState = currentState.skipFirstChoices(bonesOpponentPlaced, bonesIPickedUp);
+        int sizeOfOpponentHand = nextState.getBoneState().getSizeOfOpponentHand();
+        int sizeOfBoneyard = nextState.getBoneState().getSizeOfBoneyard();
+        int sizeOfUnknownBones = nextState.getBoneState().getUnknownBones().size();
+
+        if (sizeOfBoneyard + sizeOfOpponentHand != sizeOfUnknownBones)
+            System.out.format("\t ---- opponent has %d, boneyard has %d, unknown bones has %d%n",
+                    sizeOfOpponentHand, sizeOfBoneyard, sizeOfUnknownBones);
+
+        currentState = nextState;
     }
 
     @Override
@@ -136,13 +144,8 @@ public class ProbabilisticAI implements AIController {
     }
 
     @Override
-    public List<ImmutableBone> getMyBones() {
-        return currentState.getBoneState().getMyBones();
-    }
-
-    @Override
-    public boolean isBoneyardEmpty() {
-        return currentState.getBoneState().getSizeOfBoneyard() == 0;
+    public GameState getGameState() {
+        return currentState;
     }
 
     @Override

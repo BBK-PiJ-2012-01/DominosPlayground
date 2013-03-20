@@ -27,16 +27,6 @@ public interface AIController {
     void choose(Choice choice);
 
     /**
-     * Skips the initial choices (opponent placing bones, and me picking up).
-     * <p/>
-     * This exists to integrate properly with the dominoes package.
-     *
-     * @param bonesOpponentPlaced the bones the opponent has placed.
-     * @param bonesIPickedUp      the bones I have picked up.
-     */
-    void skipFirstChoices(List<ImmutableBone> bonesOpponentPlaced, List<ImmutableBone> bonesIPickedUp);
-
-    /**
      * Gets the best choice to make.  If it is my turn, this will be what's best for me.
      * If it's the opponent's turn, this will be what's best for them (ie. what's worst
      * for me).
@@ -56,11 +46,9 @@ public interface AIController {
     int getHandWeight();
 
     /**
-     * Returns the ai's current hand.
+     * Returns the current game state.
      *
-     * @return the ai's current hand.
+     * @return the current game state.
      */
-    List<ImmutableBone> getMyBones();
-
-    boolean isBoneyardEmpty();
+    GameState getGameState();
 }

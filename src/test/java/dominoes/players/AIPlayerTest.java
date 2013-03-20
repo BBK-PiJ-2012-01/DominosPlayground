@@ -1,130 +1,65 @@
 package dominoes.players;
 
-import dominoes.*;
-import org.junit.Before;
+import dominoes.Bone;
+import dominoes.BoneYard;
+import dominoes.DominoUI;
+import dominoes.Dominoes;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * User: Sam Wright
  * Date: 13/03/2013
  * Time: 10:52
  */
+@RunWith(MockitoJUnitRunner.class)
 public class AIPlayerTest {
-    private Table table;
-    private BoneYard boneYard;
-    private AIPlayer ai1, ai2;
+    @Mock
+    private DominoUI ui;
+    private DominoPlayer player1, player2;
 
-    @Before
-    public void setUp() throws Exception {
-        table = new Table();
-        ai1 = new AIPlayer();
-        ai2 = new AIPlayer();
-        ai1.setName("First Player");
-        ai2.setName("Second Player");
-        boneYard = new BoneYard(6);
-        table.play(new Play(boneYard.draw(), 2));
-    }
-
-    private boolean aiHasMatchingBone(AIPlayer ai, int endValue) {
-        for (Bone bone : ai.bonesInHand())
-            if (bone.left() == endValue || bone.right() == endValue)
-                return true;
-
-        return false;
-    }
-
-    private void play(AIPlayer ai) throws CantPlayException, InvalidPlayException {
-
-        if (table.layout().length == 0)
-            table.play(ai.makePlay(table));
-        else if (aiHasMatchingBone(ai, table.left()) || aiHasMatchingBone(ai, table.right()))
-            table.play(ai.makePlay(table));
-        else
-            ai.draw(boneYard);
-
-        printLayout();
-    }
-
-    private void printLayout() {
-        StringBuilder sbuilder = new StringBuilder();
-        sbuilder.append(table.left()).append(" : { ");
-
-        for (Bone bone : table.layout())
-            sbuilder.append("[").append(bone.left()).append(",").append(bone.right()).append("] ");
-
-        sbuilder.append("} : ").append(table.right());
-        System.out.println(sbuilder.toString());
+    private DominoPlayer createAIPlayer() {
+        return new AIPlayer();
+//        return new TestAIPlayer();
     }
 
     @Test
-    public void testMakePlay() throws Exception {
-        for (int i = 0; i < 7; ++i) {
-            ai1.draw(boneYard);
-            ai2.draw(boneYard);
-        }
+    public void testBoneyard() throws Exception {
+        BoneYard boneYard = new BoneYard(6);
 
-        for (int i = 0; i < 5; ++i) {
-            play(ai1);
-            play(ai2);
-        }
+        assertEquals(28, boneYard.size());
+
+        Set<Bone> allBones = new HashSet<Bone>();
+        for (int i = 0; i < 28; ++i)
+            allBones.add(boneYard.draw());
+
+        assertEquals(28, allBones.size());
 
     }
 
     @Test
-    public void testTable() throws Exception {
-        Bone bone1 = new Bone(0, 1);
-        table.play(new Play(bone1, 2));
-        assertArrayEquals(new Bone[]{bone1}, table.layout());
+    public void test() throws Exception {
+        player1 = createAIPlayer();
+        player2 = createAIPlayer();
+        player1.setName("First Player");
+        player2.setName("Second Player");
+        System.out.println("Playing game...");
+        Dominoes game = new Dominoes(ui, player1, player2, 100, 6);
+        game.play();
+
+        System.out.println("Player 1 scored " + player1.getPoints());
+        System.out.println("Player 2 scored " + player2.getPoints());
+
+        assertTrue((player1.getPoints() > 100 && player2.getPoints() < 100)
+                || (player2.getPoints() > 100 && player1.getPoints() < 100));
     }
 
-    @Test
-    public void testTakeBack() throws Exception {
-
-    }
-
-    @Test
-    public void testDraw() throws Exception {
-        ai1.draw(boneYard);
-        ai2.draw(boneYard);
-    }
-
-    @Test
-    public void testNumInHand() throws Exception {
-
-    }
-
-    @Test
-    public void testBonesInHand() throws Exception {
-
-    }
-
-    @Test
-    public void testNewRound() throws Exception {
-
-    }
-
-    @Test
-    public void testSetPoints() throws Exception {
-
-    }
-
-    @Test
-    public void testGetPoints() throws Exception {
-
-    }
-
-    @Test
-    public void testSetName() throws Exception {
-
-    }
-
-    @Test
-    public void testGetName() throws Exception {
-
-    }
 }

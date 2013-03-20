@@ -2,7 +2,6 @@ package dominoes.players.ai.algorithm;
 
 import dominoes.players.ai.algorithm.helper.BoneState;
 import dominoes.players.ai.algorithm.helper.Choice;
-import dominoes.players.ai.algorithm.helper.ImmutableBone;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -90,11 +89,6 @@ public class MockGameState implements GameState {
     @Override
     public GameState choose(Choice choice) {
         throw new UnsupportedOperationException("Not supported in mock");
-    }
-
-    @Override
-    public GameState skipFirstChoices(List<ImmutableBone> bonesOpponentPlaced, List<ImmutableBone> bonesIPickedUp) {
-        return null; // Dummy implementation
     }
 
     @Override

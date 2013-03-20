@@ -35,14 +35,19 @@ public class AutomatedTable {
         boneyardBones = new LinkedList<ImmutableBone>(all_bones.subList(14, 28));
     }
 
-    private void playOnceEach(AIController player1, AIController player2) {
-        Choice my_choice = player1.getBestChoice();
-        player1.choose(makePickupRandom(my_choice));
-        player2.choose(my_choice);
+    private void playOnce(AIController player1, AIController player2) {
+        Choice choice;
 
-        Choice opponent_choice = player2.getBestChoice();
-        player2.choose(makePickupRandom(opponent_choice));
-        player1.choose(opponent_choice);
+        do {
+            choice = player1.getBestChoice();
+            player1.choose(makePickupRandom(choice));
+            player2.choose(choice);
+        } while(choice.getAction() == Choice.Action.PICKED_UP);
+    }
+
+    private void playOnceEach(AIController player1, AIController player2) {
+        playOnce(player1, player2);
+        playOnce(player2, player1);
     }
 
     private Choice makePickupRandom(Choice choice) {
@@ -155,9 +160,11 @@ public class AutomatedTable {
 
     private AIController getWinner(AIController player1, AIController player2) {
         final AIController winner;
-        if (player1.getMyBones().isEmpty() && !player2.getMyBones().isEmpty())
+        if (player1.getGameState().getBoneState().getMyBones().isEmpty()
+                && !player2.getGameState().getBoneState().getMyBones().isEmpty())
             winner = player1;
-        else if (!player1.getMyBones().isEmpty() && player2.getMyBones().isEmpty())
+        else if (!player1.getGameState().getBoneState().getMyBones().isEmpty()
+                && player2.getGameState().getBoneState().getMyBones().isEmpty())
             winner = player2;
         else {
             if (player1.getHandWeight() < player2.getHandWeight())

@@ -35,11 +35,11 @@ public class TestAIPlayer implements dominoes.players.DominoPlayer {
     public Play makePlay(Table table) throws CantPlayException {
         System.out.println(name + " makePlay()");
 
-        if (lastPlayerToMove == this)
-            throw new RuntimeException("BUG! last player to move was me!!!");
+//        if (lastPlayerToMove == this)
+//            throw new RuntimeException("BUG! last player to move was me!!!");
 
         lastPlayerToMove = this;
-        int end = -1;
+        int end;
         this.table = table;
         Play play = null;
 

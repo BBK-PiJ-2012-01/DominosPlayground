@@ -1,10 +1,11 @@
 package dominoes.players.ai.algorithm;
 
-import dominoes.players.ai.algorithm.helper.*;
 import dominoes.players.ai.algorithm.components.HandEvaluator;
 import dominoes.players.ai.algorithm.components.StateEnumerator;
+import dominoes.players.ai.algorithm.helper.*;
 
 import java.util.*;
+
 import static dominoes.players.ai.algorithm.helper.Choice.Action;
 
 /**
@@ -70,13 +71,18 @@ public class GameStateImpl implements GameState {
      */
     private GameStateImpl(GameStateImpl parent, Choice choiceTaken) {
         this.choiceTaken = choiceTaken;
-        this.isMyTurn = !parent.isMyTurn;
         this.moveNumber = parent.moveNumber + 1;
         this.moveCounter = parent.moveCounter;
         this.parent = parent;
         this.extraPly = parent.extraPly;
         this.handEvaluator = parent.handEvaluator;
         this.stateEnumerator = parent.stateEnumerator;
+
+        if (choiceTaken.getAction() == Action.PICKED_UP)
+//        if (parent.getChoiceTaken() != null && parent.getChoiceTaken().getAction() == Action.PICKED_UP)
+            this.isMyTurn = parent.isMyTurn();
+        else
+            this.isMyTurn = ! parent.isMyTurn();
 
         this.boneState = parent.boneState.createNext(choiceTaken, parent.isMyTurn());
 
@@ -182,7 +188,7 @@ public class GameStateImpl implements GameState {
             Route r = new Route(this);
             throw new RuntimeException("Choice was not valid: " + choice +
                     "\nValid choices were: " + validChoices +
-                    "\nMy bones were: " + boneState.getMyBones() +
+                    "\nBoneState: " + boneState +
                     "\nStatus is " + status +
                     "\n possibleOpponentBones = " + boneState.getUnknownBones() +
                     "\n childStates.size() = " + getChildStates().size() +
@@ -191,36 +197,6 @@ public class GameStateImpl implements GameState {
 
         moveCounter.incrementMovesPlayed();
         return chosenState;
-    }
-
-    @Override
-    public GameState skipFirstChoices(List<ImmutableBone> bonesOpponentPlaced, List<ImmutableBone> bonesIPickedUp) {
-        assert moveNumber == 0;
-
-        // Place the opponent's initial bone
-        GameStateImpl afterChoicesState = this;
-
-        int movesToSkip = bonesIPickedUp.size() * 2 + (isMyTurn() ? 0 : 1);
-
-        // for each bone I've picked up, the opponent has either placed or picked up.
-        for (int i = 0; i < movesToSkip; ++i) {
-            if (afterChoicesState.isMyTurn()) {
-                // My pickup:
-                afterChoicesState = afterChoicesState.createNextState(new Choice(Action.PICKED_UP, bonesIPickedUp.get(i)));
-            } else {
-                // Opponent's move:
-                if (bonesOpponentPlaced.isEmpty())
-                    // Opponent has placed all his bones, so he picked up:
-                    afterChoicesState = afterChoicesState.createNextState(new Choice(Action.PICKED_UP, null));
-                else
-                    // Opponent still has bones to place
-                    afterChoicesState = afterChoicesState.createNextState(new Choice(Action.PLACED_RIGHT, bonesOpponentPlaced.remove(0)));
-            }
-        }
-
-        assert afterChoicesState.isMyTurn();
-
-        return afterChoicesState;
     }
 
     @Override

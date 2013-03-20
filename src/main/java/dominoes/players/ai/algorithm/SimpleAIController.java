@@ -6,7 +6,6 @@ import dominoes.players.ai.algorithm.helper.Choice;
 import dominoes.players.ai.algorithm.helper.ImmutableBone;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,11 +31,6 @@ public abstract class SimpleAIController implements AIController {
     }
 
     @Override
-    public void skipFirstChoices(List<ImmutableBone> bonesOpponentPlaced, List<ImmutableBone> bonesIPickedUp) {
-        currentState = currentState.skipFirstChoices(bonesOpponentPlaced, bonesIPickedUp);
-    }
-
-    @Override
     public int getHandWeight() {
         int score = 0;
 
@@ -45,11 +39,6 @@ public abstract class SimpleAIController implements AIController {
         }
 
         return score;
-    }
-
-    @Override
-    public List<ImmutableBone> getMyBones() {
-        return currentState.getBoneState().getMyBones();
     }
 
     public List<GameState> getChildStates() {
@@ -63,7 +52,7 @@ public abstract class SimpleAIController implements AIController {
     }
 
     @Override
-    public boolean isBoneyardEmpty() {
-        return currentState.getBoneState().getSizeOfBoneyard() == 0;
+    public GameState getGameState() {
+        return currentState;
     }
 }
