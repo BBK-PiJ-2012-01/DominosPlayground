@@ -1,9 +1,9 @@
 package dominoes.players.ai.algorithm;
 
+import dominoes.players.ai.algorithm.components.MockHandEvaluator;
+import dominoes.players.ai.algorithm.components.StateEnumeratorImpl;
 import dominoes.players.ai.algorithm.helper.Choice;
 import dominoes.players.ai.algorithm.helper.ImmutableBone;
-import dominoes.players.ai.algorithm.components.StateEnumeratorImpl;
-import dominoes.players.ai.algorithm.components.MockHandEvaluator;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -72,75 +72,5 @@ public class GameStateImplTest {
         topState.choose(new Choice(Choice.Action.PASS, null));
     }
 
-    // TODO: write these tests (ughh...)
 
-    @Test
-    public void testGetChildStates() throws Exception {
-
-    }
-
-    @Test
-    public void testChoose() throws Exception {
-
-    }
-
-    @Test
-    public void testGetPossibleOpponentBones() throws Exception {
-
-    }
-
-    @Test
-    public void testGetChoiceTaken() throws Exception {
-
-    }
-
-    @Test
-    public void testIsMyTurn() throws Exception {
-
-    }
-
-    @Test
-    public void testGetMyBones() throws Exception {
-
-    }
-
-    @Test
-    public void testGetParent() throws Exception {
-
-    }
-
-    @Test
-    public void testIncreasePly() throws Exception {
-
-    }
-
-    @Test
-    public void testGetValue() throws Exception {
-
-    }
-
-    @Test
-    public void testGetSizeOfOpponentHand() throws Exception {
-
-    }
-
-    @Test
-    public void testGetSizeOfBoneyard() throws Exception {
-
-    }
-
-    @Test
-    public void testGetLayoutRight() throws Exception {
-
-    }
-
-    @Test
-    public void testGetLayoutLeft() throws Exception {
-
-    }
-
-    @Test
-    public void testToString() throws Exception {
-
-    }
 }

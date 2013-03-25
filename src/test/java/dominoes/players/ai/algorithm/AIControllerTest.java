@@ -5,7 +5,9 @@ import dominoes.players.ai.algorithm.helper.ImmutableBone;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 public class AIControllerTest {
     private AIController my_ai, opponent_ai;
@@ -38,5 +40,4 @@ public class AIControllerTest {
         my_ai.setInitialState(my_bones, true);
     }
 
-    // TODO: write some proper tests here...
 }

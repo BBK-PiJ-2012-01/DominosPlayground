@@ -22,7 +22,7 @@ public abstract class SimpleAIController implements AIController {
     public void setInitialState(List<ImmutableBone> myBones, boolean isMyTurn, ImmutableBone... initialLayout) {
         currentState = new GameStateImpl(new StateEnumeratorImpl(), new ExpectationWeightEvaluator(),
                 MAX_PLY, myBones, isMyTurn, initialLayout);
-        // TODO: Implement SimpleBoneStateImpl so I don't have to use GameState (which has more functionality than is required here)
+
     }
 
     @Override
