@@ -27,8 +27,9 @@ public class AIPlayerTest {
     private DominoPlayer player1, player2;
 
     private DominoPlayer createAIPlayer() {
-        return new AIPlayer();
+//        return new AIPlayer();
 //        return new TestAIPlayer();
+        return new AIPlayerRefactored();
     }
 
     @Test

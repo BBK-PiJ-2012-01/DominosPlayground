@@ -23,12 +23,13 @@ public class AIPlayer implements dominoes.players.DominoPlayer {
     private final List<ImmutableBone> initialHand = new ArrayList<ImmutableBone>();
 
     private boolean firstMove;
-    private int points = 0;
-    private String name;
     private Bone[] prevLayout;
     private Table currentTable;
     private BoneYard boneYard;
     private boolean pickingUp;
+
+    private int points = 0;
+    private String name;
 
     public AIPlayer() {
         newRound();
@@ -113,9 +114,9 @@ public class AIPlayer implements dominoes.players.DominoPlayer {
         }
 
         if (layoutIsEmpty)
-            myPlay = myChoice.convertToPlay(true);
+            throw new RuntimeException("Layout is never empty");
         else
-            myPlay = myChoice.convertToPlay(false, matchingValue);
+            myPlay = myChoice.convertToPlay(matchingValue);
 
         return myPlay;
     }

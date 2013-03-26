@@ -79,7 +79,6 @@ public class GameStateImpl implements GameState {
         this.stateEnumerator = parent.stateEnumerator;
 
         if (choiceTaken.getAction() == Action.PICKED_UP)
-//        if (parent.getChoiceTaken() != null && parent.getChoiceTaken().getAction() == Action.PICKED_UP)
             this.isMyTurn = parent.isMyTurn();
         else
             this.isMyTurn = ! parent.isMyTurn();

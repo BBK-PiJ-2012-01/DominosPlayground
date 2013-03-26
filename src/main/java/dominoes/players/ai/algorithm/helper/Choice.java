@@ -8,7 +8,6 @@ import dominoes.Play;
  * Class representing a choice which takes the game from one GameState to another GameState.
  */
 public class Choice {
-    private final static int PLAY_START = 2;
     public static enum Action {
         PLACED_RIGHT(true), PLACED_LEFT(true), PICKED_UP(false), PASS(false);
 
@@ -72,21 +71,15 @@ public class Choice {
     /**
      * Converts this to a Play object.
      *
-     * @param firstMove whether this is the first move.
+     * @param matchingValue if the action is placement, this is value for the bone to match.
      * @return this as a Play object.
      * @throws CantPlayException if the action is to pick up.
      */
-    public Play convertToPlay(boolean firstMove) throws CantPlayException {
-        return convertToPlay(firstMove, -1);
-    }
-
-    public Play convertToPlay(boolean firstMove, int matchingValue) throws CantPlayException {
+    public Play convertToPlay(int matchingValue) throws CantPlayException {
         int end;
         Bone mutableBone = bone.cloneAsBone();
 
-        if (firstMove)
-            end = PLAY_START;
-        else if (action == Action.PLACED_LEFT) {
+        if (action == Action.PLACED_LEFT) {
             end = Play.LEFT;
             if (matchingValue != -1) {
                 if (mutableBone.left() == matchingValue)
