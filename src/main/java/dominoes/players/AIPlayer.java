@@ -59,7 +59,8 @@ public class AIPlayer extends ObservantPlayer {
         } catch (GameOverException e) {
             throw new CantPlayException();
         }
-        System.out.println("\tchose to: " + myChoice);
+        System.out.println("\tabout to choose: " + myChoice);
+        System.out.println("\tbefore my choice: " + ai.getGameState().getBoneState());
 
 
         // But if I can't place, throw a CantPlayException
@@ -73,10 +74,11 @@ public class AIPlayer extends ObservantPlayer {
             throw new CantPlayException();
         }
 
-        System.out.println("\tafter my placement: " + ai.getGameState().getBoneState());
 
         // So now, the choice must be a placement
         ai.choose(myChoice);
+
+        System.out.println("\tafter my placement: " + ai.getGameState().getBoneState());
 
         // and finally, convert to a Play object
         int matchingValue = (myChoice.getAction() == Choice.Action.PLACED_RIGHT)? table.right() : table.left();

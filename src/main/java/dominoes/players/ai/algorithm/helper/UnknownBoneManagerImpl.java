@@ -15,19 +15,13 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
     private final boolean isOpponentPickup;
     private final int sizeOfBoneyard;
     private final Choice choiceTaken;
-    private final UnknownBoneManagerImpl parent;
-    private final int lright;
-    private final int lleft;
 
     public UnknownBoneManagerImpl(List<ImmutableBone> unknownBones, int sizeOfBoneyard) {
         this.sizeOfBoneyard = sizeOfBoneyard;
         this.sizeOfOpponentHand = unknownBones.size() - sizeOfBoneyard;
         this.unknownBones = unknownBones;
         isOpponentPickup = false;
-        parent = null;
         choiceTaken = null;
-        lleft = -1;
-        lright = -1;
 
         opponentChancesToHaveBone = new HashMap<Integer, List<ImmutableBone>>();
 
@@ -36,45 +30,22 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
 
         opponentBoneProbs = calculateProbabilities();
 
-        checkConsistency();
-
-    }
-
-    private void checkConsistency() {
-        float total = 0;
-        for (Float prob : opponentBoneProbs.values())
-            total += prob;
-
-        if (Math.abs(total - sizeOfOpponentHand) > 0.01) {
-            System.out.println("\n\nERROR!!\n\n");
-            UnknownBoneManagerImpl item = this;
-            do {
-                System.out.println("\n\n" + item);
-                item = item.parent;
-            } while (item != null);
-            throw new AssertionError();
-        }
     }
 
     private UnknownBoneManagerImpl(Map<Integer, List<ImmutableBone>> opponentChancesToHaveBone,
                                    int sizeOfOpponentHand, int sizeOfBoneyard, boolean isOpponentPickup,
-                                   UnknownBoneManagerImpl parent, Choice choiceTaken, int lleft, int lright) {
+                                   UnknownBoneManagerImpl parent, Choice choiceTaken) {
         this.opponentChancesToHaveBone = opponentChancesToHaveBone;
         this.sizeOfBoneyard = sizeOfBoneyard;
         this.sizeOfOpponentHand = sizeOfOpponentHand;
         this.isOpponentPickup = isOpponentPickup;
         this.choiceTaken = choiceTaken;
-        this.parent = parent;
-        this.lleft = lleft;
-        this.lright = lright;
 
         unknownBones = new ArrayList<ImmutableBone>(sizeOfBoneyard + sizeOfOpponentHand);
         for (List<ImmutableBone> boneList : opponentChancesToHaveBone.values())
             unknownBones.addAll(boneList);
 
         opponentBoneProbs = calculateProbabilities();
-
-        checkConsistency();
     }
 
     private Map<ImmutableBone, Float> calculateProbabilities() {
@@ -83,13 +54,8 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
         if (opponentChancesToHaveBone.isEmpty())
             return Collections.emptyMap();
 
-        int largestNumberOfChances;
-        try {
-            largestNumberOfChances = Collections.max(opponentChancesToHaveBone.keySet());
-        } catch (Exception e) {
-            System.out.println("\n\nERROR!!\n\n" + this);
-            throw new RuntimeException(e);
-        }
+        int largestNumberOfChances = Collections.max(opponentChancesToHaveBone.keySet());
+
         int thenAvailableBonesToPickup = 0;
 
         List<ImmutableBone> possibleBonesToTake = new ArrayList<ImmutableBone>(sizeOfBoneyard + sizeOfOpponentHand);
@@ -107,7 +73,6 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
         // So we pretend that all bones with zero chances have exactly one chance, by merging the lists
         // from 'opponentChancesToHaveBone.get(0)' and 'opponentChancesToHaveBone.get(1)' if 'isOpponentPickup'.
 
-//        for (int i = largestNumberOfChances; i >= 0; --i) {
         for (int i = largestNumberOfChances; i > 0; --i) {
             List<ImmutableBone> bonesNowAbleToBePickedUp = opponentChancesToHaveBone.get(i);
             if (bonesNowAbleToBePickedUp != null) {
@@ -124,6 +89,13 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
                     thenAvailableBonesToPickup += quasiZeroChanceBones.size();
                 }
             }
+
+            /**
+             * No bone can be picked more than once! If this is tried, then
+             * the number of available bones is zero (and the exception is thrown).
+             */
+            if (thenAvailableBonesToPickup == 0)
+                throw new IllegalStateException("Invalid choice");
 
             for (int boneId = 0; boneId < possibleBonesToTake.size(); ++boneId) {
                 float probOpponentHasBone = thenBoneProb[boneId];
@@ -221,7 +193,7 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
             newOpponentChancesToHaveBone.remove(keyToRemove);
 
         return new UnknownBoneManagerImpl(newOpponentChancesToHaveBone, newSizeOfOpponentHand, newSizeOfBoneyard,
-                action == Choice.Action.PICKED_UP && !isMyTurn, this, choiceTaken, layoutLeft, layoutRight);
+                action == Choice.Action.PICKED_UP && !isMyTurn, this, choiceTaken);
     }
 
     private int getBoneChances(ImmutableBone bone) {
@@ -299,7 +271,7 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
     public Map<ImmutableBone, Float> getOpponentBoneProbs() {
         return opponentBoneProbs;
     }
-
+// {layoutLeft=3, layoutRight=6, myBones=[[2,1], [1,1], [4,1], [1,0], [2,4], [4,4], [0,0]],
     @Override
     public int getSizeOfOpponentHand() {
         return sizeOfOpponentHand;
@@ -333,8 +305,6 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
         sb.append(", sizeOfOpponentHand=").append(sizeOfOpponentHand);
         sb.append(", sumOfProbs=").append(total);
         sb.append(", choiceTaken=").append(choiceTaken);
-        sb.append(", left=").append(lleft);
-        sb.append(", right=").append(lright);
         sb.append(", opponentChancesToHaveBone=").append(opponentChancesToHaveBone);
         sb.append('}');
         return sb.toString();
