@@ -41,44 +41,31 @@ public class AIPlayer extends ObservantPlayer {
             ai.setInitialState(initialHand, true, getBoneYard().size(), initialLayout);
         }
 
-
-        System.out.println("Player " + getName());
         for (Choice choice : opponentsLastChoices) {
-            System.out.println("\tbefore opponent choices: " + ai.getGameState().getBoneState());
-            System.out.println("\tOpponent choice: " + choice);
             assert !ai.getGameState().isMyTurn();
             ai.choose(choice);
         }
 
-        assert ai.getGameState().isMyTurn();
-
         // Find my best choice:
+        assert ai.getGameState().isMyTurn();
         Choice myChoice;
         try {
             myChoice = ai.getBestChoice();
         } catch (GameOverException e) {
             throw new CantPlayException();
         }
-        System.out.println("\tabout to choose: " + myChoice);
-        System.out.println("\tbefore my choice: " + ai.getGameState().getBoneState());
-
 
         // But if I can't place, throw a CantPlayException
         if (!myChoice.getAction().isPlacement()) {
             // If I have to pass, do so.
-            if (myChoice.getAction() == Choice.Action.PASS) {
+            if (myChoice.getAction() == Choice.Action.PASS)
                 ai.choose(myChoice);
-                System.out.println("\tafter my pass: " + ai.getGameState().getBoneState());
-            }
 
             throw new CantPlayException();
         }
 
-
         // So now, the choice must be a placement
         ai.choose(myChoice);
-
-        System.out.println("\tafter my placement: " + ai.getGameState().getBoneState());
 
         // and finally, convert to a Play object
         int matchingValue = (myChoice.getAction() == Choice.Action.PLACED_RIGHT)? table.right() : table.left();
@@ -90,14 +77,13 @@ public class AIPlayer extends ObservantPlayer {
         super.draw(boneYard);
         ImmutableBone pickedUpBone = new ImmutableBone(boneYard.draw());
 
-        if (isFirstMove())
+        if (isFirstMove()) {
             // Just add to initialHand (they'll be given to the AI when 'makePlay' is first called.
             initialHand.add(pickedUpBone);
-        else {
+        } else {
             // Pick up
             assert ai.getGameState().isMyTurn();
             ai.choose(new Choice(Choice.Action.PICKED_UP, pickedUpBone));
-            System.out.println("\tafter my pickup of "+pickedUpBone+": " + ai.getGameState().getBoneState());
         }
     }
 

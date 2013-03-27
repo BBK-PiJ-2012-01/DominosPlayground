@@ -60,12 +60,7 @@ public class GameStateImpl implements GameState {
      * @return the resulting GameState after applying the given choice to this state.
      */
     private GameStateImpl createNextState(Choice choice) {
-        try {
-            return new GameStateImpl(this, choice);
-        } catch (NoSuchElementException e) {
-            System.out.println(" gamestate error: " + this);
-            throw e;
-        }
+        return new GameStateImpl(this, choice);
     }
 
     /**

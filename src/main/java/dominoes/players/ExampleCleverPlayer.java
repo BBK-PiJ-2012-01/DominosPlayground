@@ -5,12 +5,15 @@ import dominoes.CantPlayException;
 import dominoes.Play;
 import dominoes.Table;
 import dominoes.players.ai.CleverPlayer;
+import dominoes.players.ai.algorithm.components.StateEnumeratorImpl;
 import dominoes.players.ai.algorithm.helper.BoneState;
+import dominoes.players.ai.algorithm.helper.Bones;
 import dominoes.players.ai.algorithm.helper.Choice;
 import dominoes.players.ai.algorithm.helper.ImmutableBone;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -19,32 +22,52 @@ import java.util.List;
  * Time: 13:45
  */
 public class ExampleCleverPlayer extends CleverPlayer {
+    private static final Comparator<ImmutableBone> boneWeightComparator = new Comparator<ImmutableBone>(){
+        @Override
+        public int compare(ImmutableBone o1, ImmutableBone o2) {
+            return Integer.compare(o2.weight(), o1.weight());
+        }
+    };
+
     private int points = 0;
     private String name;
-    private List<Bone> myBones = new ArrayList<Bone>();
+    private List<ImmutableBone> myBones = new LinkedList<ImmutableBone>();
 
     private Choice lastChoice;
     private List<Choice> opponentsLastChoices;
+    private final boolean verbose;
+
+    public ExampleCleverPlayer() {
+        this(true);
+    }
+
+    public ExampleCleverPlayer(boolean verbose) {
+        this.verbose = verbose;
+    }
 
     @Override
     public Play makeCleverPlay(Table table, List<Choice> opponentsLastChoices, BoneState boneState) throws CantPlayException {
-//    public Play makeObservantPlay(Table table, List<Choice> opponentsLastChoices) throws CantPlayException {
-        System.out.println("Player " + name + " makeCleverPlay()");
+        if (isFirstMove())
+            Collections.sort(myBones, boneWeightComparator);
+
+        if (verbose) System.out.println("Player " + name + " makeCleverPlay()");
         this.opponentsLastChoices = opponentsLastChoices;
 
         // Process opponent's last choices:
-        System.out.println("\tOpponent choices were: " + opponentsLastChoices);
+        if (verbose) System.out.println("\tOpponent choices were: " + opponentsLastChoices);
 
         // Check probabilities of unknown bones (ie. bones that are either in the opponent's hand OR in the boneyard)
         for (ImmutableBone bone : boneState.getUnknownBones()) {
             Bone originalBone = bone.cloneAsBone();     // This is how to convert back to the Bone class
-            System.out.format("\tOpponent has %f chance of having bone %s%n", boneState.getProbThatOpponentHasBone(bone), bone);
+            if (verbose) System.out.format("\tOpponent has %f chance of having bone %s%n", boneState.getProbThatOpponentHasBone(bone), bone);
         }
 
         // Make my play
         Play myPlay = null;
-        for (Bone bone : myBones) {
-            ImmutableBone myBone = new ImmutableBone(bone);
+        ImmutableBone placedBone = null;
+        for (ImmutableBone myBone : myBones) {
+            placedBone = myBone;
+            Bone bone = myBone.cloneAsBone();
 
             if (myBone.matches(table.left())) {
                 if (bone.left() == table.left())
@@ -61,9 +84,24 @@ public class ExampleCleverPlayer extends CleverPlayer {
             break;
         }
 
+
+
+
+
         if (myPlay != null) {
-            assert myBones.remove(myPlay.bone());
+            myBones.remove(placedBone);
             lastChoice = new Choice(myPlay);
+
+            // What is the boneState after I make this placement?
+            BoneState nextState = boneState.createNext(lastChoice, true);
+
+            // What can the opponent do next?
+            if (verbose) {
+                System.out.println("\tThe opponent can then do:");
+                for (Choice choice : new StateEnumeratorImpl().getOpponentValidChoices(nextState))
+                    System.out.println("\t\t" + choice);
+            }
+
             return myPlay;
         } else {
             throw new CantPlayException();
@@ -72,7 +110,7 @@ public class ExampleCleverPlayer extends CleverPlayer {
 
     @Override
     public void takeBoneFromBoneyard(Bone bone) {
-        myBones.add(bone);
+        myBones.add(new ImmutableBone(bone));
         lastChoice = new Choice(Choice.Action.PICKED_UP, new ImmutableBone(bone));
     }
 
@@ -88,7 +126,7 @@ public class ExampleCleverPlayer extends CleverPlayer {
 
     @Override
     public Bone[] bonesInHand() {
-        return myBones.toArray(new Bone[0]);
+        return Bones.convertToBoneArray(myBones);
     }
 
     @Override

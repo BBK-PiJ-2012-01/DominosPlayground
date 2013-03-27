@@ -15,6 +15,7 @@ import java.util.Set;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 /**
  * User: Sam Wright
@@ -75,5 +76,38 @@ public class AIPlayerTest {
         for (int i = 0; i < 1000; ++i)
             testGame();
 
+    }
+
+
+    public static void main(String[] args) {
+        DominoPlayer probabilisticAI = new AIPlayer();
+        DominoPlayer dumbAI = new ExampleCleverPlayer(false);
+
+        DominoUI ui = mock(DominoUI.class);
+
+        probabilisticAI.setName("Probabilistic AI");
+        dumbAI.setName("Dumb AI");
+
+        int probWins = 0, dumbWins = 0, probPoints = 0, dumbPoints = 0;
+
+        System.out.println("Starting game...");
+
+        for (int i = 0; i < 100; ++i) {
+            probabilisticAI.setPoints(0);
+            dumbAI.setPoints(0);
+
+            DominoPlayer winner = new Dominoes(ui, probabilisticAI, dumbAI, 100, 6).play();
+
+            if (winner == probabilisticAI)
+                probWins += 1;
+            else
+                dumbWins += 1;
+
+            probPoints += probabilisticAI.getPoints();
+            dumbPoints += dumbAI.getPoints();
+
+            System.out.format("AI won %d points (%.1f%%) and %d games (%.1f%%)%n", probPoints, probPoints * 100. / (probPoints + dumbPoints)
+                                                                           , probWins, probWins * 100. / (probWins + dumbWins));
+        }
     }
 }

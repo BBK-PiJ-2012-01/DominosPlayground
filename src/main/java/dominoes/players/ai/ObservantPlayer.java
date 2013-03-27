@@ -15,8 +15,6 @@ import java.util.List;
  * Time: 13:27
  */
 public abstract class ObservantPlayer implements DominoPlayer {
-    private final static int INITIAL_LAYOUT_SIZE = 1;
-
     private Bone[] prevLayout, initialLayout;
 
     public BoneYard getBoneYard() {
@@ -129,7 +127,7 @@ public abstract class ObservantPlayer implements DominoPlayer {
         }
 
         if (play == null)
-            throw new NullPointerException("it's broken!");
+            throw new NullPointerException("makeObservantPlay returned null!");
 
         return play;
     }
@@ -169,7 +167,7 @@ public abstract class ObservantPlayer implements DominoPlayer {
     /**
      * Returns true iff no-one has made a play yet.
      *
-     * @returntrue iff no-one has made a play yet.
+     * @return true iff no-one has made a play yet.
      */
     public final boolean isFirstMove() {
         return firstMove;

@@ -98,7 +98,6 @@ public class ProbabilisticAI implements AIController {
 
         } while(n++ < 300);
 
-//        System.out.println("Best route length is " + bestRoutes.get(0).length() + " with value " + bestRoutes.get(0).getValue());
         return bestChoice;
     }
 
