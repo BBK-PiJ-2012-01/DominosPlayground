@@ -44,7 +44,7 @@ public interface BoneState {
      * @param bone the bone to check.
      * @return the probability that the given bone will be in the opponent's hand.
      */
-    double getProbThatOpponentHasBone(ImmutableBone bone);
+    float getProbThatOpponentHasBone(ImmutableBone bone);
 
     /**
      * Gets the probability that the given bone will be in the boneyard.
@@ -52,7 +52,7 @@ public interface BoneState {
      * @param bone the bone to check.
      * @return the probability that the given bone will be in the boneyard.
      */
-    double getProbThatBoneyardHasBone(ImmutableBone bone);
+    float getProbThatBoneyardHasBone(ImmutableBone bone);
 
     /**
      * Gets the left value of the leftmost bone in the layout.

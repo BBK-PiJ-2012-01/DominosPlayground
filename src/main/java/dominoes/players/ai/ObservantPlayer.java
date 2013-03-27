@@ -15,30 +15,33 @@ import java.util.List;
  * Time: 13:27
  */
 public abstract class ObservantPlayer implements DominoPlayer {
-    private final static int HAND_SIZE = 7, INITIAL_LAYOUT_SIZE = 1, INITIAL_BONEYARD_SIZE = 28;
+    private final static int INITIAL_LAYOUT_SIZE = 1;
 
-    private boolean firstMove;
     private Bone[] prevLayout, initialLayout;
+
+    public BoneYard getBoneYard() {
+        return boneYard;
+    }
+
     private BoneYard boneYard;
-    private boolean pickingUp;
     private Table table;
     private int prevBoneyardSize;
+
+    private boolean firstMove;
+    private boolean pickingUp;
 
     /**
      * Resets everything for a new round, which starts with the given initialLayout.
      *
      * The returned array of Choice objects are the choices the opponent has already made
      * (which will be empty, if it is my go first).
+     * @param table the table for the new round.
      */
-    private void setInitialState() {
+    private void setInitialState(Table table) {
+        this.table = table;
         Bone[] tableLayout = table.layout();
-        prevBoneyardSize = INITIAL_BONEYARD_SIZE - HAND_SIZE * 2 - INITIAL_LAYOUT_SIZE;
-
-        // Save what was the initial layout, before the game started (ie. if the opponent placed anything first,
-        // ignore those bones).
-        // NB. it doesn't matter which bones were put there by the opponent and which were there to begin with.
-        initialLayout = prevLayout = new Bone[INITIAL_LAYOUT_SIZE];
-        System.arraycopy(tableLayout, 0, prevLayout, 0, INITIAL_LAYOUT_SIZE);
+        prevBoneyardSize = boneYard.size();
+        initialLayout = prevLayout = tableLayout;
     }
 
     /**
@@ -48,7 +51,7 @@ public abstract class ObservantPlayer implements DominoPlayer {
      */
     private List<Choice> getOpponentsLastChoices() {
         // If this is the first move, and it's my move, the opponent hasn't played.
-        if (firstMove && table.layout().length == INITIAL_LAYOUT_SIZE)
+        if (firstMove)
             return Collections.emptyList();
 
         // If I'm picking up, the opponent hasn't had a chance to play
@@ -80,8 +83,12 @@ public abstract class ObservantPlayer implements DominoPlayer {
         return choices;
     }
 
-
-
+    /**
+     * Returns the layout after the given Play object has been played.
+     *
+     * @param play the Play object to play to the current layout.
+     * @return the resulting layout from applying 'play'.
+     */
     private Bone[] layoutAfterPlay(Play play) {
         Bone[] tableLayout = table.layout();
         Bone placedBone = play.bone();
@@ -101,41 +108,48 @@ public abstract class ObservantPlayer implements DominoPlayer {
 
     @Override
     public final Play makePlay(Table table) throws CantPlayException {
-        if (firstMove) {
-            this.table = table;
-            setInitialState();
-        }
+        if (firstMove)
+            setInitialState(table);
 
         Play play;
 
         try {
-            play = makeEducatedPlay(table, getOpponentsLastChoices());
+            play = makeObservantPlay(table, getOpponentsLastChoices());
             pickingUp = false;
             firstMove = false;
             prevLayout = layoutAfterPlay(play);
             prevBoneyardSize = boneYard.size();
         } catch (CantPlayException e) {
             pickingUp = ( boneYard.size() != 0 );
+            if (pickingUp)
+                prevBoneyardSize =- 1;
             prevLayout = table.layout();
             firstMove = false;
             throw e;
         }
 
+        if (play == null)
+            throw new NullPointerException("it's broken!");
+
         return play;
     }
 
-    abstract public Play makeEducatedPlay(Table table, List<Choice> opponentsLastChoices) throws CantPlayException;
+    /**
+     * Make a play, using the choices I observed the opponent make.
+     *
+     * @param table the table the game is being played on.
+     * @param opponentsLastChoices the list of choices (in chronological order) that the opponent made between
+     *                             the previous call to makeObservantPlay and now.
+     * @return the chosen play.
+     * @throws CantPlayException when a play cannot be made.
+     */
+    abstract public Play makeObservantPlay(Table table, List<Choice> opponentsLastChoices) throws CantPlayException;
 
     @Override
-    public final void draw(BoneYard boneYard) {
+    public void draw(BoneYard boneYard) {
         if (firstMove)
             this.boneYard = boneYard;
-
-        makeEducatedDraw(boneYard, firstMove);
-        prevBoneyardSize = boneYard.size();
     }
-
-    abstract public void makeEducatedDraw(BoneYard boneYard, boolean initialPickup);
 
     @Override
     public void newRound() {
@@ -143,11 +157,30 @@ public abstract class ObservantPlayer implements DominoPlayer {
         pickingUp = false;
     }
 
-    public Bone[] getInitialLayout() {
+    /**
+     * Returns the initial layout, before either player placed any bones.
+     *
+     * @return the initial layout, before either player placed any bones.
+     */
+    public final Bone[] getInitialLayout() {
         return initialLayout;
     }
 
-    public boolean isFirstMove() {
+    /**
+     * Returns true iff no-one has made a play yet.
+     *
+     * @returntrue iff no-one has made a play yet.
+     */
+    public final boolean isFirstMove() {
         return firstMove;
+    }
+
+    /**
+     * Returns true iff the player has just picked up.
+     *
+     * @return true iff the player has just picked up.
+     */
+    public final boolean isPickingUp() {
+        return pickingUp;
     }
 }

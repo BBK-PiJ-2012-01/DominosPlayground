@@ -34,7 +34,7 @@ public class BoneStateTest {
 
 
         System.out.println("Setting up initial state");
-        preGameState = new BoneStateImpl(myBones);
+        preGameState = new BoneStateImpl(myBones, 14);
 
         placedBone = myBones.remove(3);
         initialState = preGameState.createNext(new Choice(Choice.Action.PLACED_RIGHT, placedBone), true);
@@ -51,7 +51,7 @@ public class BoneStateTest {
 
         System.out.println("Setting up iPlaced");
         iPlaced = initialState.createNext(new Choice(Choice.Action.PLACED_RIGHT, myChosenBone), true);
-        System.out.println("Setting up opponentPassed");
+        System.out.println("Setting up opponentPlaced");
         opponentPlaced = initialState.createNext(new Choice(Choice.Action.PLACED_LEFT, opponentChosenBone), false); //
 
         System.out.println(" === end of setup === ");

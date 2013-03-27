@@ -8,19 +8,26 @@ import java.util.*;
  * Time: 08:01
  */
 public class UnknownBoneManagerImpl implements UnknownBoneManager {
-
     private final Map<Integer, List<ImmutableBone>> opponentChancesToHaveBone;
     private final Map<ImmutableBone, Float> opponentBoneProbs;
     private final List<ImmutableBone> unknownBones;
     private final int sizeOfOpponentHand;
-    private final boolean isPickup;
+    private final boolean isOpponentPickup;
     private final int sizeOfBoneyard;
+    private final Choice choiceTaken;
+    private final UnknownBoneManagerImpl parent;
+    private final int lright;
+    private final int lleft;
 
-    public UnknownBoneManagerImpl(List<ImmutableBone> unknownBones, int sizeOfOpponentHand) {
-        this.sizeOfBoneyard = unknownBones.size() - sizeOfOpponentHand;
-        this.sizeOfOpponentHand = sizeOfOpponentHand;
+    public UnknownBoneManagerImpl(List<ImmutableBone> unknownBones, int sizeOfBoneyard) {
+        this.sizeOfBoneyard = sizeOfBoneyard;
+        this.sizeOfOpponentHand = unknownBones.size() - sizeOfBoneyard;
         this.unknownBones = unknownBones;
-        isPickup = false;
+        isOpponentPickup = false;
+        parent = null;
+        choiceTaken = null;
+        lleft = -1;
+        lright = -1;
 
         opponentChancesToHaveBone = new HashMap<Integer, List<ImmutableBone>>();
 
@@ -28,31 +35,79 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
         opponentChancesToHaveBone.put(sizeOfOpponentHand, unknownBones);
 
         opponentBoneProbs = calculateProbabilities();
+
+        checkConsistency();
+
+    }
+
+    private void checkConsistency() {
+        float total = 0;
+        for (Float prob : opponentBoneProbs.values())
+            total += prob;
+
+        if (Math.abs(total - sizeOfOpponentHand) > 0.01) {
+            System.out.println("\n\nERROR!!\n\n");
+            UnknownBoneManagerImpl item = this;
+            do {
+                System.out.println("\n\n" + item);
+                item = item.parent;
+            } while (item != null);
+            throw new AssertionError();
+        }
     }
 
     private UnknownBoneManagerImpl(Map<Integer, List<ImmutableBone>> opponentChancesToHaveBone,
-                                   int sizeOfOpponentHand, int sizeOfBoneyard, boolean isPickup) {
+                                   int sizeOfOpponentHand, int sizeOfBoneyard, boolean isOpponentPickup,
+                                   UnknownBoneManagerImpl parent, Choice choiceTaken, int lleft, int lright) {
         this.opponentChancesToHaveBone = opponentChancesToHaveBone;
         this.sizeOfBoneyard = sizeOfBoneyard;
         this.sizeOfOpponentHand = sizeOfOpponentHand;
-        this.isPickup = isPickup;
+        this.isOpponentPickup = isOpponentPickup;
+        this.choiceTaken = choiceTaken;
+        this.parent = parent;
+        this.lleft = lleft;
+        this.lright = lright;
 
         unknownBones = new ArrayList<ImmutableBone>(sizeOfBoneyard + sizeOfOpponentHand);
         for (List<ImmutableBone> boneList : opponentChancesToHaveBone.values())
             unknownBones.addAll(boneList);
 
         opponentBoneProbs = calculateProbabilities();
+
+        checkConsistency();
     }
 
     private Map<ImmutableBone, Float> calculateProbabilities() {
         Map<ImmutableBone, Float> newOpponentBoneProbs = new HashMap<ImmutableBone, Float>();
 
-        int largestNumberOfChances = Collections.max(opponentChancesToHaveBone.keySet());
+        if (opponentChancesToHaveBone.isEmpty())
+            return Collections.emptyMap();
+
+        int largestNumberOfChances;
+        try {
+            largestNumberOfChances = Collections.max(opponentChancesToHaveBone.keySet());
+        } catch (Exception e) {
+            System.out.println("\n\nERROR!!\n\n" + this);
+            throw new RuntimeException(e);
+        }
         int thenAvailableBonesToPickup = 0;
 
         List<ImmutableBone> possibleBonesToTake = new ArrayList<ImmutableBone>(sizeOfBoneyard + sizeOfOpponentHand);
         float[] thenBoneProb = new float[sizeOfBoneyard + sizeOfOpponentHand];
 
+
+        // If this is in a long line of pickups, we know that all previous pickups can only have picked up
+        // a bone not matching the layout, or else we'd have stopped picking up.
+
+        // So if this is a pickup, then we don't need to worry about previous pickups.
+
+        // The underlying structure (opponentChancesToHaveBone) works on the basis that NO pickups involve
+        // bones that match the layout, whereas we know that the last one involves all bones.
+
+        // So we pretend that all bones with zero chances have exactly one chance, by merging the lists
+        // from 'opponentChancesToHaveBone.get(0)' and 'opponentChancesToHaveBone.get(1)' if 'isOpponentPickup'.
+
+//        for (int i = largestNumberOfChances; i >= 0; --i) {
         for (int i = largestNumberOfChances; i > 0; --i) {
             List<ImmutableBone> bonesNowAbleToBePickedUp = opponentChancesToHaveBone.get(i);
             if (bonesNowAbleToBePickedUp != null) {
@@ -60,10 +115,22 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
                 thenAvailableBonesToPickup += bonesNowAbleToBePickedUp.size();
             }
 
+            // As per the comments above, if this is a pickup, we include the bones with zero chance
+            // with the bones that have exactly one chance:
+            if (isOpponentPickup && i == 1) {
+                List<ImmutableBone> quasiZeroChanceBones = opponentChancesToHaveBone.get(0);
+                if (quasiZeroChanceBones != null) {
+                    possibleBonesToTake.addAll(quasiZeroChanceBones);
+                    thenAvailableBonesToPickup += quasiZeroChanceBones.size();
+                }
+            }
+
             for (int boneId = 0; boneId < possibleBonesToTake.size(); ++boneId) {
                 float probOpponentHasBone = thenBoneProb[boneId];
                 float probBoneyardHasBone = 1 - probOpponentHasBone;
-                float newProbOpponentHasBone = probOpponentHasBone + probBoneyardHasBone / thenAvailableBonesToPickup;
+                float newProbOpponentHasBone = probOpponentHasBone;
+                if (Math.abs(probBoneyardHasBone) > 0.001)
+                    newProbOpponentHasBone += probBoneyardHasBone / thenAvailableBonesToPickup;
 
                 thenBoneProb[boneId] = newProbOpponentHasBone;
             }
@@ -74,9 +141,12 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
         // Bones that have had zero chances to be picked up will have zero probability of being in opponent's hand.
         // I've only dealt with those with greater than zero chances so far, but I'll add these now.  They'll relate
         // to elements in thenBoneProb elements that haven't been set, ie. will be zero.
-        List<ImmutableBone> bonesWithZeroProb = opponentChancesToHaveBone.get(0);
-        if (bonesWithZeroProb != null)
-            possibleBonesToTake.addAll(bonesWithZeroProb);
+        // (NB. this is assuming that 'isOpponentPickup == false', otherwise these are dealt with above.  See comments above.)
+        if (!isOpponentPickup) {
+            List<ImmutableBone> bonesWithZeroProb = opponentChancesToHaveBone.get(0);
+            if (bonesWithZeroProb != null)
+                possibleBonesToTake.addAll(bonesWithZeroProb);
+        }
 
         // Now persist these probabilities in a map:
         for (int boneId = 0; boneId < possibleBonesToTake.size(); ++boneId)
@@ -102,17 +172,18 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
             if (action == Choice.Action.PICKED_UP) {
                 newSizeOfBoneyard -= 1;
                 setBoneAsKnown(bone, newOpponentChancesToHaveBone);
-            } else
-                return this;
+            }
 
         } else {            // If not my turn...
             if (action.isPlacement()) {
-                // If the opponent has just picked up:
-                if (isPickup)
-                    // Then we know that they picked up 'bone' (ie. the one they just placed).  We need to undo that pickup.
-                    // All bones that matched the layout had 0 chance of being in opponent's hand.
-                    // We want to decrement the other bones' chances.
-                    incrementBoneChancesNotDefinitelyInBoneyard(newOpponentChancesToHaveBone, -1);
+                // If the opponent has placed, then each pickup where 'bone' was a contender has had one chance
+                // removed from their number of chances of being picked up.
+
+                // These aforementioned bones can be identified by having at least the same number of chances as 'bone'.
+                // NB. this works because we can assume that the first pickup was 'bone', and subsequent bones are
+                // unaffected.  Only those which were in contention for that first pick (ie. those with at least the same
+                // number of chances as 'bone') need to have a chance removed.
+                incrementBoneChancesAboveThreshold(newOpponentChancesToHaveBone, getBoneChances(bone), -1);
 
                 setBoneAsKnown(bone, newOpponentChancesToHaveBone);
                 newSizeOfOpponentHand -= 1;
@@ -121,30 +192,44 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
                 newSizeOfBoneyard -= 1;
                 newSizeOfOpponentHand += 1;
 
-                // If opponent picked up, they can't have any bones containing layoutLeft or layoutRight,
-                if (!isPickup)
-                    // NB. I only need to do this for the first pickup, since subsequent pickups don't change the layout.
+                if (!isOpponentPickup) {
+                    // If first pickup: increment all bone chances, due to pickup:
+                    incrementBoneChancesAboveThreshold(newOpponentChancesToHaveBone, 0, +1);
+
+                    // but also, the opponent couldn't have had any bones matching the layout.  To make this
+                    // easier we will assume that IN ADDITION, this pickup will only involve a bone that does
+                    // not match the layout.  If the player places a bone, then we'll know they picked up a
+                    // bone that DID match the layout, and can deal with that situation when it arises.
                     setBonesMatchingLayoutToBoneyard(newOpponentChancesToHaveBone, layoutLeft, layoutRight);
+                } else {
+                    // If not the first pickup, then only bones that don't match the layout have a greater-than-zero
+                    // chance.  As such, to increment the chances of bones that don't match the layout we need only
+                    // increase the chances of bones which already have a greater-than-zero chance:
+                    incrementBoneChancesAboveThreshold(newOpponentChancesToHaveBone, 1, +1);
+                }
 
-                // but they immediately pick up so must add a chance to every unknown bone that doesn't match the layout.
-                if (!isPickup)
-                    incrementBoneChancesNotMatchingLayout(newOpponentChancesToHaveBone, layoutLeft, layoutRight);
-                else
-                    // NB. if I've done this before, I now only need to increment bone chances that might be in the opponents hand.
-                    incrementBoneChancesNotDefinitelyInBoneyard(newOpponentChancesToHaveBone, +1);
-
-                // (NB. if it turns out that the picked-up bone DID match the layout, the opponent must immediately place
-                // it, so we'll deal with that in the next UnknownBoneManager object).
-
-            } else if (action == Choice.Action.PASS) {
-                if (!isPickup)
-                    // If opponent passed, they can't have any bones containing layoutLeft or layoutRight
-                    setBonesMatchingLayoutToBoneyard(newOpponentChancesToHaveBone, layoutLeft, layoutRight);
             }
         }
 
+        // Clean up 'newOpponentChancesToHaveBone' by removing empty lists
+        List<Integer> keysToRemove = new LinkedList<Integer>();
+        for (Map.Entry<Integer,List<ImmutableBone>> e : newOpponentChancesToHaveBone.entrySet())
+            if (e.getValue().isEmpty())
+                keysToRemove.add(e.getKey());
+
+        for (Integer keyToRemove : keysToRemove)
+            newOpponentChancesToHaveBone.remove(keyToRemove);
+
         return new UnknownBoneManagerImpl(newOpponentChancesToHaveBone, newSizeOfOpponentHand, newSizeOfBoneyard,
-                action == Choice.Action.PICKED_UP);
+                action == Choice.Action.PICKED_UP && !isMyTurn, this, choiceTaken, layoutLeft, layoutRight);
+    }
+
+    private int getBoneChances(ImmutableBone bone) {
+        for (Map.Entry<Integer,List<ImmutableBone>> e : opponentChancesToHaveBone.entrySet())
+            if (e.getValue().contains(bone))
+                return e.getKey();
+
+        throw new IllegalStateException("Not an unknown bone");
     }
 
     private static void setBoneAsKnown(ImmutableBone bone, Map<Integer, List<ImmutableBone>> opponentChancesToHaveBone) {
@@ -154,42 +239,25 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
         }
     }
 
-    private static void incrementBoneChancesNotMatchingLayout(Map<Integer, List<ImmutableBone>> opponentChancesToHaveBone,
-                                                              int layoutLeft, int layoutRight) {
+    /**
+     * Increases the chances of all bones that have had at least 'threshold' chances to be chosen, by 'value'.
+     *
+     * @param opponentChancesToHaveBone the map of bones to chances the opponent has had to pick them up.
+     * @param threshold the number of chances required of each bone to qualify for increasing.  Must be at least 0.
+     * @param value the value to add to the number of chances for each qualifying bone (can be negative, but the number
+     *              of chances for any bone is at least zero).
+     */
+    private static void incrementBoneChancesAboveThreshold(Map<Integer, List<ImmutableBone>> opponentChancesToHaveBone, int threshold, int value) {
         Map<Integer, List<ImmutableBone>> newOpponentChancesToHaveBone = new HashMap<Integer, List<ImmutableBone>>();
+        if (threshold < 0)
+            throw new IllegalArgumentException("Threshold must be at least 0");
 
         for (Map.Entry<Integer, List<ImmutableBone>> e : opponentChancesToHaveBone.entrySet()) {
-            int oldKey = e.getKey();
-            for (ImmutableBone bone : e.getValue()) {
-                int newKey;
-                if (bone.matches(layoutLeft) || bone.matches(layoutRight))
-                    newKey = oldKey;
-                else
-                    newKey = oldKey + 1;
-
-                List<ImmutableBone> newBoneList = newOpponentChancesToHaveBone.get(newKey);
-                if (newBoneList == null) {
-                    newBoneList = new LinkedList<ImmutableBone>();
-                    newOpponentChancesToHaveBone.put(newKey, newBoneList);
-                }
-
-                newBoneList.add(bone);
-            }
-        }
-
-        opponentChancesToHaveBone.clear();
-        opponentChancesToHaveBone.putAll(newOpponentChancesToHaveBone);
-    }
-
-    private static void incrementBoneChancesNotDefinitelyInBoneyard(Map<Integer, List<ImmutableBone>> opponentChancesToHaveBone, int value) {
-        Map<Integer, List<ImmutableBone>> newOpponentChancesToHaveBone = new HashMap<Integer, List<ImmutableBone>>();
-
-        for (Map.Entry<Integer, List<ImmutableBone>> e : opponentChancesToHaveBone.entrySet()) {
-            int newKey;
-            if (e.getKey() == 0)
+            int newKey = e.getKey();
+            if (e.getKey() >= threshold)
+                newKey += value;
+            if (newKey < 0)
                 newKey = 0;
-            else
-                newKey = e.getKey() + value;
 
             // If the newKey is already in use, merge the bone lists.
             List<ImmutableBone> newBoneList = newOpponentChancesToHaveBone.get(newKey);
@@ -252,8 +320,21 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
         final StringBuilder sb = new StringBuilder();
         sb.append("UnknownBoneManagerImpl");
         sb.append("{sizeOfBoneyard=").append(sizeOfBoneyard);
-        sb.append(", isPickup=").append(isPickup);
+        sb.append(", isOpponentPickup=").append(isOpponentPickup);
+
+
+
+        float total = 0;
+        for (ImmutableBone bone : unknownBones) {
+            float prob = opponentBoneProbs.get(bone);
+            total += prob;
+            sb.append("\n\t\t opponent has bone ").append(bone).append(" with prob = ").append(prob);
+        }
         sb.append(", sizeOfOpponentHand=").append(sizeOfOpponentHand);
+        sb.append(", sumOfProbs=").append(total);
+        sb.append(", choiceTaken=").append(choiceTaken);
+        sb.append(", left=").append(lleft);
+        sb.append(", right=").append(lright);
         sb.append(", opponentChancesToHaveBone=").append(opponentChancesToHaveBone);
         sb.append('}');
         return sb.toString();

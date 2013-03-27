@@ -19,9 +19,9 @@ public abstract class SimpleAIController implements AIController {
 
 
     @Override
-    public void setInitialState(List<ImmutableBone> myBones, boolean isMyTurn, ImmutableBone... initialLayout) {
+    public void setInitialState(List<ImmutableBone> myBones, boolean isMyTurn, int sizeOfBoneyard, ImmutableBone... initialLayout) {
         currentState = new GameStateImpl(new StateEnumeratorImpl(), new ExpectationWeightEvaluator(),
-                MAX_PLY, myBones, isMyTurn, initialLayout);
+                MAX_PLY, myBones, isMyTurn, sizeOfBoneyard, initialLayout);
 
     }
 

@@ -50,6 +50,14 @@ public class Choice {
         }
     }
 
+    public Choice(Play play) {
+        if (play.end() == Play.LEFT)
+            this.action = Action.PLACED_LEFT;
+        else
+            this.action = Action.PLACED_RIGHT;
+        this.bone = new ImmutableBone(play.bone());
+    }
+
     /**
      * Gets the action taken in this choice.
      *

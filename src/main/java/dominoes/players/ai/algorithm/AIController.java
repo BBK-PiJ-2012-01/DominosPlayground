@@ -15,9 +15,10 @@ public interface AIController {
      *
      * @param myBones the bones I have been dealt.
      * @param isMyTurn true iff the first move is mine.
+     * @param sizeOfBoneyard the initial size of the boneyard.
      * @param initialLayout the initial layout.
      */
-    void setInitialState(List<ImmutableBone> myBones, boolean isMyTurn, ImmutableBone... initialLayout);
+    void setInitialState(List<ImmutableBone> myBones, boolean isMyTurn, int sizeOfBoneyard, ImmutableBone... initialLayout);
 
     /**
      * Make a choice, or record the opponent making a choice.  This updates the internal current state.

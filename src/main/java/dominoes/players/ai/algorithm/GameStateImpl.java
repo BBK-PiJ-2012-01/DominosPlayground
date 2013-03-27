@@ -38,7 +38,7 @@ public class GameStateImpl implements GameState {
      * @param initialLayout the bones which start in the layout.
      */
     public GameStateImpl(StateEnumerator stateEnumerator, HandEvaluator handEvaluator,
-                         int minPly, List<ImmutableBone> myBones, boolean isMyTurn, ImmutableBone... initialLayout) {
+                         int minPly, List<ImmutableBone> myBones, boolean isMyTurn, int sizeOfBoneyard, ImmutableBone... initialLayout) {
         this.isMyTurn = isMyTurn;
         this.stateEnumerator = stateEnumerator;
         this.handEvaluator = handEvaluator;
@@ -47,7 +47,7 @@ public class GameStateImpl implements GameState {
         parent = null;
         moveNumber = 0;
         choiceTaken = null;
-        boneState = new BoneStateImpl(myBones, initialLayout);
+        boneState = new BoneStateImpl(myBones, sizeOfBoneyard, initialLayout);
 
         value = handEvaluator.evaluateInitialValue(boneState);
         extraPly = 0;
@@ -60,7 +60,12 @@ public class GameStateImpl implements GameState {
      * @return the resulting GameState after applying the given choice to this state.
      */
     private GameStateImpl createNextState(Choice choice) {
-        return new GameStateImpl(this, choice);
+        try {
+            return new GameStateImpl(this, choice);
+        } catch (NoSuchElementException e) {
+            System.out.println(" gamestate error: " + this);
+            throw e;
+        }
     }
 
     /**

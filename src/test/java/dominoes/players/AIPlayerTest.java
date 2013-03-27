@@ -4,6 +4,7 @@ import dominoes.Bone;
 import dominoes.BoneYard;
 import dominoes.DominoUI;
 import dominoes.Dominoes;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -27,9 +28,16 @@ public class AIPlayerTest {
     private DominoPlayer player1, player2;
 
     private DominoPlayer createAIPlayer() {
-//        return new AIPlayer();
-//        return new TestAIPlayer();
-        return new AIPlayerRefactored();
+        return new AIPlayer();
+//        return new ExampleCleverPlayer();
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        player1 = createAIPlayer();
+        player2 = createAIPlayer();
+        player1.setName("First Player");
+        player2.setName("Second Player");
     }
 
     @Test
@@ -47,11 +55,10 @@ public class AIPlayerTest {
     }
 
     @Test
-    public void test() throws Exception {
-        player1 = createAIPlayer();
-        player2 = createAIPlayer();
-        player1.setName("First Player");
-        player2.setName("Second Player");
+    public void testGame() throws Exception {
+        player1.setPoints(0);
+        player2.setPoints(0);
+
         System.out.println("Playing game...");
         Dominoes game = new Dominoes(ui, player1, player2, 100, 6);
         game.play();
@@ -59,8 +66,14 @@ public class AIPlayerTest {
         System.out.println("Player 1 scored " + player1.getPoints());
         System.out.println("Player 2 scored " + player2.getPoints());
 
-        assertTrue((player1.getPoints() > 100 && player2.getPoints() < 100)
-                || (player2.getPoints() > 100 && player1.getPoints() < 100));
+        assertTrue((player1.getPoints() >= 100 && player2.getPoints() < 100)
+                || (player2.getPoints() >= 100 && player1.getPoints() < 100));
     }
 
+    @Test
+    public void testMultipleGames() throws Exception {
+        for (int i = 0; i < 1000; ++i)
+            testGame();
+
+    }
 }

@@ -4,11 +4,14 @@ import java.util.*;
 
 
 public class BoneStateImpl implements BoneState {
+    private static final int INITIAL_LAYOUT_SIZE = 1;
+    private static final int INITIAL_HAND_SIZE = 7;
+
     private final int layoutLeft, layoutRight;
     private final List<ImmutableBone> myBones;
     private final UnknownBoneManager unknownBoneManager;
 
-    public BoneStateImpl(List<ImmutableBone> myBones, ImmutableBone... initialLayout) {
+    public BoneStateImpl(List<ImmutableBone> myBones, int sizeOfBoneyard, ImmutableBone... initialLayout) {
         this.myBones = new ArrayList<ImmutableBone>(myBones);
 
         if (initialLayout.length == 0) {
@@ -22,7 +25,8 @@ public class BoneStateImpl implements BoneState {
         List<ImmutableBone> unknownBones = new LinkedList<ImmutableBone>(Bones.getAllBones());
         unknownBones.removeAll(myBones);
         unknownBones.removeAll(Arrays.asList(initialLayout));
-        unknownBoneManager = new UnknownBoneManagerImpl(unknownBones, myBones.size());
+
+        unknownBoneManager = new UnknownBoneManagerImpl(unknownBones, sizeOfBoneyard);
     }
 
     public BoneStateImpl(List<ImmutableBone> myBones, UnknownBoneManager unknownBoneManager, int layoutLeft, int layoutRight) {
@@ -92,12 +96,12 @@ public class BoneStateImpl implements BoneState {
     }
 
     @Override
-    public double getProbThatOpponentHasBone(ImmutableBone bone) {
+    public float getProbThatOpponentHasBone(ImmutableBone bone) {
         return unknownBoneManager.getOpponentBoneProbs().get(bone);
     }
 
     @Override
-    public double getProbThatBoneyardHasBone(ImmutableBone bone) {
+    public float getProbThatBoneyardHasBone(ImmutableBone bone) {
         return 1 - getProbThatOpponentHasBone(bone);
     }
 

@@ -2,6 +2,7 @@ package dominoes.players;
 
 
 import dominoes.*;
+import dominoes.players.ai.ObservantPlayer;
 import dominoes.players.ai.algorithm.AIBuilder;
 import dominoes.players.ai.algorithm.AIController;
 import dominoes.players.ai.algorithm.GameOverException;
@@ -17,16 +18,9 @@ import java.util.List;
  * Date: 07/02/2013
  * Time: 17:50
  */
-public class AIPlayer implements dominoes.players.DominoPlayer {
-    private final static int HAND_SIZE = 7, INITIAL_LAYOUT_SIZE = 1;
+public class AIPlayer extends ObservantPlayer {
     private final AIController ai = AIBuilder.createAI("ProbabilisticAI");
     private final List<ImmutableBone> initialHand = new ArrayList<ImmutableBone>();
-
-    private boolean firstMove;
-    private Bone[] prevLayout;
-    private Table currentTable;
-    private BoneYard boneYard;
-    private boolean pickingUp;
 
     private int points = 0;
     private String name;
@@ -36,141 +30,72 @@ public class AIPlayer implements dominoes.players.DominoPlayer {
     }
 
     @Override
-    public Play makePlay(Table table) throws CantPlayException {
-        Bone[] table_layout = table.layout();
-        currentTable = table;
+    public void takeBack(Bone bone) {
+        throw new RuntimeException("Wasn't expecting to takeBack a bone!");
+    }
 
-        if (firstMove) {
-            // First call to 'makePlay' of this game
-            assert table_layout.length >= INITIAL_LAYOUT_SIZE;
-
-            assert initialHand.size() == HAND_SIZE;
-
-            // Save what was the initial layout, before the game started (ie. if the opponent placed anything first,
-            // ignore those bones).
-            // NB. it doesn't matter which bones were put there by the opponent and which were there to begin with.
-            prevLayout = new Bone[INITIAL_LAYOUT_SIZE];
-            System.arraycopy(table_layout, 0, prevLayout, 0, INITIAL_LAYOUT_SIZE);
-            List<ImmutableBone> layoutBonesToProcess = Bones.convertToImmutableBoneList(prevLayout);
-            ImmutableBone[] initialLayout = layoutBonesToProcess.toArray(new ImmutableBone[0]);
-
-            // Was it my go first?
-            boolean myGoFirst = table_layout.length == INITIAL_LAYOUT_SIZE;
-
-            // Set the initial state for the AI
-            ai.setInitialState(initialHand.subList(0, HAND_SIZE), myGoFirst, initialLayout);
-
-            // If the opponent went first, process their choices.
-            if (!myGoFirst)
-                applyOpponentsLastChoices(table_layout);
-
-        } else if(!pickingUp) {
-            // Not the first call to 'makePlay' of this game, and the previous choice was the opponent's.
-            applyOpponentsLastChoices(table_layout);
+    @Override
+    public Play makeObservantPlay(Table table, List<Choice> opponentsLastChoices) throws CantPlayException {
+        if (isFirstMove()) {
+            ImmutableBone[] initialLayout = Bones.convertToImmutableBoneList(getInitialLayout()).toArray(new ImmutableBone[0]);
+            ai.setInitialState(initialHand, true, getBoneYard().size(), initialLayout);
         }
 
-        firstMove = false;
 
-        // Now make my best choice:
+        System.out.println("Player " + getName());
+        for (Choice choice : opponentsLastChoices) {
+            System.out.println("\tbefore opponent choices: " + ai.getGameState().getBoneState());
+            System.out.println("\tOpponent choice: " + choice);
+            assert !ai.getGameState().isMyTurn();
+            ai.choose(choice);
+        }
+
+        assert ai.getGameState().isMyTurn();
+
+        // Find my best choice:
         Choice myChoice;
         try {
             myChoice = ai.getBestChoice();
         } catch (GameOverException e) {
             throw new CantPlayException();
         }
+        System.out.println("\tchose to: " + myChoice);
+
 
         // But if I can't place, throw a CantPlayException
         if (!myChoice.getAction().isPlacement()) {
-            if (!pickingUp) {
-                pickingUp = true;
-                prevLayout = currentTable.layout();
+            // If I have to pass, do so.
+            if (myChoice.getAction() == Choice.Action.PASS) {
+                ai.choose(myChoice);
+                System.out.println("\tafter my pass: " + ai.getGameState().getBoneState());
             }
+
             throw new CantPlayException();
         }
 
-        // So now, the choice must be a placement.
-        pickingUp = false;
+        System.out.println("\tafter my placement: " + ai.getGameState().getBoneState());
+
+        // So now, the choice must be a placement
         ai.choose(myChoice);
-        Play myPlay;
 
-        // And update my internal memory of the table
-        prevLayout = new Bone[table_layout.length + 1];
-        Bone bone = myChoice.getBone().cloneAsBone();
-        int matchingValue = -1;
-
-        // I should consider what happens when I'm given an empty layout (re defensive coding).
-        boolean layoutIsEmpty = table_layout.length == 0;
-
-        if (myChoice.getAction() == Choice.Action.PLACED_RIGHT) {
-            prevLayout[table_layout.length] = bone;
-            System.arraycopy(table_layout, 0, prevLayout, 0, table_layout.length);
-            if (!layoutIsEmpty)
-                matchingValue = table.right();
-        } else {
-            prevLayout[0] = bone;
-            System.arraycopy(table_layout, 0, prevLayout, 1, table_layout.length);
-            if (!layoutIsEmpty)
-                matchingValue = table.left();
-        }
-
-        if (layoutIsEmpty)
-            throw new RuntimeException("Layout is never empty");
-        else
-            myPlay = myChoice.convertToPlay(matchingValue);
-
-        return myPlay;
-    }
-
-    /**
-     * Given the current layout, this works out what the opponent did and passes those
-     * choices to this player's AI.
-     *
-     * @param layout the current layout (after the opponent made their move(s)).
-     */
-    private void applyOpponentsLastChoices(Bone[] layout) {
-        int rightPos = layout.length - 1;
-        int prevRightPos = prevLayout.length - 1;
-
-        int numberOfPickups = ai.getGameState().getBoneState().getSizeOfBoneyard() - boneYard.size();
-
-        for (int i = 0; i < numberOfPickups; ++i)
-            ai.choose(new Choice(Choice.Action.PICKED_UP, null));
-
-        if (!prevLayout[0].equals(layout[0])) {
-            // The opponent put a bone on the left
-            ai.choose(new Choice(Choice.Action.PLACED_LEFT, new ImmutableBone(layout[0])));
-        } else if (!prevLayout[prevRightPos].equals(layout[rightPos])) {
-            // The opponent put a bone on the right
-            ai.choose(new Choice(Choice.Action.PLACED_RIGHT, new ImmutableBone(layout[rightPos])));
-        } else {
-            // The opponent must have passed
-            ai.choose(new Choice(Choice.Action.PASS, null));
-        }
-    }
-
-    @Override
-    public void takeBack(Bone bone) {
-        throw new RuntimeException("Wasn't expecting to takeBack a bone!");
+        // and finally, convert to a Play object
+        int matchingValue = (myChoice.getAction() == Choice.Action.PLACED_RIGHT)? table.right() : table.left();
+        return myChoice.convertToPlay(matchingValue);
     }
 
     @Override
     public void draw(BoneYard boneYard) {
+        super.draw(boneYard);
         ImmutableBone pickedUpBone = new ImmutableBone(boneYard.draw());
-        this.boneYard = boneYard;
 
-        if (firstMove)
+        if (isFirstMove())
             // Just add to initialHand (they'll be given to the AI when 'makePlay' is first called.
             initialHand.add(pickedUpBone);
-        else
+        else {
             // Pick up
+            assert ai.getGameState().isMyTurn();
             ai.choose(new Choice(Choice.Action.PICKED_UP, pickedUpBone));
-    }
-
-    private List<ImmutableBone> getMyInternalBones() {
-        try {
-            return ai.getGameState().getBoneState().getMyBones();
-        } catch (NullPointerException e) {
-            return initialHand;
+            System.out.println("\tafter my pickup of "+pickedUpBone+": " + ai.getGameState().getBoneState());
         }
     }
 
@@ -181,13 +106,20 @@ public class AIPlayer implements dominoes.players.DominoPlayer {
 
     @Override
     public Bone[] bonesInHand() {
-        return Bones.convertToBoneArray(getMyInternalBones());
+        List<ImmutableBone> internalBones;
+
+        try {
+            internalBones = ai.getGameState().getBoneState().getMyBones();
+        } catch (NullPointerException e) {
+            internalBones = initialHand;
+        }
+
+        return Bones.convertToBoneArray(internalBones);
     }
 
     @Override
     public void newRound() {
-        pickingUp = false;
-        firstMove = true;
+        super.newRound();
         initialHand.clear();
     }
 

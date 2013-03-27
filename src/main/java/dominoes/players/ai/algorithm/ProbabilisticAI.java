@@ -37,11 +37,11 @@ public class ProbabilisticAI implements AIController {
     }
 
     @Override
-    public void setInitialState(List<ImmutableBone> myBones, boolean isMyTurn, ImmutableBone... initialLayout) {
+    public void setInitialState(List<ImmutableBone> myBones, boolean isMyTurn, int sizeOfBoneyard, ImmutableBone... initialLayout) {
         currentState = null;
         System.gc();
         currentState = new GameStateImpl(stateEnumerator, handEvaluator,
-                plyManager.getInitialPly(), myBones, isMyTurn, initialLayout);
+                plyManager.getInitialPly(), myBones, isMyTurn, sizeOfBoneyard, initialLayout);
     }
 
     /**
@@ -104,17 +104,7 @@ public class ProbabilisticAI implements AIController {
 
     @Override
     public void choose(Choice choice) {
-        GameState nextState = currentState.choose(choice);
-
-        int sizeOfOpponentHand = nextState.getBoneState().getSizeOfOpponentHand();
-        int sizeOfBoneyard = nextState.getBoneState().getSizeOfBoneyard();
-        int sizeOfUnknownBones = nextState.getBoneState().getUnknownBones().size();
-
-        if (sizeOfBoneyard + sizeOfOpponentHand != sizeOfUnknownBones)
-            System.out.format("\t ---- opponent has %d, boneyard has %d, unknown bones has %d%n",
-                    sizeOfOpponentHand, sizeOfBoneyard, sizeOfUnknownBones);
-
-        currentState = nextState;
+        currentState = currentState.choose(choice);
     }
 
     @Override

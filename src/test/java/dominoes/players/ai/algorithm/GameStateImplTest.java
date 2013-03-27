@@ -37,7 +37,8 @@ public class GameStateImplTest {
                         new MockHandEvaluator(),
                         initialPly,
                         myBones,
-                        true
+                        true,
+                        14
                     );
     }
 
