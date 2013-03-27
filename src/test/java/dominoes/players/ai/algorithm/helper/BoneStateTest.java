@@ -174,23 +174,12 @@ public class BoneStateTest {
         System.out.println(opponentPassed);
 
         // All unknown bones that matched what I place should have prob == 0:
-        int bonesThatAreDefinitelyInBoneyard = 0;
         ImmutableBone boneToCheck = null;
+        double probAfterPass = 7.0 / 21;
 
-        for (ImmutableBone bone : opponentPassed.getUnknownBones()) {
-            if (bone.matches(placedBone.right()) || bone.matches(placedBone.left())) {
-                assertEquals(0.0, opponentPassed.getProbThatOpponentHasBone(bone), 0.001);
-                bonesThatAreDefinitelyInBoneyard += 1;
-            } else if (boneToCheck == null)
-                boneToCheck = bone;
-        }
+        for (ImmutableBone bone : opponentPassed.getUnknownBones())
+            assertEquals(probAfterPass, opponentPassed.getProbThatOpponentHasBone(bone), 0.001);
 
-        // Now (21 - bonesThatAreDefinitelyInBoneyard) bones are truly unknown, with 7 of them being
-        // in the opponent's hand. so:
-        double probAfterPass = 7.0 / (21 - bonesThatAreDefinitelyInBoneyard);
-
-        System.out.println("Checking bone " + boneToCheck);
-        assertEquals(probAfterPass, opponentPassed.getProbThatOpponentHasBone(boneToCheck), 0.001);
     }
 
     @Test
@@ -281,8 +270,8 @@ public class BoneStateTest {
                 unknownBonesNotMatchingLayout.add(bone);
         }
 
-        double probOfBoneNotMatchingLayoutBeingPickedUpOnFirstGo = 8.0 / unknownBonesNotMatchingLayout.size();
-        double probOfBoneMatchingLayoutBeingPickedUpOnFirstGo = 0.0;
+        double probOfBoneNotMatchingLayoutBeingPickedUpOnFirstGo = 7.0 / unknownBonesNotMatchingLayout.size() + (1 - 7.0 / unknownBonesNotMatchingLayout.size()) * 1.0 / initialState.getSizeOfBoneyard();
+        double probOfBoneMatchingLayoutBeingPickedUpOnFirstGo = 1.0 / initialState.getSizeOfBoneyard();
 
         for (ImmutableBone bone : opponentPickedUp.getUnknownBones()) {
             if (bone.matches(placedBone.right()) || bone.matches(placedBone.left())) {
