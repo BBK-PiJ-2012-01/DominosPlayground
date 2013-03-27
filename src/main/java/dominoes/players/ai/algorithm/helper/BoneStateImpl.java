@@ -29,7 +29,7 @@ public class BoneStateImpl implements BoneState {
         unknownBoneManager = new UnknownBoneManagerImpl(unknownBones, sizeOfBoneyard);
     }
 
-    public BoneStateImpl(List<ImmutableBone> myBones, UnknownBoneManager unknownBoneManager, int layoutLeft, int layoutRight) {
+    private BoneStateImpl(List<ImmutableBone> myBones, UnknownBoneManager unknownBoneManager, int layoutLeft, int layoutRight) {
         this.myBones = myBones;
         this.unknownBoneManager = unknownBoneManager;
         this.layoutLeft = layoutLeft;

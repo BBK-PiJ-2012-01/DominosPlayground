@@ -19,9 +19,7 @@ import static junit.framework.Assert.assertTrue;
  * Time: 20:14
  */
 public class ExampleCleverPlayerTest {
-    private final static float PROBABILITY_MARGIN = new Float(0.05);
     private ExampleCleverPlayer player1, player2;
-    private BoneYard boneYard;
     private Table table;
 
     @Before
@@ -38,7 +36,7 @@ public class ExampleCleverPlayerTest {
 
     @Test
     public void testOneRound() throws Exception {
-        boneYard = new BoneYard(6);
+        BoneYard boneYard = new BoneYard(6);
         table = new Table();
 
         Bone initialBone = boneYard.draw();
@@ -89,7 +87,7 @@ public class ExampleCleverPlayerTest {
                         firstTryOfGo = false;
                     }
                     if (boneYard.size() == 0) {
-                        if (lastMoveWasPass == true)
+                        if (lastMoveWasPass)
                             return;
                         else
                             lastMoveWasPass = true;

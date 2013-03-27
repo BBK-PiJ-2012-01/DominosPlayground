@@ -1,8 +1,6 @@
 package dominoes.players.ai.algorithm;
 
-import com.sun.javafx.collections.UnmodifiableListSet;
 import dominoes.players.ai.algorithm.components.*;
-import dominoes.players.ai.algorithm.helper.ConsoleHelper;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -17,7 +15,7 @@ import java.util.List;
  */
 public class AIBuilder {
     private static final List<String> validAINames;
-    private static String builderMethodPrefix = "create";
+    private static final String builderMethodPrefix = "create";
 
     static {
         List<String> tempValidAINames = new ArrayList<String>();

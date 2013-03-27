@@ -7,8 +7,7 @@ import dominoes.Bone;
  * An immutable bone (like dominoes.Bone, but not flippable).
  */
 public class ImmutableBone {
-    private int left, right;
-    private int weight;
+    private final int left, right, weight;
 
     public ImmutableBone(Bone bone) {
         this(bone.left(), bone.right());

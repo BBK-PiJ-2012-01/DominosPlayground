@@ -14,14 +14,12 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
     private final int sizeOfOpponentHand;
     private final boolean isOpponentPickup;
     private final int sizeOfBoneyard;
-    private final Choice choiceTaken;
 
     public UnknownBoneManagerImpl(List<ImmutableBone> unknownBones, int sizeOfBoneyard) {
         this.sizeOfBoneyard = sizeOfBoneyard;
         this.sizeOfOpponentHand = unknownBones.size() - sizeOfBoneyard;
         this.unknownBones = unknownBones;
         isOpponentPickup = false;
-        choiceTaken = null;
 
         opponentChancesToHaveBone = new HashMap<Integer, List<ImmutableBone>>();
 
@@ -33,13 +31,11 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
     }
 
     private UnknownBoneManagerImpl(Map<Integer, List<ImmutableBone>> opponentChancesToHaveBone,
-                                   int sizeOfOpponentHand, int sizeOfBoneyard, boolean isOpponentPickup,
-                                   UnknownBoneManagerImpl parent, Choice choiceTaken) {
+                                   int sizeOfOpponentHand, int sizeOfBoneyard, boolean isOpponentPickup) {
         this.opponentChancesToHaveBone = opponentChancesToHaveBone;
         this.sizeOfBoneyard = sizeOfBoneyard;
         this.sizeOfOpponentHand = sizeOfOpponentHand;
         this.isOpponentPickup = isOpponentPickup;
-        this.choiceTaken = choiceTaken;
 
         unknownBones = new ArrayList<ImmutableBone>(sizeOfBoneyard + sizeOfOpponentHand);
         for (List<ImmutableBone> boneList : opponentChancesToHaveBone.values())
@@ -193,7 +189,7 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
             newOpponentChancesToHaveBone.remove(keyToRemove);
 
         return new UnknownBoneManagerImpl(newOpponentChancesToHaveBone, newSizeOfOpponentHand, newSizeOfBoneyard,
-                action == Choice.Action.PICKED_UP && !isMyTurn, this, choiceTaken);
+                action == Choice.Action.PICKED_UP && !isMyTurn);
     }
 
     private int getBoneChances(ImmutableBone bone) {
@@ -304,7 +300,6 @@ public class UnknownBoneManagerImpl implements UnknownBoneManager {
         }
         sb.append(", sizeOfOpponentHand=").append(sizeOfOpponentHand);
         sb.append(", sumOfProbs=").append(total);
-        sb.append(", choiceTaken=").append(choiceTaken);
         sb.append(", opponentChancesToHaveBone=").append(opponentChancesToHaveBone);
         sb.append('}');
         return sb.toString();

@@ -28,7 +28,8 @@ public abstract class CleverPlayer extends ObservantPlayer {
     public Play makeObservantPlay(Table table, List<Choice> opponentsLastChoices) throws CantPlayException {
         if (isFirstMove()) {
             List<ImmutableBone> initialHand = Bones.convertToImmutableBoneList(bonesInHand());
-            ImmutableBone[] initialLayout = Bones.convertToImmutableBoneList(getInitialLayout()).toArray(new ImmutableBone[0]);
+            List<ImmutableBone> var = Bones.convertToImmutableBoneList(getInitialLayout());
+            ImmutableBone[] initialLayout = var.toArray(new ImmutableBone[var.size()]);
             boneState = new BoneStateImpl(initialHand, getBoneYard().size(), initialLayout);
         }
 

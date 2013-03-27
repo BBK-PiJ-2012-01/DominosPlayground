@@ -99,10 +99,6 @@ public class BoneStateTest {
         assertEquals(6, opponentPlaced.getSizeOfOpponentHand());
     }
 
-    @Test
-    public void testCreateNext() throws Exception {
-
-    }
 
     @Test
     public void testGetMyBones() throws Exception {
@@ -174,7 +170,6 @@ public class BoneStateTest {
         System.out.println(opponentPassed);
 
         // All unknown bones that matched what I place should have prob == 0:
-        ImmutableBone boneToCheck = null;
         double probAfterPass = 7.0 / 21;
 
         for (ImmutableBone bone : opponentPassed.getUnknownBones())
@@ -261,12 +256,9 @@ public class BoneStateTest {
         // BoneState opponentPickedUp = iPlaced.createNext(new Choice(Choice.Action.PICKED_UP, null), false);
         System.out.println(opponentPickedUp);
 
-        List<ImmutableBone> unknownBonesMatchingLayout = new LinkedList<ImmutableBone>();
         List<ImmutableBone> unknownBonesNotMatchingLayout = new LinkedList<ImmutableBone>();
         for (ImmutableBone bone : initialState.getUnknownBones()) {
-            if (bone.matches(placedBone.left()) || bone.matches(placedBone.right()))
-                unknownBonesMatchingLayout.add(bone);
-            else
+            if (!bone.matches(placedBone.left()) && !bone.matches(placedBone.right()))
                 unknownBonesNotMatchingLayout.add(bone);
         }
 

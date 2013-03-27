@@ -20,7 +20,7 @@ public interface RouteSelector {
      *
      * If a placement is possible, this will return a list for the best routes for
      * each legal placement.  If only a pickup is possible (ie. can't place but the
-     * boneyard isn't empty) the retured list will be empty.  If the only option is to
+     * boneyard isn't empty) the returned list will be empty.  If the only option is to
      * pass, the list will return one route leading to the GameState a pass leads to.
      *
      * @param state the state the routes starts from.

@@ -31,7 +31,7 @@ public class ExampleCleverPlayer extends CleverPlayer {
 
     private int points = 0;
     private String name;
-    private List<ImmutableBone> myBones = new LinkedList<ImmutableBone>();
+    private final List<ImmutableBone> myBones = new LinkedList<ImmutableBone>();
 
     private Choice lastChoice;
     private List<Choice> opponentsLastChoices;
