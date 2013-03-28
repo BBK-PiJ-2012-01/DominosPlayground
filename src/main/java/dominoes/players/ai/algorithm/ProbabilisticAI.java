@@ -19,7 +19,7 @@ public class ProbabilisticAI implements AIController {
     private final RouteSelector routeSelector;
     private final StateEnumerator stateEnumerator;
     private final HandEvaluator handEvaluator;
-    private int stableIterationRequirement = 50;
+    private int stableIterationRequirement = 200;
 
     public void setStableIterationRequirement(int stableIterationRequirement) {
         this.stableIterationRequirement = stableIterationRequirement;
@@ -38,8 +38,6 @@ public class ProbabilisticAI implements AIController {
 
     @Override
     public void setInitialState(List<ImmutableBone> myBones, boolean isMyTurn, int sizeOfBoneyard, ImmutableBone... initialLayout) {
-        currentState = null;
-        System.gc();
         currentState = new GameStateImpl(stateEnumerator, handEvaluator,
                 plyManager.getInitialPly(), myBones, isMyTurn, sizeOfBoneyard, initialLayout);
     }

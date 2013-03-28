@@ -3,9 +3,7 @@ package dominoes.players.ai.algorithm.helper;
 import java.util.List;
 
 /**
- * User: Sam Wright
- * Date: 14/02/2013
- * Time: 00:23
+ * Keeps track of the bones in a game.
  */
 public interface BoneState {
     BoneState createNext(Choice choiceTaken, boolean isMyTurn);

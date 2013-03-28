@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * User: Sam Wright
- * Date: 06/03/2013
- * Time: 14:18
+ * Keeps track of the unknown bones (ie. those in the opponent's hand and the boneyard).
  */
 public interface UnknownBoneManager {
     /**

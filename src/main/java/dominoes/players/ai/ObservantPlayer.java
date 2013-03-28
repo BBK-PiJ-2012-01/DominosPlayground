@@ -161,7 +161,9 @@ public abstract class ObservantPlayer implements DominoPlayer {
      * @return the initial layout, before either player placed any bones.
      */
     public final Bone[] getInitialLayout() {
-        return initialLayout;
+        Bone[] copiedInitialLayout = new Bone[initialLayout.length];
+        System.arraycopy(initialLayout, 0, copiedInitialLayout, 0, initialLayout.length);
+        return copiedInitialLayout;
     }
 
     /**

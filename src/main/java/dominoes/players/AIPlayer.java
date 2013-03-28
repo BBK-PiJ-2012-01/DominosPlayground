@@ -90,20 +90,20 @@ public class AIPlayer extends ObservantPlayer {
 
     @Override
     public int numInHand() {
-        return ai.getGameState().getBoneState().getMyBones().size();
+        return getInternalBones().size();
+    }
+
+    private List<ImmutableBone> getInternalBones() {
+        try {
+            return ai.getGameState().getBoneState().getMyBones();
+        } catch (NullPointerException e) {
+            return initialHand;
+        }
     }
 
     @Override
     public Bone[] bonesInHand() {
-        List<ImmutableBone> internalBones;
-
-        try {
-            internalBones = ai.getGameState().getBoneState().getMyBones();
-        } catch (NullPointerException e) {
-            internalBones = initialHand;
-        }
-
-        return Bones.convertToBoneArray(internalBones);
+        return Bones.convertToBoneArray(getInternalBones());
     }
 
     @Override

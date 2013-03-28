@@ -149,12 +149,11 @@ public class GameStateImpl implements GameState {
     public Status getStatus() {
         if (status == Status.GAME_OVER)
             return Status.GAME_OVER;
+
         if (moveCounter.getMovesPlayed() + moveCounter.getMinPly() + extraPly > moveNumber)
             return Status.HAS_CHILD_STATES;
-        if (moveCounter.getMovesPlayed() + moveCounter.getMinPly() + extraPly <= moveNumber)
+        else
             return Status.NOT_YET_CALCULATED;
-
-        throw new RuntimeException("getStatus broke");
     }
 
     @Override
