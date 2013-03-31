@@ -7,31 +7,15 @@ import dominoes.players.ai.algorithm.helper.ImmutableBone;
 /**
  * Evaluates the state value as the expectation value of the opponent's hand's weight minus
  * my hand's weight.
+ *
+ * @author Sam Wright
  */
 public class ExpectationWeightEvaluator implements HandEvaluator {
-//    private static final int COST_OF_MY_PICKUP = 0;
-//    private static final int VALUE_OF_OPPONENT_PICKUP = 0;
-//    private static final int COST_OF_LOSING = 100;
-//    private static final int VALUE_OF_WINNING = 100;
-//    private static final double COST_FACTOR_OF_IMPASS = 1;
-//    private static final double COST_OF_IMPASS = 0;
-//    private static final double VALUE_OF_OPPONENT_PASS = 0;
-//    private static final double COST_OF_MY_PASS = 0;
-
-//    private static final int COST_OF_MY_PICKUP = 20;
-//    private static final int VALUE_OF_OPPONENT_PICKUP = 5;
-//    private static final int COST_OF_LOSING = 300;
-//    private static final int VALUE_OF_WINNING = 300;
-//    private static final double COST_FACTOR_OF_IMPASS = 1;
-//    private static final double COST_OF_IMPASS = 50;
-//    private static final double VALUE_OF_OPPONENT_PASS = 10;
-//    private static final double COST_OF_MY_PASS = 10;
-
     private static final int COST_OF_MY_PICKUP = 10;
     private static final int VALUE_OF_OPPONENT_PICKUP = 10;
-    private static final int COST_OF_LOSING = 500;
-    private static final int VALUE_OF_WINNING = 500;
-    private static final double COST_FACTOR_OF_IMPASS = 10;
+    private static final int COST_OF_LOSING = 100;
+    private static final int VALUE_OF_WINNING = 100;
+    private static final double COST_FACTOR_OF_IMPASS = 3;
     private static final double COST_OF_IMPASS = 0;
     private static final double VALUE_OF_OPPONENT_PASS = 0;
     private static final double COST_OF_MY_PASS = 0;

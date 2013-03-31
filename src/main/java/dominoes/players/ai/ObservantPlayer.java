@@ -10,9 +10,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * User: Sam Wright
- * Date: 25/03/2013
- * Time: 13:27
+ * An ObservantPlayer is a DominoPlayer who observes the opponent's moves.
+ *
+ * @author Sam Wright
  */
 public abstract class ObservantPlayer implements DominoPlayer {
     private Bone[] prevLayout, initialLayout;

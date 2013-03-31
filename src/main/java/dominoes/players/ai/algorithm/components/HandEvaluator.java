@@ -8,6 +8,8 @@ import dominoes.players.ai.algorithm.helper.Choice;
  *
  * NB. The suggested convention is for the larger of two values to represent the
  * GameState that is better.
+ *
+ * @author Sam Wright
  */
 public interface HandEvaluator {
     /**

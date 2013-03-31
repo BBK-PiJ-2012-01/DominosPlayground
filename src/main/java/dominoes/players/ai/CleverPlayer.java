@@ -7,9 +7,10 @@ import java.util.List;
 
 
 /**
- * User: Sam Wright
- * Date: 26/03/2013
- * Time: 12:55
+ * A CleverPlayer is an ObservantPlayer who uses his observations to work out probabilistically
+ * what bones are in the opponent's hand, and which are in the boneyard.
+ *
+ * @author Sam Wright
  */
 public abstract class CleverPlayer extends ObservantPlayer {
     private BoneState boneState;

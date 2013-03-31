@@ -14,7 +14,7 @@ import java.util.List;
  * Date: 15/02/2013
  * Time: 17:57
  */
-public class RouteSelectorBinary implements RouteSelector {
+public class FastRouteSelector implements RouteSelector {
 
     private static final Comparator<Route> routeValueComparator = new Comparator<Route>() {
         @Override
@@ -87,7 +87,7 @@ public class RouteSelectorBinary implements RouteSelector {
             n -= 1;
         }
 
-        double extraValue = (n == 0 ? 0 : sumOfOpponentValues / n / 1);
+        double extraValue = (n == 0 ? 0 : sumOfOpponentValues * 1.0 / n);
 
         bestRoute.extendBackward();
         bestRoute.increaseValue(extraValue);

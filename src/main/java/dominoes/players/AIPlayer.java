@@ -14,9 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * User: Sam Wright
- * Date: 07/02/2013
- * Time: 17:50
+ * The AI DominoPlayer class.
+ *
+ * @author Sam Wright
  */
 public class AIPlayer extends ObservantPlayer {
     private final AIController ai = AIBuilder.createAI("ProbabilisticAI");

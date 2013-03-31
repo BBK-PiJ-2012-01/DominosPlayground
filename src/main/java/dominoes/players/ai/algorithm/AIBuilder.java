@@ -9,9 +9,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * User: Sam Wright
- * Date: 07/03/2013
- * Time: 13:34
+ * Builder class for AIContoller objects.
+ *
+ * @author Sam Wright
  */
 public class AIBuilder {
     private static final List<String> validAINames;
@@ -41,7 +41,7 @@ public class AIBuilder {
     private static AIController createProbabilisticAI() {
         return new ProbabilisticAI(
                 new LinearPlyManager(),
-                new RouteSelectorBinary(),
+                new FastRouteSelector(),
                 new StateEnumeratorImpl(),
                 new ExpectationWeightEvaluator());
     }
@@ -49,7 +49,7 @@ public class AIBuilder {
     private static AIController createAIWithValueAddedPerChoice(int value) {
         return new ProbabilisticAI(
                 new LinearPlyManager(),
-                new RouteSelectorBinary(),
+                new FastRouteSelector(),
                 new StateEnumeratorImpl(),
                 new ExpectationWeightEvaluator(value));
     }

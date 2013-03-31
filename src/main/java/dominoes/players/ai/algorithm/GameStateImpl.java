@@ -10,6 +10,8 @@ import static dominoes.players.ai.algorithm.helper.Choice.Action;
 
 /**
  * Implementation of GameState, which uses lazy initialisation of child states.
+ *
+ * @author Sam Wright
  */
 public class GameStateImpl implements GameState {
 

@@ -7,6 +7,8 @@ import java.util.List;
 
 /**
  * Class to enumerate all possible future states from a GameState.
+ *
+ * @author Sam Wright
  */
 public interface StateEnumerator {
 

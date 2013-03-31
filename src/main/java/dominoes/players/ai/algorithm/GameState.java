@@ -9,6 +9,8 @@ import java.util.List;
  * Immutable class which defines the state of the game at a point in time.  Each GameState
  * is a node in a decision tree, and contains children GameStates.  The links from a parent
  * to a child node are 'Choice's.
+ *
+ * @author Sam Wright
  */
 public interface GameState {
 

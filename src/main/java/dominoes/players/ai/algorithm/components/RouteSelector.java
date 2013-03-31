@@ -7,6 +7,8 @@ import java.util.List;
 
 /**
  * Class to calculate the best routes to take from a GameState.
+ *
+ * @author Sam Wright
  */
 public interface RouteSelector {
 

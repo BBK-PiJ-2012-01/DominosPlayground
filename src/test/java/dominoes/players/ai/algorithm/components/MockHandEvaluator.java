@@ -5,12 +5,10 @@ import dominoes.players.ai.algorithm.helper.Choice;
 import dominoes.players.ai.algorithm.helper.ImmutableBone;
 import org.mockito.Mock;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 /**
  * Evaluates the hand purely on the AI's hand
+ *
+ * @author Sam Wright
  */
 public class MockHandEvaluator implements HandEvaluator {
     @Mock

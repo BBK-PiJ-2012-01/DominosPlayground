@@ -78,7 +78,6 @@ public class AIPlayerTest {
 
     }
 
-
     public static void main(String[] args) {
         DominoPlayer probabilisticAI = new AIPlayer();
         DominoPlayer dumbAI = new ExampleCleverPlayer(false);

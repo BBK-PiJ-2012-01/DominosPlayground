@@ -9,9 +9,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * User: Sam Wright
- * Date: 06/02/2013
- * Time: 16:26
+ * Concrete implementation of StateEnumerator.
+ *
+ * @author Sam Wright
  */
 public class StateEnumeratorImpl extends AbstractStateEnumerator {
 
@@ -26,7 +26,6 @@ public class StateEnumeratorImpl extends AbstractStateEnumerator {
                     boneState.getLayoutLeft(), boneState.getLayoutRight());
 
         if (validChoices.isEmpty() && boneState.getSizeOfBoneyard() > 0) {
-            // No possible move - must pick up from boneyard
             List<ImmutableBone> pickupableBones = new LinkedList<ImmutableBone>();
             for (ImmutableBone bone : boneState.getUnknownBones())
                 if (boneState.getProbThatBoneyardHasBone(bone) > 0.001)

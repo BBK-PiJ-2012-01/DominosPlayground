@@ -5,6 +5,8 @@ package dominoes.players.ai.algorithm.components;
  *
  * The ply is set for each GameState, so certain favourable GameStates can be explored
  * further without unfavorable/unrealistic GameStates being wastefully pursued.
+ *
+ * @author Sam Wright
  */
 public interface PlyManager {
     /**

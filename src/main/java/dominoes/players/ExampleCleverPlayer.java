@@ -17,9 +17,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * User: Sam Wright
- * Date: 26/03/2013
- * Time: 13:45
+ * A CleverPlayer implementation that demonstrates the functionality available to a
+ * CleverPlayer.
+ *
+ * @author Sam Wright
  */
 public class ExampleCleverPlayer extends CleverPlayer {
     private static final Comparator<ImmutableBone> boneWeightComparator = new Comparator<ImmutableBone>(){
@@ -62,6 +63,12 @@ public class ExampleCleverPlayer extends CleverPlayer {
             if (verbose) System.out.format("\tOpponent has %f chance of having bone %s%n", boneState.getProbThatOpponentHasBone(bone), bone);
         }
 
+        // Find all possible Choices I can make
+        if (verbose) {
+            List<Choice> myPossibleChoices = new StateEnumeratorImpl().getMyValidChoices(boneState);
+            System.out.println("The choices I can make are: " + myPossibleChoices);
+        }
+
         // Make my play
         Play myPlay = null;
         ImmutableBone placedBone = null;
@@ -83,9 +90,6 @@ public class ExampleCleverPlayer extends CleverPlayer {
 
             break;
         }
-
-
-
 
 
         if (myPlay != null) {

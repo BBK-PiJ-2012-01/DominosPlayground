@@ -5,12 +5,17 @@ import dominoes.players.ai.algorithm.GameStateImpl;
 import dominoes.players.ai.algorithm.helper.Choice;
 import dominoes.players.ai.algorithm.helper.Route;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
- * User: Sam Wright
- * Date: 07/02/2013
- * Time: 17:19
+ * Abstract implementation of RouteSelector.  Implements all functionality, but uses
+ * the 'curiously recurring template pattern' to allow a child class to choose how much
+ * value add from discarded routes.
+ *
+ * @author Sam Wright
  */
 public abstract class AbstractRouteSelector implements RouteSelector {
 

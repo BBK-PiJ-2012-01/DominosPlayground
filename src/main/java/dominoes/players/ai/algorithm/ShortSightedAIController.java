@@ -2,15 +2,14 @@ package dominoes.players.ai.algorithm;
 
 import dominoes.players.ai.algorithm.helper.Choice;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 /**
- * User: Sam Wright
- * Date: 06/03/2013
- * Time: 16:19
+ * An AI that places the highest-weight bone possible.
+ *
+ * @author Sam Wright
  */
 public class ShortSightedAIController extends SimpleAIController {
 

@@ -1,14 +1,17 @@
 package dominoes.players.ai.algorithm.components;
 
-import dominoes.players.ai.algorithm.helper.ImmutableBone;
 import dominoes.players.ai.algorithm.helper.Choice;
+import dominoes.players.ai.algorithm.helper.ImmutableBone;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
- * User: Sam Wright
- * Date: 07/02/2013
- * Time: 17:32
+ * Abstract implementation of StateEnumerator.  Doesn't actually implement any functionality
+ * from the interface, but provides helper methods for derived classes to use.
+ *
+ * @author Sam Wright
  */
 public abstract class AbstractStateEnumerator implements StateEnumerator {
     /**

@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * User: Sam Wright
- * Date: 06/03/2013
- * Time: 16:15
+ * Abstract implementation of AIController.
+ *
+ * @author Sam Wright
  */
 public abstract class SimpleAIController implements AIController {
     private static final int MAX_PLY = 1;

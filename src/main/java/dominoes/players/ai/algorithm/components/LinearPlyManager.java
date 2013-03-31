@@ -1,6 +1,10 @@
 package dominoes.players.ai.algorithm.components;
 
-
+/**
+ * A ply manager that increases ply by the same amount each time.
+ *
+ * @author Sam Wright
+ */
 public class LinearPlyManager implements PlyManager {
 
     @Override

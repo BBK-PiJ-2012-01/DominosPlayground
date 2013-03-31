@@ -13,6 +13,8 @@ import java.util.List;
 
 /**
  * Implementation of AIController, using an iterative process to get the best routes through the decision tree.
+ *
+ * @author Sam Wright
  */
 public class ProbabilisticAI implements AIController {
     private final PlyManager plyManager;

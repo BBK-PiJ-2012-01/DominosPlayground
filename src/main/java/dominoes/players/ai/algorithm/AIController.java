@@ -8,6 +8,8 @@ import java.util.List;
 /**
  * The top-level class in the AI algorithm which ties together the GameState, PlyManager, RouteSelector,
  * StateEnumerator, and HandEvaluator classes.
+ *
+ * @author Sam Wright
  */
 public interface AIController {
     /**

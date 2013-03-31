@@ -1,19 +1,14 @@
 package dominoes.players.ai.algorithm;
 
 import dominoes.players.ai.algorithm.helper.Choice;
-import dominoes.players.ai.algorithm.helper.ImmutableBone;
-import dominoes.players.ai.algorithm.components.ExpectationWeightEvaluator;
-import dominoes.players.ai.algorithm.components.LinearPlyManager;
-import dominoes.players.ai.algorithm.components.StateEnumeratorImpl;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * User: Sam Wright
- * Date: 16/02/2013
- * Time: 10:25
+ * An AI that chooses bones to place at random.
+ *
+ * @author Sam Wright
  */
 public class RandomAIController extends SimpleAIController {
 
